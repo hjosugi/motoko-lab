@@ -1,0 +1,65 @@
+Motoko Mastery Kit offline execution checks
+Snapshot: 2026-07-20 JST
+Root: /mnt/data/github.com/hjosugi/motoko-lab
+
+[1/8] Shell syntax
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/bootstrap_toolchain.sh
+
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/check_all_apps.sh
+
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/create_issues.sh
+
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/create_labels.sh
+
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/deploy_app.sh
+
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/run_offline_checks.sh
+
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/verify_versions.sh
+
+[2/8] Python source compilation without bytecode output
+ok: scripts/check_api_surface.py
+ok: scripts/generate_file_index.py
+ok: scripts/issue_loader.py
+ok: scripts/package_kit.py
+ok: scripts/validate_kit.py
+compiled: 5 Python files
+
+[3/8] Node syntax
++ node --check /mnt/data/github.com/hjosugi/motoko-lab/protocol/tools/provenance-cli.mjs
+
++ node --check /mnt/data/github.com/hjosugi/motoko-lab/protocol/tools/provenance-cli.test.mjs
+
+[4/8] Provenance protocol tests
++ node /mnt/data/github.com/hjosugi/motoko-lab/protocol/tools/provenance-cli.test.mjs
+ok: 2 provenance test vectors
+
+[5/8] Motoko/Candid API surface
++ python3 /mnt/data/github.com/hjosugi/motoko-lab/scripts/check_api_surface.py /mnt/data/github.com/hjosugi/motoko-lab --json-report /mnt/data/github.com/hjosugi/motoko-lab/validation/api-surface.json --markdown-report /mnt/data/github.com/hjosugi/motoko-lab/validation/API_SURFACE.md
+Motoko/Candid API surface: PASS
+Applications: 5 | Methods: 46
+
+[6/8] GitHub automation dry-runs
+Dry run only. Set APPLY=1 TARGET_REPO=owner/repo after review.
+label commands: 40
+Dry run only. Set APPLY=1 TARGET_REPO=owner/repo after review.
+issue dry-run output lines: 40
+
+[7/8] Structural validation
++ python3 /mnt/data/github.com/hjosugi/motoko-lab/scripts/validate_kit.py /mnt/data/github.com/hjosugi/motoko-lab --json-report /mnt/data/github.com/hjosugi/motoko-lab/validation/structural-validation.json
+Motoko Mastery Kit structural validation
+Status: PASS
+Files: 211 | Lines: 10277 | Size: 352.1 KiB
+Apps: 5 | Issues: 40 | Numbered docs: 26
+
+Warnings:
+- jsonschema is unavailable; protocol example validation skipped
+
+All offline structural checks passed.
+Motoko compilation and PocketIC integration remain separate toolchain-dependent gates.
+JSON report: /mnt/data/github.com/hjosugi/motoko-lab/validation/structural-validation.json
+
+[8/8] Workspace hygiene
+No node_modules, .mops, or __pycache__ directories are packaged.
+
+OFFLINE CHECKS: PASS

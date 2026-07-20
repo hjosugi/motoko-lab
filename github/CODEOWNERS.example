@@ -1,0 +1,6 @@
+# Copy to .github/CODEOWNERS after replacing placeholders.
+* @your-org/core-maintainers
+/apps/01_creator_proof_registry/ @your-org/provenance-maintainers
+/protocol/ @your-org/protocol-maintainers
+/apps/03_license_marketplace/ @your-org/payments-maintainers
+/apps/05_usage_metered_saas/ @your-org/billing-maintainers

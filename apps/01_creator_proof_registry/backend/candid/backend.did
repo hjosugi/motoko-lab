@@ -1,0 +1,83 @@
+type AIDisclosure = record {
+  assisted : bool;
+  mode : variant { none; assist; generate; transform; other : text };
+  provider : opt text;
+  model : opt text;
+  promptHash : opt blob;
+  humanContribution : opt text;
+};
+type Error = variant {
+  anonymousNotAllowed;
+  unauthorized;
+  notFound;
+  invalidInput : text;
+  duplicate : text;
+  conflict : text;
+  expired;
+};
+type CommitmentStatus = variant { open; revealed : nat; cancelled : nat };
+type Commitment = record {
+  id : nat;
+  owner : principal;
+  commitmentHash : blob;
+  metadataHash : opt blob;
+  committedAt : nat;
+  expiresAt : opt nat;
+  status : CommitmentStatus;
+};
+type RecordStatus = variant {
+  active;
+  revoked : record { at : nat; reason : text };
+};
+type ProofRecord = record {
+  id : nat;
+  commitmentId : nat;
+  owner : principal;
+  artifactHash : blob;
+  manifestHash : blob;
+  salt : blob;
+  title : text;
+  kind : text;
+  mimeType : text;
+  storageUri : text;
+  parents : vec nat;
+  ai : AIDisclosure;
+  createdAt : nat;
+  status : RecordStatus;
+};
+type CommitInput = record {
+  commitmentHash : blob;
+  metadataHash : opt blob;
+  expiresAt : opt nat;
+};
+type RevealInput = record {
+  commitmentId : nat;
+  artifactHash : blob;
+  manifestHash : blob;
+  salt : blob;
+  title : text;
+  kind : text;
+  mimeType : text;
+  storageUri : text;
+  parents : vec nat;
+  ai : AIDisclosure;
+};
+type CommitmentResult = variant { ok : Commitment; err : Error };
+type RecordResult = variant { ok : ProofRecord; err : Error };
+type Stats = record {
+  commitments : nat;
+  records : nat;
+  activeRecords : nat;
+  revokedRecords : nat;
+};
+service : {
+  commit : (CommitInput) -> (CommitmentResult);
+  cancelCommitment : (nat) -> (CommitmentResult);
+  reveal : (RevealInput) -> (RecordResult);
+  revokeRecord : (nat, text) -> (RecordResult);
+  getCommitment : (nat) -> (opt Commitment) query;
+  getRecord : (nat) -> (opt ProofRecord) query;
+  getByArtifactHash : (blob) -> (opt ProofRecord) query;
+  listRecords : (nat, nat) -> (vec ProofRecord) query;
+  stats : () -> (Stats) query;
+};

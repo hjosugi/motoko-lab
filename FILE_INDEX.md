@@ -1,0 +1,253 @@
+# File Index
+
+このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
+完全性確認には`MANIFEST.sha256`を使用してください。
+
+Indexed files: **211**
+
+## Root
+
+- `.gitignore`
+- `BUILD_REPORT.md`
+- `CHANGELOG.md`
+- `CONTENTS.md`
+- `FILE_INDEX.md`
+- `LICENSE`
+- `MANIFEST.sha256`
+- `Makefile`
+- `README.md`
+- `THIRD_PARTY_NOTICES.md`
+- `VALIDATION_STATUS.md`
+- `VERSION_SNAPSHOT.md`
+- `kit-metadata.json`
+
+## `.github/`
+
+- `.github/CODEOWNERS`
+- `.github/CONTRIBUTING.md`
+- `.github/ISSUE_TEMPLATE/bug.yml`
+- `.github/ISSUE_TEMPLATE/config.yml`
+- `.github/ISSUE_TEMPLATE/feature.yml`
+- `.github/ISSUE_TEMPLATE/research.yml`
+- `.github/PULL_REQUEST_TEMPLATE.md`
+- `.github/workflows/ci.yml`
+
+## `apps/`
+
+- `apps/01_creator_proof_registry/.gitignore`
+- `apps/01_creator_proof_registry/Makefile`
+- `apps/01_creator_proof_registry/README.md`
+- `apps/01_creator_proof_registry/backend/candid/backend.did`
+- `apps/01_creator_proof_registry/backend/canister.yaml`
+- `apps/01_creator_proof_registry/backend/src/Validation.mo`
+- `apps/01_creator_proof_registry/backend/src/main.mo`
+- `apps/01_creator_proof_registry/docs/THREAT_MODEL.md`
+- `apps/01_creator_proof_registry/docs/UPGRADE_PLAN.md`
+- `apps/01_creator_proof_registry/icp.yaml`
+- `apps/01_creator_proof_registry/mops.toml`
+- `apps/01_creator_proof_registry/test/Validation.test.mo`
+- `apps/02_merkle_anchor/.gitignore`
+- `apps/02_merkle_anchor/Makefile`
+- `apps/02_merkle_anchor/README.md`
+- `apps/02_merkle_anchor/backend/candid/backend.did`
+- `apps/02_merkle_anchor/backend/canister.yaml`
+- `apps/02_merkle_anchor/backend/src/Validation.mo`
+- `apps/02_merkle_anchor/backend/src/main.mo`
+- `apps/02_merkle_anchor/docs/THREAT_MODEL.md`
+- `apps/02_merkle_anchor/docs/UPGRADE_PLAN.md`
+- `apps/02_merkle_anchor/icp.yaml`
+- `apps/02_merkle_anchor/mops.toml`
+- `apps/02_merkle_anchor/test/Validation.test.mo`
+- `apps/03_license_marketplace/.gitignore`
+- `apps/03_license_marketplace/Makefile`
+- `apps/03_license_marketplace/README.md`
+- `apps/03_license_marketplace/backend/candid/backend.did`
+- `apps/03_license_marketplace/backend/canister.yaml`
+- `apps/03_license_marketplace/backend/src/Validation.mo`
+- `apps/03_license_marketplace/backend/src/main.mo`
+- `apps/03_license_marketplace/docs/THREAT_MODEL.md`
+- `apps/03_license_marketplace/docs/UPGRADE_PLAN.md`
+- `apps/03_license_marketplace/icp.yaml`
+- `apps/03_license_marketplace/mops.toml`
+- `apps/03_license_marketplace/test/Validation.test.mo`
+- `apps/04_bounty_board/.gitignore`
+- `apps/04_bounty_board/Makefile`
+- `apps/04_bounty_board/README.md`
+- `apps/04_bounty_board/backend/candid/backend.did`
+- `apps/04_bounty_board/backend/canister.yaml`
+- `apps/04_bounty_board/backend/src/Validation.mo`
+- `apps/04_bounty_board/backend/src/main.mo`
+- `apps/04_bounty_board/docs/THREAT_MODEL.md`
+- `apps/04_bounty_board/docs/UPGRADE_PLAN.md`
+- `apps/04_bounty_board/icp.yaml`
+- `apps/04_bounty_board/mops.toml`
+- `apps/04_bounty_board/test/Validation.test.mo`
+- `apps/05_usage_metered_saas/.gitignore`
+- `apps/05_usage_metered_saas/Makefile`
+- `apps/05_usage_metered_saas/README.md`
+- `apps/05_usage_metered_saas/backend/candid/backend.did`
+- `apps/05_usage_metered_saas/backend/canister.yaml`
+- `apps/05_usage_metered_saas/backend/src/Validation.mo`
+- `apps/05_usage_metered_saas/backend/src/main.mo`
+- `apps/05_usage_metered_saas/docs/THREAT_MODEL.md`
+- `apps/05_usage_metered_saas/docs/UPGRADE_PLAN.md`
+- `apps/05_usage_metered_saas/icp.yaml`
+- `apps/05_usage_metered_saas/mops.toml`
+- `apps/05_usage_metered_saas/test/Validation.test.mo`
+
+## `career/`
+
+- `career/12_MONTH_MAINTAINER_PLAN.md`
+- `career/CONTRIBUTION_LOG_TEMPLATE.md`
+- `career/PORTFOLIO_SCORECARD.md`
+- `career/READING_LIST_OCAML_WASM_PL.md`
+- `career/WEEKLY_REVIEW_TEMPLATE.md`
+
+## `compiler/`
+
+- `compiler/ARCHITECTURE_MAP.md`
+- `compiler/BOOTSTRAP.md`
+- `compiler/FIRST_10_PRS.md`
+- `compiler/ISSUE_TRIAGE_RUBRIC.md`
+- `compiler/OCAML_DUNE_NIX_WASM_CURRICULUM.md`
+- `compiler/README.md`
+- `compiler/RELEASE_CHECKLIST.md`
+
+## `docs/`
+
+- `docs/00_START_HERE.md`
+- `docs/01_16_WEEK_ROADMAP.md`
+- `docs/02_MOTOKO_LANGUAGE_DEEP_DIVE.md`
+- `docs/03_ICP_RUNTIME_AND_ACTOR_MODEL.md`
+- `docs/04_PRODUCTION_ARCHITECTURE.md`
+- `docs/05_SECURITY_THREAT_MODEL.md`
+- `docs/06_TESTING_CI_DEPLOYMENT.md`
+- `docs/07_OPERATIONS_RUNBOOK.md`
+- `docs/08_PRODUCTION_SERVICES_EVIDENCE.md`
+- `docs/09_MONETIZATION_CASES.md`
+- `docs/10_CREATOR_PROVENANCE_THESIS.md`
+- `docs/11_CREATOR_PROVENANCE_PROTOCOL.md`
+- `docs/12_MAINTAINER_PATH.md`
+- `docs/13_COMPILER_ARCHITECTURE.md`
+- `docs/14_CONTRIBUTION_PLAYBOOK.md`
+- `docs/15_RESOURCE_INDEX.md`
+- `docs/16_COMMAND_CHEATSHEET.md`
+- `docs/17_90_DAY_EXECUTION_PLAN.md`
+- `docs/18_BUSINESS_GTM.md`
+- `docs/19_LIMITATIONS_AND_LEGAL.md`
+- `docs/20_SOURCE_EVIDENCE.md`
+- `docs/21_LARGEST_MOTOKO_SERVICE_BLUEPRINT.md`
+- `docs/22_AI_PROVENANCE_PRODUCT_PRD.md`
+- `docs/23_DATA_MODEL_AND_API.md`
+- `docs/24_UPGRADE_MIGRATION_STRATEGY.md`
+- `docs/25_COST_AND_CAPACITY_MODEL.md`
+
+## `github/`
+
+- `github/CODEOWNERS.example`
+- `github/CONTRIBUTING.md`
+- `github/ISSUE_BACKLOG.md`
+- `github/ISSUE_TEMPLATE/bug.yml`
+- `github/ISSUE_TEMPLATE/config.yml`
+- `github/ISSUE_TEMPLATE/feature.yml`
+- `github/ISSUE_TEMPLATE/research.yml`
+- `github/PROJECT_SETUP.md`
+- `github/PULL_REQUEST_TEMPLATE.md`
+- `github/issues/001-compile-all-reference-apps-with-the-current-pinned-toolchain.md`
+- `github/issues/002-add-pocketic-integration-tests-for-all-five-applications.md`
+- `github/issues/003-add-audited-on-chain-sha-256-commitment-verification.md`
+- `github/issues/004-implement-full-rfc-8785-json-canonicalization-conformance.md`
+- `github/issues/005-freeze-commitment-binary-layout-and-publish-conformance-vectors.md`
+- `github/issues/006-add-certified-query-support-for-public-verification.md`
+- `github/issues/007-design-and-implement-creator-key-rotation-and-scoped-delegation.md`
+- `github/issues/008-implement-correction-counterclaim-and-dispute-workflow.md`
+- `github/issues/009-implement-merkle-proof-and-multiproof-verifier-with-fixed-tree-rules.md`
+- `github/issues/010-build-a-c2pa-bridge-for-content-credentials.md`
+- `github/issues/011-build-w3c-verifiable-credential-issuer-and-verifier-integration.md`
+- `github/issues/012-implement-an-icrc-1-payment-verification-adapter.md`
+- `github/issues/013-add-icrc-2-approve-transfer-from-escrow-flows.md`
+- `github/issues/014-add-subscription-billing-and-invoice-entities.md`
+- `github/issues/015-add-signed-usage-receipts-and-reporter-anti-abuse-controls.md`
+- `github/issues/016-add-enhanced-persistence-migration-chain-examples.md`
+- `github/issues/017-add-candid-compatibility-ci-against-released-interfaces.md`
+- `github/issues/018-add-property-based-state-machine-tests.md`
+- `github/issues/019-implement-portable-data-export-and-verified-restore-tooling.md`
+- `github/issues/020-complete-privacy-and-data-protection-review.md`
+- `github/issues/021-commission-and-remediate-an-independent-security-audit.md`
+- `github/issues/022-add-quotas-fees-and-abuse-economics-to-public-write-paths.md`
+- `github/issues/023-design-tenant-sharding-routing-and-global-hash-index.md`
+- `github/issues/024-add-observability-cycle-alerts-and-service-level-indicators.md`
+- `github/issues/025-create-disaster-recovery-and-quarterly-restore-drill.md`
+- `github/issues/026-build-a-production-creator-and-verifier-frontend.md`
+- `github/issues/027-integrate-internet-identity-and-organization-membership.md`
+- `github/issues/028-create-reproducible-mainnet-release-and-launch-checklist.md`
+- `github/issues/029-add-dependency-provenance-and-reproducible-build-verification.md`
+- `github/issues/030-benchmark-storage-cycles-latency-and-upgrade-behavior.md`
+- `github/issues/031-triage-current-motoko-compiler-issues-and-select-good-first-contributions.md`
+- `github/issues/032-submit-a-motoko-compiler-documentation-or-diagnostic-pr.md`
+- `github/issues/033-publish-a-current-base-to-core-migration-case-study.md`
+- `github/issues/034-create-and-maintain-a-japanese-motoko-learning-and-release-digest.md`
+- `github/issues/035-complete-intellectual-property-terms-and-claims-review.md`
+- `github/issues/036-build-monetization-experiment-and-unit-economics-dashboard.md`
+- `github/issues/037-publish-a-production-grade-provenance-verification-cli-and-sdk.md`
+- `github/issues/038-add-content-availability-adapters-and-integrity-monitoring.md`
+- `github/issues/039-define-ai-tool-and-model-attestation-schema.md`
+- `github/issues/040-prepare-governance-and-sns-readiness-decision-record.md`
+- `github/labels.md`
+- `github/milestones.md`
+- `github/workflows/ci.yml`
+
+## `labs/`
+
+- `labs/01_types_and_patterns.md`
+- `labs/02_modules_and_generics.md`
+- `labs/03_persistent_actor.md`
+- `labs/04_authorization.md`
+- `labs/05_async_state_machine.md`
+- `labs/06_upgrade_migration.md`
+- `labs/07_certified_data.md`
+- `labs/08_icrc_adapter.md`
+- `labs/09_property_testing.md`
+- `labs/10_compiler_trace.md`
+- `labs/README.md`
+
+## `notes/`
+
+- `notes/README.md`
+
+## `protocol/`
+
+- `protocol/INTEROPERABILITY.md`
+- `protocol/README.md`
+- `protocol/artifacts/ai-assisted-note.txt`
+- `protocol/artifacts/human-note.txt`
+- `protocol/examples/ai-assisted.json`
+- `protocol/examples/human-only.json`
+- `protocol/package.json`
+- `protocol/schemas/provenance-manifest.schema.json`
+- `protocol/schemas/verification-report.schema.json`
+- `protocol/test-vectors/test-vectors.json`
+- `protocol/tools/provenance-cli.mjs`
+- `protocol/tools/provenance-cli.test.mjs`
+
+## `scripts/`
+
+- `scripts/bootstrap_toolchain.sh`
+- `scripts/check_all_apps.sh`
+- `scripts/check_api_surface.py`
+- `scripts/create_issues.sh`
+- `scripts/create_labels.sh`
+- `scripts/deploy_app.sh`
+- `scripts/generate_file_index.py`
+- `scripts/issue_loader.py`
+- `scripts/package_kit.py`
+- `scripts/run_offline_checks.sh`
+- `scripts/validate_kit.py`
+- `scripts/verify_versions.sh`
+
+## `validation/`
+
+- `validation/API_SURFACE.md`
+- `validation/api-surface.json`
+- `validation/execution-tests.txt`
+- `validation/structural-validation.json`

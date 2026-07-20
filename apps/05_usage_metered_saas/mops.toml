@@ -1,0 +1,17 @@
+[package]
+name = "usage-metered-saas"
+version = "0.1.0"
+description = "Multi-tenant metering and quota reference backend"
+repository = "https://github.com/hjosugi/motoko-lab/tree/main/apps/05_usage_metered_saas"
+keywords = ["internet-computer", "motoko", "reference-app"]
+license = "Apache-2.0"
+
+[dependencies]
+core = "2.6.0"
+
+[toolchain]
+moc = "1.11.1"
+
+[canisters.backend]
+main = "backend/src/main.mo"
+candid = "backend/candid/backend.did"

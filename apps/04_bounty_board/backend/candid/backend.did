@@ -1,0 +1,41 @@
+type Error = variant { anonymousNotAllowed; unauthorized; notFound; invalidInput : text; duplicate; conflict : text; deadlinePassed };
+type BountyStatus = variant {
+  open;
+  awarded : record { submissionId : nat; awardId : nat; at : nat };
+  cancelled : record { at : nat; reason : text };
+};
+type Bounty = record {
+  id : nat; owner : principal; title : text; descriptionHash : blob; descriptionUri : text;
+  criteriaHash : blob; reward : nat; ledger : principal; deadline : nat; createdAt : nat; status : BountyStatus;
+};
+type BountyInput = record {
+  title : text; descriptionHash : blob; descriptionUri : text; criteriaHash : blob;
+  reward : nat; ledger : principal; deadline : nat;
+};
+type Submission = record {
+  id : nat; bountyId : nat; submitter : principal; artifactHash : blob;
+  proofCanister : principal; proofRecordId : nat; evidenceUri : text; note : text; submittedAt : nat;
+};
+type SubmissionInput = record {
+  bountyId : nat; artifactHash : blob; proofCanister : principal;
+  proofRecordId : nat; evidenceUri : text; note : text;
+};
+type Award = record {
+  id : nat; bountyId : nat; submissionId : nat; owner : principal; winner : principal;
+  reward : nat; ledger : principal; awardedAt : nat;
+};
+type BountyResult = variant { ok : Bounty; err : Error };
+type SubmissionResult = variant { ok : Submission; err : Error };
+type AwardResult = variant { ok : Award; err : Error };
+type Stats = record { bounties : nat; submissions : nat; awards : nat };
+service : {
+  createBounty : (BountyInput) -> (BountyResult);
+  submit : (SubmissionInput) -> (SubmissionResult);
+  award : (nat, nat) -> (AwardResult);
+  cancelBounty : (nat, text) -> (BountyResult);
+  getBounty : (nat) -> (opt Bounty) query;
+  getSubmission : (nat) -> (opt Submission) query;
+  getAward : (nat) -> (opt Award) query;
+  listBounties : (nat, nat) -> (vec Bounty) query;
+  stats : () -> (Stats) query;
+};

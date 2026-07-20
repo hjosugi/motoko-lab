@@ -1,0 +1,76 @@
+{
+  "version": "0.1",
+  "creator": {
+    "principal": "aaaaa-aa",
+    "displayName": "Example Creator",
+    "organization": null,
+    "credentialUris": []
+  },
+  "derivation": {
+    "parents": [],
+    "notes": null
+  },
+  "license": {
+    "termsUri": "https://example.org/licenses/creator-proof-example-v1",
+    "termsDigest": {
+      "algorithm": "sha256",
+      "hex": "177685de465408927f1b2f65e6cca29f319f6684fd375c9808b02871c39a693d"
+    },
+    "spdxId": null
+  },
+  "extensions": {},
+  "artifact": {
+    "name": "ai-assisted-note.txt",
+    "mediaType": "text/plain",
+    "sizeBytes": 79,
+    "digest": {
+      "algorithm": "sha256",
+      "hex": "3eabac0a5996ee655269410d496b8c48eb23dd051094bd53aa30c5437a859eb3"
+    },
+    "storageUri": "https://example.org/artifacts/ai-assisted-note.txt",
+    "normalization": {
+      "binary": false,
+      "textEncoding": "utf-8",
+      "unicode": "NFC",
+      "lineEndings": "LF"
+    }
+  },
+  "process": {
+    "declaredCreatedAt": "2026-07-20T00:05:00Z",
+    "tools": [
+      {
+        "name": "Text editor",
+        "version": null,
+        "role": "Selection and revision",
+        "attestationUri": null
+      },
+      {
+        "name": "Generative assistant",
+        "version": "example-2026-07",
+        "role": "Draft ideation",
+        "attestationUri": null
+      }
+    ],
+    "humanStatement": "I selected one idea, rewrote the sentence, and approved the final artifact.",
+    "sealedEvidenceUri": "urn:example:sealed-evidence:123",
+    "environmentDigest": null
+  },
+  "ai": {
+    "assisted": true,
+    "mode": "assist",
+    "systems": [
+      {
+        "provider": "Example AI Provider",
+        "model": "Example Model",
+        "version": "2026-07",
+        "role": "Generated draft ideas"
+      }
+    ],
+    "promptDigest": {
+      "algorithm": "sha256",
+      "hex": "d1fd1b05985bc38019501194ac4c40208e2f0d5a7431540632503a1627b42030"
+    },
+    "humanContribution": "The creator selected, edited, and approved the final text.",
+    "attestationUris": []
+  }
+}

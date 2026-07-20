@@ -1,0 +1,60 @@
+{
+  "version": "0.1",
+  "creator": {
+    "principal": "aaaaa-aa",
+    "displayName": "Example Creator",
+    "organization": null,
+    "credentialUris": []
+  },
+  "derivation": {
+    "parents": [],
+    "notes": null
+  },
+  "license": {
+    "termsUri": "https://example.org/licenses/creator-proof-example-v1",
+    "termsDigest": {
+      "algorithm": "sha256",
+      "hex": "177685de465408927f1b2f65e6cca29f319f6684fd375c9808b02871c39a693d"
+    },
+    "spdxId": null
+  },
+  "extensions": {},
+  "artifact": {
+    "name": "human-note.txt",
+    "mediaType": "text/plain",
+    "sizeBytes": 49,
+    "digest": {
+      "algorithm": "sha256",
+      "hex": "5af3d0761ca6c5ca932875642af3daf0f8682d8592b6baf03cc738cd5022be9f"
+    },
+    "storageUri": "https://example.org/artifacts/human-note.txt",
+    "normalization": {
+      "binary": false,
+      "textEncoding": "utf-8",
+      "unicode": "NFC",
+      "lineEndings": "LF"
+    }
+  },
+  "process": {
+    "declaredCreatedAt": "2026-07-20T00:00:00Z",
+    "tools": [
+      {
+        "name": "Text editor",
+        "version": null,
+        "role": "Manual writing",
+        "attestationUri": null
+      }
+    ],
+    "humanStatement": "I wrote and revised the text without a generative AI system.",
+    "sealedEvidenceUri": null,
+    "environmentDigest": null
+  },
+  "ai": {
+    "assisted": false,
+    "mode": "none",
+    "systems": [],
+    "promptDigest": null,
+    "humanContribution": "All wording and revision decisions were made by the creator.",
+    "attestationUris": []
+  }
+}

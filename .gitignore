@@ -1,0 +1,9 @@
+.icp/cache/
+node_modules/
+.DS_Store
+*.log
+*.wasm
+*.wasm.gz
+.env
+.env.*
+!*.env.example

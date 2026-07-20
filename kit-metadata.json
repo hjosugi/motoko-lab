@@ -1,0 +1,17 @@
+{
+  "name": "motoko-mastery-kit",
+  "snapshotDate": "2026-07-20",
+  "timezone": "Asia/Tokyo",
+  "motokoCompiler": "1.11.1",
+  "corePackage": "2.6.0",
+  "motokoRecipe": "@dfinity/motoko@v5.0.0",
+  "mopsCliObserved": "2.16.1",
+  "nodeMotokoObserved": "4.10.0",
+  "icpCliObserved": "1.1.0",
+  "icWasmObserved": "0.9.11",
+  "applicationCount": 5,
+  "issueDraftCount": 40,
+  "publicApiMethodCount": 46,
+  "license": "Apache-2.0",
+  "validation": "offline checks passed; native Motoko compile and PocketIC pending"
+}

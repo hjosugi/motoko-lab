@@ -1,0 +1,42 @@
+type Error = variant { anonymousNotAllowed; unauthorized; notFound; invalidInput : text; duplicate : text; conflict : text; soldOut };
+type Listing = record {
+  id : nat; seller : principal; proofCanister : principal; proofRecordId : nat;
+  artifactHash : blob; title : text; termsHash : blob; termsUri : text;
+  price : nat; currencyLedger : principal; supply : opt nat; sold : nat;
+  active : bool; createdAt : nat;
+};
+type ListingInput = record {
+  proofCanister : principal; proofRecordId : nat; artifactHash : blob; title : text;
+  termsHash : blob; termsUri : text; price : nat; currencyLedger : principal; supply : opt nat;
+};
+type OrderStatus = variant {
+  paymentSubmitted;
+  accepted : record { at : nat; grantId : nat };
+  rejected : record { at : nat; reason : text };
+};
+type Order = record {
+  id : nat; listingId : nat; buyer : principal; ledger : principal;
+  paymentBlock : nat; receiptHash : blob; submittedAt : nat; status : OrderStatus;
+};
+type PurchaseInput = record { listingId : nat; ledger : principal; paymentBlock : nat; receiptHash : blob };
+type LicenseGrant = record {
+  id : nat; listingId : nat; orderId : nat; seller : principal; buyer : principal;
+  proofCanister : principal; proofRecordId : nat; artifactHash : blob; termsHash : blob;
+  termsUri : text; price : nat; currencyLedger : principal; grantedAt : nat;
+};
+type ListingResult = variant { ok : Listing; err : Error };
+type OrderResult = variant { ok : Order; err : Error };
+type GrantResult = variant { ok : LicenseGrant; err : Error };
+type Stats = record { listings : nat; orders : nat; grants : nat };
+service : {
+  createListing : (ListingInput) -> (ListingResult);
+  setListingActive : (nat, bool) -> (ListingResult);
+  submitPurchase : (PurchaseInput) -> (OrderResult);
+  acceptPurchase : (nat) -> (GrantResult);
+  rejectPurchase : (nat, text) -> (OrderResult);
+  getListing : (nat) -> (opt Listing) query;
+  getOrder : (nat) -> (opt Order) query;
+  getGrant : (nat) -> (opt LicenseGrant) query;
+  listListings : (nat, nat) -> (vec Listing) query;
+  stats : () -> (Stats) query;
+};

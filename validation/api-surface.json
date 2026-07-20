@@ -1,0 +1,530 @@
+{
+  "check": "motoko-candid-api-surface",
+  "scope": "method names, query/update modes, and top-level argument counts",
+  "limitation": "This does not replace compiler-generated Candid or compatibility checking.",
+  "status": "pass",
+  "application_count": 5,
+  "method_count": 46,
+  "applications": [
+    {
+      "app": "01_creator_proof_registry",
+      "motoko_methods": [
+        {
+          "name": "cancelCommitment",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "commit",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "getByArtifactHash",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getCommitment",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getRecord",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "listRecords",
+          "mode": "query",
+          "argument_count": 2
+        },
+        {
+          "name": "reveal",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "revokeRecord",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "stats",
+          "mode": "query",
+          "argument_count": 0
+        }
+      ],
+      "candid_methods": [
+        {
+          "name": "cancelCommitment",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "commit",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "getByArtifactHash",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getCommitment",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getRecord",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "listRecords",
+          "mode": "query",
+          "argument_count": 2
+        },
+        {
+          "name": "reveal",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "revokeRecord",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "stats",
+          "mode": "query",
+          "argument_count": 0
+        }
+      ],
+      "missing_in_candid": [],
+      "missing_in_motoko": [],
+      "mode_mismatches": [],
+      "argument_count_mismatches": [],
+      "status": "pass"
+    },
+    {
+      "app": "02_merkle_anchor",
+      "motoko_methods": [
+        {
+          "name": "anchor",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "getBatch",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getByRoot",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "listBatches",
+          "mode": "query",
+          "argument_count": 2
+        },
+        {
+          "name": "revoke",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "stats",
+          "mode": "query",
+          "argument_count": 0
+        }
+      ],
+      "candid_methods": [
+        {
+          "name": "anchor",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "getBatch",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getByRoot",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "listBatches",
+          "mode": "query",
+          "argument_count": 2
+        },
+        {
+          "name": "revoke",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "stats",
+          "mode": "query",
+          "argument_count": 0
+        }
+      ],
+      "missing_in_candid": [],
+      "missing_in_motoko": [],
+      "mode_mismatches": [],
+      "argument_count_mismatches": [],
+      "status": "pass"
+    },
+    {
+      "app": "03_license_marketplace",
+      "motoko_methods": [
+        {
+          "name": "acceptPurchase",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "createListing",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "getGrant",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getListing",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getOrder",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "listListings",
+          "mode": "query",
+          "argument_count": 2
+        },
+        {
+          "name": "rejectPurchase",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "setListingActive",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "stats",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
+          "name": "submitPurchase",
+          "mode": "update",
+          "argument_count": 1
+        }
+      ],
+      "candid_methods": [
+        {
+          "name": "acceptPurchase",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "createListing",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "getGrant",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getListing",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getOrder",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "listListings",
+          "mode": "query",
+          "argument_count": 2
+        },
+        {
+          "name": "rejectPurchase",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "setListingActive",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "stats",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
+          "name": "submitPurchase",
+          "mode": "update",
+          "argument_count": 1
+        }
+      ],
+      "missing_in_candid": [],
+      "missing_in_motoko": [],
+      "mode_mismatches": [],
+      "argument_count_mismatches": [],
+      "status": "pass"
+    },
+    {
+      "app": "04_bounty_board",
+      "motoko_methods": [
+        {
+          "name": "award",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "cancelBounty",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "createBounty",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "getAward",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getBounty",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getSubmission",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "listBounties",
+          "mode": "query",
+          "argument_count": 2
+        },
+        {
+          "name": "stats",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
+          "name": "submit",
+          "mode": "update",
+          "argument_count": 1
+        }
+      ],
+      "candid_methods": [
+        {
+          "name": "award",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "cancelBounty",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "createBounty",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "getAward",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getBounty",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getSubmission",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "listBounties",
+          "mode": "query",
+          "argument_count": 2
+        },
+        {
+          "name": "stats",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
+          "name": "submit",
+          "mode": "update",
+          "argument_count": 1
+        }
+      ],
+      "missing_in_candid": [],
+      "missing_in_motoko": [],
+      "mode_mismatches": [],
+      "argument_count_mismatches": [],
+      "status": "pass"
+    },
+    {
+      "app": "05_usage_metered_saas",
+      "motoko_methods": [
+        {
+          "name": "createTenant",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "getApiKey",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getTenant",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getUsageEvent",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "listUsageEvents",
+          "mode": "query",
+          "argument_count": 2
+        },
+        {
+          "name": "recordUsage",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "registerApiKeyHash",
+          "mode": "update",
+          "argument_count": 3
+        },
+        {
+          "name": "revokeApiKeyHash",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "setReporter",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "setTenantEnabled",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "setTenantPlan",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "stats",
+          "mode": "query",
+          "argument_count": 0
+        }
+      ],
+      "candid_methods": [
+        {
+          "name": "createTenant",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "getApiKey",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getTenant",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getUsageEvent",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "listUsageEvents",
+          "mode": "query",
+          "argument_count": 2
+        },
+        {
+          "name": "recordUsage",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "registerApiKeyHash",
+          "mode": "update",
+          "argument_count": 3
+        },
+        {
+          "name": "revokeApiKeyHash",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "setReporter",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "setTenantEnabled",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "setTenantPlan",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "stats",
+          "mode": "query",
+          "argument_count": 0
+        }
+      ],
+      "missing_in_candid": [],
+      "missing_in_motoko": [],
+      "mode_mismatches": [],
+      "argument_count_mismatches": [],
+      "status": "pass"
+    }
+  ]
+}

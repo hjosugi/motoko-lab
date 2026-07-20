@@ -1,0 +1,2 @@
+An AI-assisted provenance example, selected and edited by a human.
+Revision: 3

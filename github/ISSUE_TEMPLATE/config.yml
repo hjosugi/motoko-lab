@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report
+    url: https://example.org/security
+    about: Replace with a private security reporting channel before launch.

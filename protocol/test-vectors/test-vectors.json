@@ -1,0 +1,27 @@
+{
+  "version": "0.1",
+  "canonicalization": "educational-recursive-key-sort-json",
+  "commitmentLayout": "domain-zero-principalText-zero-manifestDigest-zero-salt",
+  "vectors": [
+    {
+      "name": "human-only",
+      "manifest": "../examples/human-only.json",
+      "artifact": "../artifacts/human-note.txt",
+      "principal": "aaaaa-aa",
+      "artifactSha256": "5af3d0761ca6c5ca932875642af3daf0f8682d8592b6baf03cc738cd5022be9f",
+      "manifestSha256": "31179f0b4650bcff35de13e4576a430c286b099a6b7b3c4e8741528ed6b7083f",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "commitmentSha256": "daa33341a420eaf9ef8b0887d1b459197d0afb70ab305e1c58f45b0b5851514a"
+    },
+    {
+      "name": "ai-assisted",
+      "manifest": "../examples/ai-assisted.json",
+      "artifact": "../artifacts/ai-assisted-note.txt",
+      "principal": "aaaaa-aa",
+      "artifactSha256": "3eabac0a5996ee655269410d496b8c48eb23dd051094bd53aa30c5437a859eb3",
+      "manifestSha256": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "ffeeddccbbaa99887766554433221100",
+      "commitmentSha256": "66a2bef96472b8699655a16d43dd8d910878f16d0818f891010cdae60207a556"
+    }
+  ]
+}

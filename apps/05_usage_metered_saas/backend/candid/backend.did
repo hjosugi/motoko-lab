@@ -1,0 +1,36 @@
+type Error = variant {
+  anonymousNotAllowed; unauthorized; notFound; invalidInput : text;
+  duplicate : text; conflict : text;
+  quotaExceeded : record { quota : nat; used : nat; requested : nat };
+};
+type Plan = record { name : text; quota : nat; periodSeconds : nat; priceMinorUnits : nat; currency : text };
+type Tenant = record {
+  principal : principal; displayName : text; plan : Plan; used : nat;
+  periodStartedAt : nat; enabled : bool; createdAt : nat;
+};
+type ApiKeyRecord = record { hash : blob; tenant : principal; label : text; createdAt : nat; revokedAt : opt nat };
+type UsageEvent = record {
+  id : nat; tenant : principal; units : nat; category : text;
+  idempotencyKey : text; recordedBy : principal; recordedAt : nat;
+};
+type TenantInput = record { principal : principal; displayName : text; plan : Plan };
+type UsageInput = record { tenant : principal; units : nat; category : text; idempotencyKey : text };
+type BoolResult = variant { ok : bool; err : Error };
+type TenantResult = variant { ok : Tenant; err : Error };
+type ApiKeyResult = variant { ok : ApiKeyRecord; err : Error };
+type UsageResult = variant { ok : UsageEvent; err : Error };
+type Stats = record { tenants : nat; apiKeys : nat; usageEvents : nat; reporters : nat };
+service : {
+  setReporter : (principal, bool) -> (BoolResult);
+  createTenant : (TenantInput) -> (TenantResult);
+  setTenantPlan : (principal, Plan) -> (TenantResult);
+  setTenantEnabled : (principal, bool) -> (TenantResult);
+  registerApiKeyHash : (principal, blob, text) -> (ApiKeyResult);
+  revokeApiKeyHash : (blob) -> (ApiKeyResult);
+  recordUsage : (UsageInput) -> (UsageResult);
+  getTenant : (principal) -> (opt Tenant) query;
+  getApiKey : (blob) -> (opt ApiKeyRecord) query;
+  getUsageEvent : (nat) -> (opt UsageEvent) query;
+  listUsageEvents : (nat, nat) -> (vec UsageEvent) query;
+  stats : () -> (Stats) query;
+};

@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/creator-provenance/0.1/verification-report.schema.json",
+  "title": "Creator Provenance Verification Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "verifiedAt",
+    "commitmentValid",
+    "artifactHashValid",
+    "manifestHashValid",
+    "recordStatus",
+    "warnings"
+  ],
+  "properties": {
+    "version": {
+      "const": "0.1"
+    },
+    "verifiedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "commitmentValid": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "artifactHashValid": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "manifestHashValid": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "manifestSchemaValid": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "recordStatus": {
+      "enum": [
+        "active",
+        "revoked",
+        "not-found",
+        "not-checked"
+      ]
+    },
+    "identityCredentialValid": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "contentAvailable": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence": {
+      "type": "object"
+    }
+  }
+}

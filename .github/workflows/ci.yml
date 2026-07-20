@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install ICP and Motoko tooling
+        run: |
+          npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm
+          npm install -g ic-mops
+      - name: Validate kit structure
+        run: python3 scripts/validate_kit.py
+      - name: Test protocol tools
+        run: node protocol/tools/provenance-cli.test.mjs
+      - name: Check all Motoko apps
+        run: ./scripts/check_all_apps.sh

@@ -1,0 +1,22 @@
+type Error = variant { anonymousNotAllowed; unauthorized; notFound; invalidInput : text; duplicate; conflict : text };
+type Status = variant { active; revoked : record { at : nat; reason : text } };
+type Batch = record {
+  id : nat; owner : principal; root : blob; leafCount : nat;
+  hashAlgorithm : text; treeVersion : text; schemaUri : text;
+  policyUri : text; manifestUri : text; supersedes : opt nat;
+  createdAt : nat; status : Status;
+};
+type AnchorInput = record {
+  root : blob; leafCount : nat; hashAlgorithm : text; treeVersion : text;
+  schemaUri : text; policyUri : text; manifestUri : text; supersedes : opt nat;
+};
+type BatchResult = variant { ok : Batch; err : Error };
+type Stats = record { batches : nat; active : nat; revoked : nat };
+service : {
+  anchor : (AnchorInput) -> (BatchResult);
+  revoke : (nat, text) -> (BatchResult);
+  getBatch : (nat) -> (opt Batch) query;
+  getByRoot : (blob) -> (opt Batch) query;
+  listBatches : (nat, nat) -> (vec Batch) query;
+  stats : () -> (Stats) query;
+};

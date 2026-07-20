@@ -1,0 +1,17 @@
+[package]
+name = "creator-proof-registry"
+version = "0.1.0"
+description = "Commit-reveal registry for creator provenance evidence"
+repository = "https://github.com/hjosugi/motoko-lab/tree/main/apps/01_creator_proof_registry"
+keywords = ["internet-computer", "motoko", "reference-app"]
+license = "Apache-2.0"
+
+[dependencies]
+core = "2.6.0"
+
+[toolchain]
+moc = "1.11.1"
+
+[canisters.backend]
+main = "backend/src/main.mo"
+candid = "backend/candid/backend.did"

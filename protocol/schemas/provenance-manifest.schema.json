@@ -1,0 +1,398 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/creator-provenance/0.1/manifest.schema.json",
+  "title": "Creator Provenance Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "artifact",
+    "creator",
+    "process",
+    "ai",
+    "derivation",
+    "license"
+  ],
+  "properties": {
+    "version": {
+      "const": "0.1"
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "mediaType",
+        "digest",
+        "normalization"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "mediaType": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "storageUri": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2048
+        },
+        "normalization": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "binary"
+          ],
+          "properties": {
+            "binary": {
+              "type": "boolean"
+            },
+            "textEncoding": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "unicode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "lineEndings": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "creator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "principal"
+      ],
+      "properties": {
+        "principal": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 100
+        },
+        "displayName": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "organization": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "credentialUris": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "type": "string",
+            "maxLength": 2048
+          }
+        }
+      }
+    },
+    "process": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "declaredCreatedAt",
+        "tools",
+        "humanStatement"
+      ],
+      "properties": {
+        "declaredCreatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tools": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/tool"
+          }
+        },
+        "humanStatement": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "sealedEvidenceUri": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2048
+        },
+        "environmentDigest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "ai": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assisted",
+        "mode",
+        "systems",
+        "humanContribution"
+      ],
+      "properties": {
+        "assisted": {
+          "type": "boolean"
+        },
+        "mode": {
+          "enum": [
+            "none",
+            "assist",
+            "generate",
+            "transform",
+            "other"
+          ]
+        },
+        "systems": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "$ref": "#/$defs/aiSystem"
+          }
+        },
+        "promptDigest": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "humanContribution": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "attestationUris": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "string",
+            "maxLength": 2048
+          }
+        }
+      }
+    },
+    "derivation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parents"
+      ],
+      "properties": {
+        "parents": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/parent"
+          }
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4000
+        }
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "termsUri",
+        "termsDigest"
+      ],
+      "properties": {
+        "termsUri": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "termsDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "spdxId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 100
+        }
+      }
+    },
+    "extensions": {
+      "type": "object"
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "hex"
+      ],
+      "properties": {
+        "algorithm": {
+          "const": "sha256"
+        },
+        "hex": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "role"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "version": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 100
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "attestationUri": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2048
+        }
+      }
+    },
+    "aiSystem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "model",
+        "role"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "version": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 100
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      }
+    },
+    "parent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relationship",
+        "recordUri",
+        "artifactDigest"
+      ],
+      "properties": {
+        "relationship": {
+          "enum": [
+            "source",
+            "remix",
+            "translation",
+            "transform",
+            "component",
+            "inspiration",
+            "other"
+          ]
+        },
+        "recordUri": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2048
+        },
+        "artifactDigest": {
+          "$ref": "#/$defs/digest"
+        },
+        "licenseUri": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2048
+        }
+      }
+    }
+  }
+}
