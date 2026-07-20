@@ -1,36 +1,105 @@
-type Error = variant {
-  anonymousNotAllowed; unauthorized; notFound; invalidInput : text;
-  duplicate : text; conflict : text;
-  quotaExceeded : record { quota : nat; used : nat; requested : nat };
-};
-type Plan = record { name : text; quota : nat; periodSeconds : nat; priceMinorUnits : nat; currency : text };
-type Tenant = record {
-  principal : principal; displayName : text; plan : Plan; used : nat;
-  periodStartedAt : nat; enabled : bool; createdAt : nat;
-};
-type ApiKeyRecord = record { hash : blob; tenant : principal; label : text; createdAt : nat; revokedAt : opt nat };
-type UsageEvent = record {
-  id : nat; tenant : principal; units : nat; category : text;
-  idempotencyKey : text; recordedBy : principal; recordedAt : nat;
-};
-type TenantInput = record { principal : principal; displayName : text; plan : Plan };
-type UsageInput = record { tenant : principal; units : nat; category : text; idempotencyKey : text };
-type BoolResult = variant { ok : bool; err : Error };
-type TenantResult = variant { ok : Tenant; err : Error };
-type ApiKeyResult = variant { ok : ApiKeyRecord; err : Error };
-type UsageResult = variant { ok : UsageEvent; err : Error };
-type Stats = record { tenants : nat; apiKeys : nat; usageEvents : nat; reporters : nat };
+type UsageInput =
+ record {
+   category: text;
+   idempotencyKey: text;
+   tenant: principal;
+   units: nat;
+ };
+type UsageEvent =
+ record {
+   category: text;
+   id: nat;
+   idempotencyKey: text;
+   recordedAt: nat;
+   recordedBy: principal;
+   tenant: principal;
+   units: nat;
+ };
+type TenantInput =
+ record {
+   displayName: text;
+   plan: Plan;
+   "principal": principal;
+ };
+type Tenant =
+ record {
+   createdAt: nat;
+   displayName: text;
+   enabled: bool;
+   periodStartedAt: nat;
+   plan: Plan;
+   "principal": principal;
+   used: nat;
+ };
+type Stats =
+ record {
+   apiKeys: nat;
+   reporters: nat;
+   tenants: nat;
+   usageEvents: nat;
+ };
+type Result_3 =
+ variant {
+   err: Error;
+   ok: UsageEvent;
+ };
+type Result_2 =
+ variant {
+   err: Error;
+   ok: ApiKeyRecord;
+ };
+type Result_1 =
+ variant {
+   err: Error;
+   ok: bool;
+ };
+type Result =
+ variant {
+   err: Error;
+   ok: Tenant;
+ };
+type Plan =
+ record {
+   currency: text;
+   name: text;
+   periodSeconds: nat;
+   priceMinorUnits: nat;
+   quota: nat;
+ };
+type Error =
+ variant {
+   anonymousNotAllowed;
+   conflict: text;
+   duplicate: text;
+   invalidInput: text;
+   notFound;
+   quotaExceeded: record {
+                    quota: nat;
+                    requested: nat;
+                    used: nat;
+                  };
+   unauthorized;
+ };
+type ApiKeyRecord =
+ record {
+   createdAt: nat;
+   hash: blob;
+   keyLabel: text;
+   revokedAt: opt nat;
+   tenant: principal;
+ };
 service : {
-  setReporter : (principal, bool) -> (BoolResult);
-  createTenant : (TenantInput) -> (TenantResult);
-  setTenantPlan : (principal, Plan) -> (TenantResult);
-  setTenantEnabled : (principal, bool) -> (TenantResult);
-  registerApiKeyHash : (principal, blob, text) -> (ApiKeyResult);
-  revokeApiKeyHash : (blob) -> (ApiKeyResult);
-  recordUsage : (UsageInput) -> (UsageResult);
-  getTenant : (principal) -> (opt Tenant) query;
-  getApiKey : (blob) -> (opt ApiKeyRecord) query;
-  getUsageEvent : (nat) -> (opt UsageEvent) query;
-  listUsageEvents : (nat, nat) -> (vec UsageEvent) query;
-  stats : () -> (Stats) query;
-};
+  createTenant: (input: TenantInput) -> (Result);
+  getApiKey: (hash: blob) -> (opt ApiKeyRecord) query;
+  getTenant: ("principal": principal) -> (opt Tenant) query;
+  getUsageEvent: (id: nat) -> (opt UsageEvent) query;
+  listUsageEvents: (start: nat, limit: nat) -> (vec UsageEvent) query;
+  recordUsage: (input: UsageInput) -> (Result_3);
+  registerApiKeyHash: (tenantPrincipal: principal, hash: blob, keyLabel:
+   text) -> (Result_2);
+  revokeApiKeyHash: (hash: blob) -> (Result_2);
+  setReporter: (reporter: principal, enabled: bool) -> (Result_1);
+  setTenantEnabled: (tenantPrincipal: principal, enabled: bool) -> (Result);
+  setTenantPlan: (tenantPrincipal: principal, plan: Plan) -> (Result);
+  stats: () -> (Stats) query;
+}

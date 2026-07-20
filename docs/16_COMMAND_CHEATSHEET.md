@@ -7,6 +7,14 @@ npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm
 npm install -g ic-mops
 ```
 
+Nixなどglobal npm prefixがread-onlyの場合:
+
+```bash
+./scripts/bootstrap_toolchain.sh
+# Optional override:
+MOTOKO_TOOLCHAIN_PREFIX="$HOME/.local/share/motoko-lab/npm" ./scripts/bootstrap_toolchain.sh
+```
+
 ## Verify
 
 ```bash

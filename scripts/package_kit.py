@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import os
+import shutil
 import subprocess
 import sys
 import zipfile
@@ -31,15 +32,10 @@ def run(command: list[str], cwd: Path | None = None) -> None:
 
 
 def remove_caches(root: Path) -> None:
-    for directory in sorted(root.rglob("__pycache__"), reverse=True):
-        if directory.is_dir():
-            for child in directory.rglob("*"):
-                if child.is_file() or child.is_symlink():
-                    child.unlink()
-            for child in sorted(directory.rglob("*"), reverse=True):
-                if child.is_dir():
-                    child.rmdir()
-            directory.rmdir()
+    for name in ("__pycache__", ".mops"):
+        for directory in sorted(root.rglob(name), reverse=True):
+            if directory.is_dir():
+                shutil.rmtree(directory)
 
 
 def sha256_file(path: Path) -> str:

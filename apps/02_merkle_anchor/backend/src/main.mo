@@ -1,4 +1,5 @@
 import Blob "mo:core/Blob";
+import Int "mo:core/Int";
 import Iter "mo:core/Iter";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
@@ -52,6 +53,8 @@ persistent actor MerkleAnchor {
   var activeCount : Nat = 0;
   var revokedCount : Nat = 0;
 
+  func nowNanos() : Nat { Int.abs(Time.now()) };
+
   func validate(input : AnchorInput) : ?Error {
     if (not Validation.isDigest(input.root)) return ?#invalidInput("root must be 32 bytes");
     if (input.leafCount == 0 or input.leafCount > 1_000_000) {
@@ -92,7 +95,7 @@ persistent actor MerkleAnchor {
       policyUri = input.policyUri;
       manifestUri = input.manifestUri;
       supersedes = input.supersedes;
-      createdAt = Time.now();
+      createdAt = nowNanos();
       status = #active;
     };
     Map.add(batches, Nat.compare, id, batch);
@@ -121,7 +124,7 @@ persistent actor MerkleAnchor {
       manifestUri = current.manifestUri;
       supersedes = current.supersedes;
       createdAt = current.createdAt;
-      status = #revoked({ at = Time.now(); reason = reason });
+      status = #revoked({ at = nowNanos(); reason = reason });
     };
     Map.add(batches, Nat.compare, id, updated);
     activeCount -= 1;

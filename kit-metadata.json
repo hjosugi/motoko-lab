@@ -13,5 +13,6 @@
   "issueDraftCount": 40,
   "publicApiMethodCount": 46,
   "license": "Apache-2.0",
-  "validation": "offline checks passed; native Motoko compile and PocketIC pending"
+  "release": "v2026.07.20",
+  "validation": "offline and native Motoko checks passed for all five apps; PocketIC pending"
 }

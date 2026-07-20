@@ -1,4 +1,5 @@
 import Blob "mo:core/Blob";
+import Int "mo:core/Int";
 import Iter "mo:core/Iter";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
@@ -91,6 +92,8 @@ persistent actor LicenseMarketplace {
   var nextOrderId : Nat = 1;
   var nextGrantId : Nat = 1;
 
+  func nowNanos() : Nat { Int.abs(Time.now()) };
+
   func paymentKey(ledger : Principal, block : Nat) : Text {
     Principal.toText(ledger) # ":" # Nat.toText(block)
   };
@@ -129,7 +132,7 @@ persistent actor LicenseMarketplace {
       supply = input.supply;
       sold = 0;
       active = true;
-      createdAt = Time.now();
+      createdAt = nowNanos();
     };
     Map.add(listings, Nat.compare, id, listing);
     #ok(listing)
@@ -169,7 +172,7 @@ persistent actor LicenseMarketplace {
     let order : Order = {
       id = id; listingId = input.listingId; buyer = caller; ledger = input.ledger;
       paymentBlock = input.paymentBlock; receiptHash = input.receiptHash;
-      submittedAt = Time.now(); status = #paymentSubmitted;
+      submittedAt = nowNanos(); status = #paymentSubmitted;
     };
     Map.add(orders, Nat.compare, id, order);
     Map.add(paymentReceiptIndex, Text.compare, key, id);
@@ -196,14 +199,14 @@ persistent actor LicenseMarketplace {
       seller = listing.seller; buyer = order.buyer; proofCanister = listing.proofCanister;
       proofRecordId = listing.proofRecordId; artifactHash = listing.artifactHash;
       termsHash = listing.termsHash; termsUri = listing.termsUri; price = listing.price;
-      currencyLedger = listing.currencyLedger; grantedAt = Time.now();
+      currencyLedger = listing.currencyLedger; grantedAt = nowNanos();
     };
     Map.add(grants, Nat.compare, grantId, grant);
 
     let acceptedOrder : Order = {
       id = order.id; listingId = order.listingId; buyer = order.buyer; ledger = order.ledger;
       paymentBlock = order.paymentBlock; receiptHash = order.receiptHash;
-      submittedAt = order.submittedAt; status = #accepted({ at = Time.now(); grantId = grantId });
+      submittedAt = order.submittedAt; status = #accepted({ at = nowNanos(); grantId = grantId });
     };
     Map.add(orders, Nat.compare, order.id, acceptedOrder);
 
@@ -229,7 +232,7 @@ persistent actor LicenseMarketplace {
     let updated : Order = {
       id = order.id; listingId = order.listingId; buyer = order.buyer; ledger = order.ledger;
       paymentBlock = order.paymentBlock; receiptHash = order.receiptHash;
-      submittedAt = order.submittedAt; status = #rejected({ at = Time.now(); reason = reason });
+      submittedAt = order.submittedAt; status = #rejected({ at = nowNanos(); reason = reason });
     };
     Map.add(orders, Nat.compare, order.id, updated);
     #ok(updated)

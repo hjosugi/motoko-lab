@@ -3,7 +3,7 @@
 このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
 完全性確認には`MANIFEST.sha256`を使用してください。
 
-Indexed files: **211**
+Indexed files: **217**
 
 ## Root
 
@@ -44,6 +44,7 @@ Indexed files: **211**
 - `apps/01_creator_proof_registry/docs/THREAT_MODEL.md`
 - `apps/01_creator_proof_registry/docs/UPGRADE_PLAN.md`
 - `apps/01_creator_proof_registry/icp.yaml`
+- `apps/01_creator_proof_registry/mops.lock`
 - `apps/01_creator_proof_registry/mops.toml`
 - `apps/01_creator_proof_registry/test/Validation.test.mo`
 - `apps/02_merkle_anchor/.gitignore`
@@ -56,6 +57,7 @@ Indexed files: **211**
 - `apps/02_merkle_anchor/docs/THREAT_MODEL.md`
 - `apps/02_merkle_anchor/docs/UPGRADE_PLAN.md`
 - `apps/02_merkle_anchor/icp.yaml`
+- `apps/02_merkle_anchor/mops.lock`
 - `apps/02_merkle_anchor/mops.toml`
 - `apps/02_merkle_anchor/test/Validation.test.mo`
 - `apps/03_license_marketplace/.gitignore`
@@ -68,6 +70,7 @@ Indexed files: **211**
 - `apps/03_license_marketplace/docs/THREAT_MODEL.md`
 - `apps/03_license_marketplace/docs/UPGRADE_PLAN.md`
 - `apps/03_license_marketplace/icp.yaml`
+- `apps/03_license_marketplace/mops.lock`
 - `apps/03_license_marketplace/mops.toml`
 - `apps/03_license_marketplace/test/Validation.test.mo`
 - `apps/04_bounty_board/.gitignore`
@@ -80,6 +83,7 @@ Indexed files: **211**
 - `apps/04_bounty_board/docs/THREAT_MODEL.md`
 - `apps/04_bounty_board/docs/UPGRADE_PLAN.md`
 - `apps/04_bounty_board/icp.yaml`
+- `apps/04_bounty_board/mops.lock`
 - `apps/04_bounty_board/mops.toml`
 - `apps/04_bounty_board/test/Validation.test.mo`
 - `apps/05_usage_metered_saas/.gitignore`
@@ -92,6 +96,7 @@ Indexed files: **211**
 - `apps/05_usage_metered_saas/docs/THREAT_MODEL.md`
 - `apps/05_usage_metered_saas/docs/UPGRADE_PLAN.md`
 - `apps/05_usage_metered_saas/icp.yaml`
+- `apps/05_usage_metered_saas/mops.lock`
 - `apps/05_usage_metered_saas/mops.toml`
 - `apps/05_usage_metered_saas/test/Validation.test.mo`
 
@@ -242,6 +247,7 @@ Indexed files: **211**
 - `scripts/issue_loader.py`
 - `scripts/package_kit.py`
 - `scripts/run_offline_checks.sh`
+- `scripts/toolchain_env.sh`
 - `scripts/validate_kit.py`
 - `scripts/verify_versions.sh`
 

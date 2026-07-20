@@ -3,7 +3,7 @@
 ## Technical limitations
 
 - reference appsはsecurity audit前
-- Motoko compileはこの生成環境で未実行
+- 全5 reference appsはpinned toolchainでcompile/test/Wasm build済みだが、PocketICとupgrade rehearsalは未実行
 - SHA-256とRFC 8785完全検証はoff-chain/future issue
 - payment appsはmanual confirmation model
 - certified queryは未実装

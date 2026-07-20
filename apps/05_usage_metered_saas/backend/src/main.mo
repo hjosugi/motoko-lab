@@ -1,4 +1,5 @@
 import Blob "mo:core/Blob";
+import Int "mo:core/Int";
 import Iter "mo:core/Iter";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
@@ -37,7 +38,7 @@ persistent actor UsageMeteredSaaS {
   public type ApiKeyRecord = {
     hash : Blob;
     tenant : Principal;
-    label : Text;
+    keyLabel : Text;
     createdAt : Nat;
     revokedAt : ?Nat;
   };
@@ -60,6 +61,8 @@ persistent actor UsageMeteredSaaS {
   let usageIdempotency = Map.empty<Text, Nat>();
   let reporters = Map.empty<Principal, Bool>();
   var nextEventId : Nat = 1;
+
+  func nowNanos() : Nat { Int.abs(Time.now()) };
 
   func isController(caller : Principal) : Bool { Principal.isController(caller) };
 
@@ -102,7 +105,7 @@ persistent actor UsageMeteredSaaS {
       case (?_) return #err(#duplicate("tenant already exists"));
       case null {};
     };
-    let now = Time.now();
+    let now = nowNanos();
     let tenant : Tenant = {
       principal = input.principal; displayName = input.displayName; plan = input.plan;
       used = 0; periodStartedAt = now; enabled = true; createdAt = now;
@@ -117,7 +120,7 @@ persistent actor UsageMeteredSaaS {
     let ?current = Map.get(tenants, Principal.compare, tenantPrincipal) else return #err(#notFound);
     let updated : Tenant = {
       principal = current.principal; displayName = current.displayName; plan = plan;
-      used = 0; periodStartedAt = Time.now(); enabled = current.enabled; createdAt = current.createdAt;
+      used = 0; periodStartedAt = nowNanos(); enabled = current.enabled; createdAt = current.createdAt;
     };
     Map.add(tenants, Principal.compare, tenantPrincipal, updated);
     #ok(updated)
@@ -134,16 +137,16 @@ persistent actor UsageMeteredSaaS {
     #ok(updated)
   };
 
-  public shared ({ caller }) func registerApiKeyHash(tenantPrincipal : Principal, hash : Blob, label : Text) : async Result<ApiKeyRecord> {
+  public shared ({ caller }) func registerApiKeyHash(tenantPrincipal : Principal, hash : Blob, keyLabel : Text) : async Result<ApiKeyRecord> {
     if (Principal.isAnonymous(caller)) return #err(#anonymousNotAllowed);
     if (caller != tenantPrincipal and not isController(caller)) return #err(#unauthorized);
     if (not Validation.isDigest(hash)) return #err(#invalidInput("API key hash must be 32 bytes"));
-    if (not Validation.validText(label, 1, 100)) return #err(#invalidInput("label length is invalid"));
+    if (not Validation.validText(keyLabel, 1, 100)) return #err(#invalidInput("keyLabel length is invalid"));
     let ?tenant = Map.get(tenants, Principal.compare, tenantPrincipal) else return #err(#notFound);
     if (not tenant.enabled) return #err(#conflict("tenant is disabled"));
     switch (Map.get(apiKeys, Blob.compare, hash)) { case (?_) return #err(#duplicate("API key hash already exists")); case null {} };
     let record : ApiKeyRecord = {
-      hash = hash; tenant = tenantPrincipal; label = label; createdAt = Time.now(); revokedAt = null
+      hash = hash; tenant = tenantPrincipal; keyLabel = keyLabel; createdAt = nowNanos(); revokedAt = null
     };
     Map.add(apiKeys, Blob.compare, hash, record);
     #ok(record)
@@ -154,8 +157,8 @@ persistent actor UsageMeteredSaaS {
     if (current.tenant != caller and not isController(caller)) return #err(#unauthorized);
     switch (current.revokedAt) { case (?_) return #err(#conflict("API key is already revoked")); case null {} };
     let updated : ApiKeyRecord = {
-      hash = current.hash; tenant = current.tenant; label = current.label;
-      createdAt = current.createdAt; revokedAt = ?Time.now();
+      hash = current.hash; tenant = current.tenant; keyLabel = current.keyLabel;
+      createdAt = current.createdAt; revokedAt = ?nowNanos();
     };
     Map.add(apiKeys, Blob.compare, hash, updated);
     #ok(updated)
@@ -167,7 +170,7 @@ persistent actor UsageMeteredSaaS {
     if (not Validation.validText(input.category, 1, 100)) return #err(#invalidInput("category length is invalid"));
     if (not Validation.validText(input.idempotencyKey, 1, 200)) return #err(#invalidInput("idempotencyKey length is invalid"));
     let ?storedTenant = Map.get(tenants, Principal.compare, input.tenant) else return #err(#notFound);
-    let now = Time.now();
+    let now = nowNanos();
     let tenant = currentTenant(storedTenant, now);
     if (not tenant.enabled) return #err(#conflict("tenant is disabled"));
     let scopedKey = Principal.toText(input.tenant) # ":" # input.idempotencyKey;

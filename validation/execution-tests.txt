@@ -15,6 +15,8 @@ Root: /mnt/data/github.com/hjosugi/motoko-lab
 
 + bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/run_offline_checks.sh
 
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/toolchain_env.sh
+
 + bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/verify_versions.sh
 
 [2/8] Python source compilation without bytecode output
@@ -49,14 +51,11 @@ issue dry-run output lines: 40
 + python3 /mnt/data/github.com/hjosugi/motoko-lab/scripts/validate_kit.py /mnt/data/github.com/hjosugi/motoko-lab --json-report /mnt/data/github.com/hjosugi/motoko-lab/validation/structural-validation.json
 Motoko Mastery Kit structural validation
 Status: PASS
-Files: 211 | Lines: 10277 | Size: 352.1 KiB
+Files: 217 | Lines: 10785 | Size: 386.5 KiB
 Apps: 5 | Issues: 40 | Numbered docs: 26
 
-Warnings:
-- jsonschema is unavailable; protocol example validation skipped
-
 All offline structural checks passed.
-Motoko compilation and PocketIC integration remain separate toolchain-dependent gates.
+Run check_all_apps.sh for pinned native compilation; PocketIC remains a separate integration gate.
 JSON report: /mnt/data/github.com/hjosugi/motoko-lab/validation/structural-validation.json
 
 [8/8] Workspace hygiene

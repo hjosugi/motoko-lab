@@ -2,6 +2,8 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$root/scripts/toolchain_env.sh"
+motoko_add_toolchain_to_path
 
 for command in mops; do
   if ! command -v "$command" >/dev/null 2>&1; then

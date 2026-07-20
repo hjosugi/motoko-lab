@@ -42,7 +42,7 @@ except ImportError:  # pragma: no cover
 
 TEXT_SUFFIXES = {
     ".md", ".mo", ".did", ".yaml", ".yml", ".toml", ".json", ".mjs",
-    ".js", ".py", ".sh", ".txt", ".example", ".gitignore",
+    ".js", ".py", ".sh", ".txt", ".example", ".gitignore", ".lock",
 }
 SKIP_LINK_PREFIXES = (
     "http://", "https://", "mailto:", "tel:", "data:", "javascript:",
@@ -52,6 +52,7 @@ REQUIRED_APP_FILES = (
     "README.md",
     "Makefile",
     "icp.yaml",
+    "mops.lock",
     "mops.toml",
     "backend/canister.yaml",
     "backend/candid/backend.did",
@@ -489,7 +490,15 @@ def run_validation(root: Path) -> Report:
 
     files = list(iter_files(report.root))
     report.stats["file_count"] = len(files)
-    report.stats["directory_count"] = sum(1 for path in report.root.rglob("*") if path.is_dir()) + 1
+    report.stats["directory_count"] = (
+        sum(
+            1
+            for path in report.root.rglob("*")
+            if path.is_dir()
+            and not any(part in {".git", "node_modules", ".mops", "__pycache__"} for part in path.parts)
+        )
+        + 1
+    )
     report.stats["total_bytes"] = sum(path.stat().st_size for path in files)
     report.stats["total_lines"] = 0
 
@@ -510,6 +519,8 @@ def run_validation(root: Path) -> Report:
         elif path.suffix == ".did":
             check_candid(report, path, text)
         elif path.suffix == ".json":
+            parse_json(report, path, text)
+        elif path.name == "mops.lock":
             parse_json(report, path, text)
         elif path.suffix == ".toml":
             parse_toml(report, path, text)
@@ -575,7 +586,7 @@ def main() -> int:
             print(f"- {item}")
     else:
         print("\nAll offline structural checks passed.")
-        print("Motoko compilation and PocketIC integration remain separate toolchain-dependent gates.")
+        print("Run check_all_apps.sh for pinned native compilation; PocketIC remains a separate integration gate.")
 
     if args.json_report:
         args.json_report.parent.mkdir(parents=True, exist_ok=True)

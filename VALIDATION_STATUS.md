@@ -15,6 +15,11 @@
 - Issue draft 40件のfront matter、連番、labels、milestones確認
 - Motoko sourceのdelimiter、local import、`persistent actor`、主要core APIの静的確認
 - 5アプリ・46 public methodsのMotoko/Candid method名、query/update mode、引数個数の機械照合
+- 全5アプリの`mops install`、`mops check`、Motoko unit test
+- pinned `moc` 1.11.1による全5アプリのWasm build
+- 全5アプリのcompiler-generated Candid compatibility check
+- 全5アプリの`mops.lock`生成とdependency hash固定
+- Nix/read-only npm prefixでのuser/XDG toolchain fallback
 - Issue/label作成scriptのdry-run
 - ZIP entry検査、kit内`MANIFEST.sha256`、ZIP SHA-256 checksum
 
@@ -24,13 +29,8 @@
 - `validation/api-surface.json`
 - `validation/execution-tests.txt`
 
-## この実行環境で未実施
+## 未実施のproduction gate
 
-- `mops install`
-- `mops check`
-- `mops build`
-- native `moc` compile
-- compiler-generated Candidとの型単位のdiff
 - `icp network start -d`
 - `icp deploy`
 - PocketIC integration test
@@ -38,7 +38,7 @@
 - mainnet deployment
 - third-party security audit
 
-理由: 実行環境に`moc`、Mops、`icp-cli`がなく、shellから外部packageを取得する経路も完了しませんでした。したがって、収録Motokoは**reference implementation / static-reviewed**であり、compile済みbinaryとは表示しません。
+全5アプリはcompile/test/build済みですが、replica上のinter-canister behavior、upgrade後のstable state、負荷・攻撃耐性まではcompileだけでは証明できません。したがって、production deploymentには残りのIssue gateと独立監査が必要です。
 
 ## ローカルで必ず行うrelease gate
 
@@ -53,7 +53,7 @@ icp network start -d
 icp deploy
 ```
 
-compile error、generated Candid差分、upgrade failureが出た場合は、`github/issues/001-compile-all-reference-apps-with-the-current-pinned-toolchain.md`を起点に、実version、command、expected、actual、最小再現を記録します。
+compile error、generated Candid差分、upgrade failureが出た場合は、実version、command、expected、actual、最小再現をIssueへ記録します。
 
 ## 品質表示
 
@@ -63,5 +63,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、`gi
 | JavaScript/Python/shell | locally executed and validated |
 | JSON Schema/test vectors | locally validated |
 | Motoko/Candid API surface | offline mechanically cross-checked |
-| Motoko compile/PocketIC | pending external toolchain gate |
+| Motoko compile/test/Wasm/Candid | passed for all 5 applications |
+| Nix toolchain bootstrap | passed with read-only global npm prefix |
+| PocketIC/upgrade rehearsal | pending integration gate |
 | production readiness | reference implementation; integration, load test, audit required |

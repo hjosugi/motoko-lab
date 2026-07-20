@@ -7,6 +7,9 @@ if [[ $# -ne 1 ]]; then
 fi
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$root/scripts/toolchain_env.sh"
+motoko_add_toolchain_to_path
+
 app="$root/$1"
 if [[ ! -f "$app/icp.yaml" ]]; then
   echo "Not an app directory: $app" >&2

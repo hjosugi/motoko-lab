@@ -26,7 +26,7 @@ cd motoko-lab
  icp network start -d  
  icp deploy  
    
-moc、Mops、icp-cliが未導入の場合はbootstrap_toolchain.shが公式のnpmパッケージを導入します。Node.js 22以上を前提にしています。  
+moc、Mops、icp-cliが未導入の場合はbootstrap_toolchain.shが公式のnpmパッケージを導入します。Node.js 22以上を前提にしています。Nixなどglobal npm prefixがread-onlyの環境では、`${XDG_DATA_HOME:-$HOME/.local/share}/motoko-lab/npm`へ自動的にフォールバックし、同梱scriptがそのtoolchainを検出します。  
 **収録物**  
 全体案内はCONTENTS.md、全ファイル一覧はFILE_INDEX.mdを参照してください。  
 | | |  
@@ -58,7 +58,7 @@ moc、Mops、icp-cliが未導入の場合はbootstrap_toolchain.shが公式のnp
 - ICP Developer Docsのicp-cli recipe version  
 - Mops toolchain documentation  
 **検証状態**  
-この環境にはmoc、Mops、icp-cliが入っておらず、外部package installationも実行できませんでした。そのため、構造、UTF-8/LF、TOML/JSON、JavaScript、Python、shell、静的整合性は検証済みですが、Motoko compileとPocketIC testは未実行です。詳細はVALIDATION_STATUS.mdを参照してください。  
+構造、UTF-8/LF、TOML/JSON、JavaScript、Python、shell、静的整合性に加え、pinned `moc` 1.11.1 / `core` 2.6.0で全5アプリの`mops check`、Motoko test、Wasm build、Candid compatibilityを実行済みです。PocketIC、upgrade rehearsal、mainnet deployment、third-party security auditは未実行です。詳細はVALIDATION_STATUS.mdを参照してください。  
 **ライセンス**  
 本キットの独自コードと文書はApache License 2.0です。リンク先のソフトウェア、仕様、商標は各権利者に帰属します。  
    

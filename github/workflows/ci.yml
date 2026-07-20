@@ -14,12 +14,8 @@ jobs:
         with:
           node-version: '22'
       - name: Install ICP and Motoko tooling
-        run: |
-          npm install -g @icp-sdk/icp-cli @icp-sdk/ic-wasm
-          npm install -g ic-mops
-      - name: Validate kit structure
-        run: python3 scripts/validate_kit.py
-      - name: Test protocol tools
-        run: node protocol/tools/provenance-cli.test.mjs
+        run: ./scripts/bootstrap_toolchain.sh
+      - name: Run offline checks
+        run: ./scripts/run_offline_checks.sh
       - name: Check all Motoko apps
         run: ./scripts/check_all_apps.sh

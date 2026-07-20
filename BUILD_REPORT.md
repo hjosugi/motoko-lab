@@ -4,7 +4,7 @@ Snapshot: **2026-07-20 JST**
 
 ## Result
 
-The artifact package passed all checks that can run without downloading the native Motoko toolchain.
+The artifact package passed both offline checks and the pinned native Motoko toolchain gates.
 
 - provenance CLI unit tests: pass
 - protocol JSON Schema examples: pass
@@ -14,25 +14,32 @@ The artifact package passed all checks that can run without downloading the nati
 - GitHub issue/label dry-run: pass
 - structural validator: pass
 - Motoko/Candid API surface: pass for 5 applications and 46 public methods
+- `mops install`, `mops check`, and Motoko unit tests: pass for all 5 applications
+- pinned `moc` 1.11.1 Wasm build: pass for all 5 applications
+- compiler-generated Candid compatibility: pass for all 5 applications
+- Nix/read-only npm-prefix fallback: pass
 - SHA-256 manifest verification: pass
 - ZIP entry/integrity verification: pass
 
-## Native toolchain boundary
+## Remaining production gates
 
-The following gates remain intentionally open because the execution environment could not install `moc`, Mops, `icp-cli`, or PocketIC:
+The following gates remain intentionally open:
 
-- Motoko type-check and Wasm build
-- compiler-generated Candid comparison
 - local replica deployment
+- PocketIC integration
 - upgrade rehearsal
-- integration/load/security testing
+- load testing
+- mainnet deployment
+- independent security audit
 
-These are represented as explicit GitHub Issue drafts rather than being hidden. The first mandatory gate is `github/issues/001-compile-all-reference-apps-with-the-current-pinned-toolchain.md`.
+These are represented as explicit GitHub Issues rather than being hidden. The native compile baseline from Issue 001 is complete.
 
 ## Reproduction
 
 ```bash
 ./scripts/run_offline_checks.sh
+./scripts/bootstrap_toolchain.sh
+./scripts/check_all_apps.sh
 python3 scripts/package_kit.py
 ```
 

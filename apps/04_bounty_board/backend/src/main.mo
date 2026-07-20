@@ -1,4 +1,5 @@
 import Blob "mo:core/Blob";
+import Int "mo:core/Int";
 import Iter "mo:core/Iter";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
@@ -84,6 +85,8 @@ persistent actor CreatorBountyBoard {
   var nextSubmissionId : Nat = 1;
   var nextAwardId : Nat = 1;
 
+  func nowNanos() : Nat { Int.abs(Time.now()) };
+
   func submissionKey(bountyId : Nat, submitter : Principal) : Text {
     Nat.toText(bountyId) # ":" # Principal.toText(submitter)
   };
@@ -96,7 +99,7 @@ persistent actor CreatorBountyBoard {
     if (not Validation.validText(input.descriptionUri, 1, 2048)) return #err(#invalidInput("descriptionUri length is invalid"));
     if (input.reward == 0) return #err(#invalidInput("reward must be greater than zero"));
     if (Principal.isAnonymous(input.ledger)) return #err(#invalidInput("ledger is invalid"));
-    if (input.deadline <= Time.now()) return #err(#invalidInput("deadline must be in the future"));
+    if (input.deadline <= nowNanos()) return #err(#invalidInput("deadline must be in the future"));
 
     let id = nextBountyId;
     nextBountyId += 1;
@@ -104,7 +107,7 @@ persistent actor CreatorBountyBoard {
       id = id; owner = caller; title = input.title; descriptionHash = input.descriptionHash;
       descriptionUri = input.descriptionUri; criteriaHash = input.criteriaHash;
       reward = input.reward; ledger = input.ledger; deadline = input.deadline;
-      createdAt = Time.now(); status = #open;
+      createdAt = nowNanos(); status = #open;
     };
     Map.add(bounties, Nat.compare, id, bounty);
     #ok(bounty)
@@ -114,7 +117,7 @@ persistent actor CreatorBountyBoard {
     if (Principal.isAnonymous(caller)) return #err(#anonymousNotAllowed);
     let ?bounty = Map.get(bounties, Nat.compare, input.bountyId) else return #err(#notFound);
     switch (bounty.status) { case (#open) {}; case _ return #err(#conflict("bounty is not open")) };
-    if (Time.now() > bounty.deadline) return #err(#deadlinePassed);
+    if (nowNanos() > bounty.deadline) return #err(#deadlinePassed);
     if (not Validation.isDigest(input.artifactHash)) return #err(#invalidInput("artifactHash must be 32 bytes"));
     if (Principal.isAnonymous(input.proofCanister)) return #err(#invalidInput("proofCanister is invalid"));
     if (not Validation.validText(input.evidenceUri, 1, 2048)) return #err(#invalidInput("evidenceUri length is invalid"));
@@ -127,7 +130,7 @@ persistent actor CreatorBountyBoard {
     let submission : Submission = {
       id = id; bountyId = input.bountyId; submitter = caller; artifactHash = input.artifactHash;
       proofCanister = input.proofCanister; proofRecordId = input.proofRecordId;
-      evidenceUri = input.evidenceUri; note = input.note; submittedAt = Time.now();
+      evidenceUri = input.evidenceUri; note = input.note; submittedAt = nowNanos();
     };
     Map.add(submissions, Nat.compare, id, submission);
     Map.add(submitterIndex, Text.compare, key, id);
@@ -143,7 +146,7 @@ persistent actor CreatorBountyBoard {
 
     let id = nextAwardId;
     nextAwardId += 1;
-    let now = Time.now();
+    let now = nowNanos();
     let award : Award = {
       id = id; bountyId = bountyId; submissionId = submissionId; owner = bounty.owner;
       winner = submission.submitter; reward = bounty.reward; ledger = bounty.ledger; awardedAt = now;
@@ -170,7 +173,7 @@ persistent actor CreatorBountyBoard {
       descriptionHash = bounty.descriptionHash; descriptionUri = bounty.descriptionUri;
       criteriaHash = bounty.criteriaHash; reward = bounty.reward; ledger = bounty.ledger;
       deadline = bounty.deadline; createdAt = bounty.createdAt;
-      status = #cancelled({ at = Time.now(); reason = reason });
+      status = #cancelled({ at = nowNanos(); reason = reason });
     };
     Map.add(bounties, Nat.compare, id, updated);
     #ok(updated)

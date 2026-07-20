@@ -1,4 +1,5 @@
 import Blob "mo:core/Blob";
+import Int "mo:core/Int";
 import Iter "mo:core/Iter";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
@@ -105,6 +106,8 @@ persistent actor CreatorProofRegistry {
   var activeRecordCount : Nat = 0;
   var revokedRecordCount : Nat = 0;
 
+  func nowNanos() : Nat { Int.abs(Time.now()) };
+
   func rejectAnonymous(caller : Principal) : ?Error {
     if (Principal.isAnonymous(caller)) ?#anonymousNotAllowed else null
   };
@@ -123,7 +126,7 @@ persistent actor CreatorProofRegistry {
     };
     switch (input.expiresAt) {
       case (?expiresAt) {
-        if (expiresAt <= Time.now()) {
+        if (expiresAt <= nowNanos()) {
           return ?#invalidInput("expiresAt must be in the future")
         }
       };
@@ -217,7 +220,7 @@ persistent actor CreatorProofRegistry {
       owner = caller;
       commitmentHash = input.commitmentHash;
       metadataHash = input.metadataHash;
-      committedAt = Time.now();
+      committedAt = nowNanos();
       expiresAt = input.expiresAt;
       status = #open;
     };
@@ -242,7 +245,7 @@ persistent actor CreatorProofRegistry {
       metadataHash = current.metadataHash;
       committedAt = current.committedAt;
       expiresAt = current.expiresAt;
-      status = #cancelled(Time.now());
+      status = #cancelled(nowNanos());
     };
     Map.add(commitments, Nat.compare, id, updated);
     #ok(updated)
@@ -268,7 +271,7 @@ persistent actor CreatorProofRegistry {
     };
     switch (commitment.expiresAt) {
       case (?expiresAt) {
-        if (Time.now() > expiresAt) {
+        if (nowNanos() > expiresAt) {
           return #err(#expired)
         }
       };
@@ -305,7 +308,7 @@ persistent actor CreatorProofRegistry {
       storageUri = input.storageUri;
       parents = input.parents;
       ai = input.ai;
-      createdAt = Time.now();
+      createdAt = nowNanos();
       status = #active;
     };
     Map.add(records, Nat.compare, recordId, record);
@@ -351,7 +354,7 @@ persistent actor CreatorProofRegistry {
       parents = current.parents;
       ai = current.ai;
       createdAt = current.createdAt;
-      status = #revoked({ at = Time.now(); reason = reason });
+      status = #revoked({ at = nowNanos(); reason = reason });
     };
     Map.add(records, Nat.compare, id, updated);
     activeRecordCount -= 1;

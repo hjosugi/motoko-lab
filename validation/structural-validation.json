@@ -2,10 +2,10 @@
   "root": "/mnt/data/github.com/hjosugi/motoko-lab",
   "status": "pass",
   "stats": {
-    "file_count": 211,
+    "file_count": 217,
     "directory_count": 52,
-    "total_bytes": 362106,
-    "total_lines": 10304,
+    "total_bytes": 396261,
+    "total_lines": 10797,
     "application_count": 5,
     "numbered_doc_count": 26,
     "issue_count": 40,
@@ -14,23 +14,22 @@
     "public_api_method_count": 46
   },
   "passed": {
-    "app_required_files": 55,
+    "app_required_files": 60,
     "candid_structure": 5,
     "issue_front_matter": 40,
-    "json_parse": 9,
+    "json_parse": 14,
     "metadata_consistency": 1,
     "motoko_candid_api_surface": 46,
     "motoko_delimiters": 15,
     "motoko_imports": 10,
     "protocol_required_files": 10,
+    "protocol_schema_examples": 2,
     "relative_links": 40,
-    "script_shebang": 12,
+    "script_shebang": 13,
     "toml_parse": 5,
-    "utf8_lf": 203,
+    "utf8_lf": 209,
     "yaml_parse": 20
   },
-  "warnings": [
-    "jsonschema is unavailable; protocol example validation skipped"
-  ],
+  "warnings": [],
   "errors": []
 }
