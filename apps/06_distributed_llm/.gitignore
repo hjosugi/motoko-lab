@@ -1,0 +1,7 @@
+.icp/cache/
+node_modules/
+*.wasm
+*.wasm.gz
+tools/node_modules/
+tools/package-lock.json
+tools/.pocket-ic/

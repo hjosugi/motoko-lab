@@ -3,8 +3,8 @@
   "scope": "method names, query/update modes, and top-level argument counts",
   "limitation": "This does not replace compiler-generated Candid or compatibility checking.",
   "status": "pass",
-  "application_count": 5,
-  "method_count": 46,
+  "application_count": 6,
+  "method_count": 55,
   "applications": [
     {
       "app": "01_creator_proof_registry",
@@ -513,6 +513,108 @@
           "name": "setTenantPlan",
           "mode": "update",
           "argument_count": 2
+        },
+        {
+          "name": "stats",
+          "mode": "query",
+          "argument_count": 0
+        }
+      ],
+      "missing_in_candid": [],
+      "missing_in_motoko": [],
+      "mode_mismatches": [],
+      "argument_count_mismatches": [],
+      "status": "pass"
+    },
+    {
+      "app": "06_distributed_llm",
+      "motoko_methods": [
+        {
+          "name": "askLlmCanister",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "autoWire",
+          "mode": "update",
+          "argument_count": 0
+        },
+        {
+          "name": "benchmark",
+          "mode": "update",
+          "argument_count": 4
+        },
+        {
+          "name": "generate",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "llmTarget",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
+          "name": "modelInfo",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
+          "name": "setLlmCanister",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "setWorkers",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "stats",
+          "mode": "query",
+          "argument_count": 0
+        }
+      ],
+      "candid_methods": [
+        {
+          "name": "askLlmCanister",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "autoWire",
+          "mode": "update",
+          "argument_count": 0
+        },
+        {
+          "name": "benchmark",
+          "mode": "update",
+          "argument_count": 4
+        },
+        {
+          "name": "generate",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "llmTarget",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
+          "name": "modelInfo",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
+          "name": "setLlmCanister",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "setWorkers",
+          "mode": "update",
+          "argument_count": 1
         },
         {
           "name": "stats",

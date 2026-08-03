@@ -1,0 +1,142 @@
+type WorkerInfo = 
+ record {
+   hi: nat;
+   lo: nat;
+   shard: nat;
+   shardCount: nat;
+   vocabSize: nat;
+ };
+type Strategy = 
+ variant {
+   arDraft;
+   baseline;
+   maskedDraft;
+   shardedArgmax;
+   shardedDense;
+   shardedQuantized: record {
+                       bits: nat;
+                       rounding: Rounding;
+                     };
+ };
+type Rounding = 
+ variant {
+   floor;
+   nearest;
+ };
+type Result_3 = 
+ variant {
+   err: Error;
+   ok: vec Report;
+ };
+type Result_2 = 
+ variant {
+   err: Error;
+   ok: Report;
+ };
+type Result_1 = 
+ variant {
+   err: Error;
+   ok: text;
+ };
+type Result = 
+ variant {
+   err: Error;
+   ok: vec WorkerInfo;
+ };
+type Report = 
+ record {
+   acceptanceRatePercent: nat;
+   accepted: nat;
+   draftEvals: nat;
+   draftRounds: nat;
+   interCanisterCalls: nat;
+   lossless: bool;
+   proposed: nat;
+   strategy: text;
+   targetEvals: nat;
+   targetRounds: nat;
+   "text": text;
+   tokens: nat;
+   wireBytes: nat;
+ };
+type ModelInfo = 
+ record {
+   corpusTokens: nat;
+   draftOrder: nat;
+   stopToken: nat;
+   targetOrder: nat;
+   vocabSize: nat;
+   workers: nat;
+ };
+type GenerateRequest = 
+ record {
+   block: nat;
+   maxTokens: nat;
+   prompt: text;
+   steps: nat;
+   strategy: Strategy;
+ };
+type Error = 
+ variant {
+   anonymousNotAllowed;
+   invalidInput: text;
+   notConfigured: text;
+   unauthorized;
+   workerFailed: text;
+ };
+/// Orchestrator canister for distributed decoding.
+/// 
+/// It exposes one `generate` entry point over several strategies so the *same*
+/// prompt can be decoded six ways and the results compared on identical terms:
+/// 
+///   `#baseline`          one target pass per token, no workers.
+///   `#arDraft`           speculative decoding, sequential draft.
+///   `#maskedDraft`       speculative decoding, diffusion-style parallel draft.
+///   `#shardedArgmax`     vocabulary-parallel over worker canisters, workers
+///                        return only their local winner.
+///   `#shardedDense`      same, but workers return the whole score slice.
+///   `#shardedQuantized`  same, with the slice quantized before it is sent.
+/// 
+/// Every report carries `lossless`, computed by re-running `#baseline` locally
+/// and comparing token for token. `#shardedQuantized` is the one strategy that
+/// can legitimately come back `false`, and seeing exactly when it does is the
+/// point of having it here.
+/// 
+/// `generate` is an update call by necessity: a query cannot make an
+/// inter-canister call, so any fan-out has to go through consensus.
+service : {
+  /// Calls the Internet Computer LLM canister (or the local shim) and returns
+  /// its answer. This is the path that reaches a *real* model; everything above
+  /// is the on-chain toy model.
+  askLlmCanister: (llmModel: text, prompt: text) -> (Result_1);
+  /// Discovers the cluster from the canister environment.
+  /// 
+  /// `icp deploy` injects `PUBLIC_CANISTER_ID:<name>` for every canister in the
+  /// project, so `worker_0`, `worker_1`, ... and `llm_shim` can be found
+  /// without anyone pasting principals. Scanning stops at the first gap, which
+  /// makes a partial deployment (two workers instead of four) wire itself
+  /// correctly instead of failing.
+  /// 
+  /// Use `setWorkers` when the workers are not part of this project or the
+  /// environment does not carry them.
+  autoWire: () -> (Result);
+  /// Runs every strategy on one prompt. This is the endpoint the README quotes:
+  /// it is the only fair comparison, because all six share a prompt, a token
+  /// budget and a reference output.
+  benchmark: (prompt: text, maxTokens: nat, block: nat, steps: nat) ->
+   (Result_3);
+  generate: (request: GenerateRequest) -> (Result_2);
+  llmTarget: () -> (text) query;
+  modelInfo: () -> (ModelInfo) query;
+  /// Points `LlmClient` at a specific LLM canister. Use it to target the local
+  /// `llm_shim`; leave it unset to fall back to `PUBLIC_CANISTER_ID:llm` and
+  /// then to mainnet.
+  setLlmCanister: (id: opt text) -> (Result_1);
+  /// Registers the shard workers and assigns each one its vocabulary slice.
+  setWorkers: (ids: vec principal) -> (Result);
+  stats: () -> (record {
+                  calls: nat;
+                  wireBytes: nat;
+                  workers: nat;
+                }) query;
+}

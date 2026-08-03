@@ -14,7 +14,10 @@ def main() -> int:
         path.relative_to(root).as_posix()
         for path in sorted(root.rglob("*"))
         if path.is_file()
-        and not any(part in {".git", "node_modules", ".mops", "__pycache__"} for part in path.parts)
+        and not any(
+            part in {".git", "node_modules", ".mops", ".mops-cache", ".pocket-ic", "__pycache__"}
+            for part in path.parts
+        )
     ]
     if "FILE_INDEX.md" not in paths:
         paths.append("FILE_INDEX.md")

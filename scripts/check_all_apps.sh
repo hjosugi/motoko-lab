@@ -17,7 +17,14 @@ for app in "$root"/apps/*; do
   echo "==> $(basename "$app")"
   (
     cd "$app"
-    mops install
+    # `mops install` needs the Mops registry, which lives on the Internet
+    # Computer. Where `icp-api.io` is blocked - sandboxes, CI runners, egress
+    # allowlists - fall back to vendoring `mo:core` into `.mops/` directly. The
+    # remaining commands only need the package to be present, not the registry.
+    if ! mops install; then
+      echo "mops install failed; vendoring mo:core offline" >&2
+      "$root/scripts/vendor_core_offline.sh" "$app"
+    fi
     mops check
     if mops --help 2>&1 | grep -qE '(^|[[:space:]])test([[:space:]]|$)'; then
       mops test

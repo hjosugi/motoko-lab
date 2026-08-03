@@ -114,7 +114,11 @@ def _top_level_count(text: str) -> int:
 def extract_motoko_methods(text: str) -> list[Method]:
     pattern = re.compile(
         r"\bpublic\s+"
-        r"(?P<prefix>(?:(?:shared\s*\([^)]*\)|query)\s+)*)"
+        # `shared` may appear bare (`public shared func f()`), with a caller
+        # pattern (`public shared ({ caller }) func f()`), or not at all. The
+        # previous pattern required the caller pattern and silently skipped
+        # every method declared without one.
+        r"(?P<prefix>(?:(?:shared(?:\s*\([^)]*\))?|composite|query)\s+)*)"
         r"func\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(",
         flags=re.MULTILINE,
     )
@@ -129,7 +133,60 @@ def extract_motoko_methods(text: str) -> list[Method]:
     return sorted(methods, key=lambda method: method.name)
 
 
+def _split_top_level(text: str, separator: str) -> list[str]:
+    """Splits on `separator`, ignoring separators nested inside brackets.
+
+    A Candid service entry may return an inline `record { a: nat; b: nat }`, so
+    splitting the service body on every `;` would cut a single method into
+    fragments.
+    """
+    parts: list[str] = []
+    depth = 0
+    current: list[str] = []
+    in_string = False
+    escaped = False
+    for char in text:
+        if in_string:
+            current.append(char)
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+        if char == '"':
+            in_string = True
+            current.append(char)
+            continue
+        # Only real bracket pairs count. `<`/`>` are not brackets in Candid and
+        # `>` appears in every `->`, so tracking them would push the depth
+        # negative and hide every subsequent separator.
+        if char in "([{":
+            depth += 1
+        elif char in ")]}":
+            depth -= 1
+        if char == separator and depth == 0:
+            parts.append("".join(current))
+            current = []
+            continue
+        current.append(char)
+    parts.append("".join(current))
+    return parts
+
+
+def _strip_candid_comments(text: str) -> str:
+    """Removes `//` and `///` line comments.
+
+    `moc --idl` copies Motoko doc comments into the generated `.did`, so a
+    documented public method would otherwise be parsed as part of the service
+    entry that follows it.
+    """
+    return "\n".join(re.sub(r"//.*$", "", line) for line in text.splitlines())
+
+
 def extract_candid_methods(text: str) -> list[Method]:
+    text = _strip_candid_comments(text)
     service = re.search(r"\bservice\s*:\s*\{", text)
     if not service:
         raise ValueError("Candid service declaration not found")
@@ -137,7 +194,7 @@ def extract_candid_methods(text: str) -> list[Method]:
     closing = _find_matching(text, opening, "{", "}")
     body = text[opening + 1:closing]
     methods: list[Method] = []
-    for raw_entry in body.split(";"):
+    for raw_entry in _split_top_level(body, ";"):
         entry = raw_entry.strip()
         if not entry:
             continue

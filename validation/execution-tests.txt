@@ -62,3 +62,38 @@ JSON report: /mnt/data/github.com/hjosugi/motoko-lab/validation/structural-valid
 No node_modules, .mops, or __pycache__ directories are packaged.
 
 OFFLINE CHECKS: PASS
+
+# 2026-08-03 — apps/06_distributed_llm
+
+moc 1.11.1 / pocket-ic 14.0.0 / didc 0.4.0 / node 22
+
+scripts/check_all_apps.sh
+  6/6 apps: mops check, mops test, mops build  PASS
+  mo:core vendored into .mops/ (Mops registry unreachable: icp-api.io blocked)
+
+apps/06_distributed_llm
+  make test-offline      8/8 Motoko test files PASS
+  make sim               cluster of 4 workers + orchestrator + llm shim, moc -r actor scheduler
+  node tools/latency-model.test.mjs   10 strategies x 6 network profiles PASS
+  node tools/pocket-ic-e2e.mjs        6 canisters installed on a replica, benchmark PASS
+
+  benchmark, prompt "speculative decoding uses", 24 tokens, block 4, 2 unmask steps
+  identical on the interpreter and on the replica:
+
+    strategy                       tgtRnd drfRnd accept%  calls   bytes  lossless
+    baseline                           10      0       0      0       0  yes
+    arDraft                             6     24      33      0       0  yes
+    maskedDraft                         6     12      20      0       0  yes
+    shardedArgmax                      10      0       0     40     640  yes
+    shardedDense                       10      0       0     40   27200  yes
+    shardedQuantized/8bit/floor        10      0       0     40    4000  yes
+    shardedQuantized/4bit/nearest      21      0       0     84    4872  NO
+
+  quantization flips, swept over every context position of the corpus:
+    floor rounding    0 / 398 at 2, 4 and 8 bits, both heads
+    nearest rounding  19 / 398 at 8 bits, 43 / 398 at 2 bits (target head)
+
+# Not run
+  icp network start -d / icp deploy   (network launcher is fetched from api.github.com, blocked here)
+  mainnet deployment
+  upgrade rehearsal

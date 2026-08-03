@@ -12,6 +12,7 @@ This is an offline guardrail and does not replace compiler-generated Candid or u
 | `03_license_marketplace` | 10 | PASS |
 | `04_bounty_board` | 9 | PASS |
 | `05_usage_metered_saas` | 12 | PASS |
+| `06_distributed_llm` | 9 | PASS |
 
 ## Per-application methods
 
@@ -74,4 +75,16 @@ This is an offline guardrail and does not replace compiler-generated Candid or u
 - `setReporter`: update, 2 argument(s)
 - `setTenantEnabled`: update, 2 argument(s)
 - `setTenantPlan`: update, 2 argument(s)
+- `stats`: query, 0 argument(s)
+
+### 06_distributed_llm
+
+- `askLlmCanister`: update, 2 argument(s)
+- `autoWire`: update, 0 argument(s)
+- `benchmark`: update, 4 argument(s)
+- `generate`: update, 1 argument(s)
+- `llmTarget`: query, 0 argument(s)
+- `modelInfo`: query, 0 argument(s)
+- `setLlmCanister`: update, 1 argument(s)
+- `setWorkers`: update, 1 argument(s)
 - `stats`: query, 0 argument(s)

@@ -33,7 +33,7 @@ moc、Mops、icp-cliが未導入の場合はbootstrap_toolchain.shが公式のnp
 |-|-|  
 | **パス** | **内容** |   
 | docs/ | 16週間ロードマップ、本番設計、セキュリティ、運用、事業、証跡プロトコル |   
-| apps/ | 5つの独立したMotokoバックエンドプロジェクト |   
+| apps/ | 6つの独立したMotokoバックエンドプロジェクト |   
 | protocol/ | provenance manifest schema、test vectors、off-chain verifier CLI |   
 | labs/ | 段階的な演習とcompiler reading lab |   
 | compiler/ | Motoko compilerメンテナへの実務ロードマップ |   
@@ -58,7 +58,7 @@ moc、Mops、icp-cliが未導入の場合はbootstrap_toolchain.shが公式のnp
 - ICP Developer Docsのicp-cli recipe version  
 - Mops toolchain documentation  
 **検証状態**  
-構造、UTF-8/LF、TOML/JSON、JavaScript、Python、shell、静的整合性に加え、pinned `moc` 1.11.1 / `core` 2.6.0で全5アプリの`mops check`、Motoko test、Wasm build、Candid compatibilityを実行済みです。PocketIC、upgrade rehearsal、mainnet deployment、third-party security auditは未実行です。詳細はVALIDATION_STATUS.mdを参照してください。  
+構造、UTF-8/LF、TOML/JSON、JavaScript、Python、shell、静的整合性に加え、pinned `moc` 1.11.1 / `core` 2.6.0で全6アプリの`mops check`、Motoko test、Wasm build、Candid compatibilityを実行済みです。apps/06_distributed_llmはpocket-ic 14.0.0の実レプリカ上で6キャニスターの配備とinter-canister呼び出しまで確認済みです。apps/01-05のPocketIC、upgrade rehearsal、mainnet deployment、third-party security auditは未実行です。詳細はVALIDATION_STATUS.mdを参照してください。  
 **ライセンス**  
 本キットの独自コードと文書はApache License 2.0です。リンク先のソフトウェア、仕様、商標は各権利者に帰属します。  
    

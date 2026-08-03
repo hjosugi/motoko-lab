@@ -1,0 +1,37 @@
+[package]
+name = "distributed-llm"
+version = "0.1.0"
+description = "Distributed decoding across canisters: speculative, diffusion-draft, vocabulary- and pipeline-parallel"
+repository = "https://github.com/hjosugi/motoko-lab/tree/main/apps/06_distributed_llm"
+keywords = ["internet-computer", "motoko", "llm", "speculative-decoding", "reference-app"]
+license = "Apache-2.0"
+
+[dependencies]
+core = "2.6.0"
+
+[toolchain]
+moc = "1.11.1"
+
+[canisters.backend]
+main = "backend/src/main.mo"
+candid = "backend/candid/backend.did"
+
+[canisters.llm_shim]
+main = "llm_shim/src/main.mo"
+candid = "llm_shim/candid/llm_shim.did"
+
+[canisters.worker_0]
+main = "worker/src/main.mo"
+candid = "worker/candid/worker.did"
+
+[canisters.worker_1]
+main = "worker/src/main.mo"
+candid = "worker/candid/worker.did"
+
+[canisters.worker_2]
+main = "worker/src/main.mo"
+candid = "worker/candid/worker.did"
+
+[canisters.worker_3]
+main = "worker/src/main.mo"
+candid = "worker/candid/worker.did"

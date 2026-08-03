@@ -1,0 +1,14 @@
+{
+  "name": "distributed-llm-tools",
+  "private": true,
+  "type": "module",
+  "description": "Replica harness and latency model for apps/06_distributed_llm. Dependencies are installed by pocket-ic-setup.mjs; latency-model.mjs has none.",
+  "scripts": {
+    "setup": "node pocket-ic-setup.mjs",
+    "e2e": "node pocket-ic-e2e.mjs",
+    "test": "node latency-model.test.mjs"
+  },
+  "dependencies": {
+    "@dfinity/pic": "^0.22.0"
+  }
+}
