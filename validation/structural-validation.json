@@ -2,10 +2,10 @@
   "root": "/home/user/motoko-lab",
   "status": "pass",
   "stats": {
-    "file_count": 303,
+    "file_count": 304,
     "directory_count": 78,
-    "total_bytes": 870384,
-    "total_lines": 20737,
+    "total_bytes": 877398,
+    "total_lines": 20947,
     "application_count": 6,
     "numbered_doc_count": 26,
     "issue_count": 45,
@@ -26,7 +26,7 @@
     "relative_links": 40,
     "script_shebang": 14,
     "toml_parse": 6,
-    "utf8_lf": 291,
+    "utf8_lf": 292,
     "yaml_parse": 23
   },
   "warnings": [

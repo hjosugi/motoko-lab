@@ -1,23 +1,25 @@
 Motoko Mastery Kit offline execution checks
 Snapshot: 2026-07-20 JST
-Root: /mnt/data/github.com/hjosugi/motoko-lab
+Root: /home/user/motoko-lab
 
 [1/8] Shell syntax
-+ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/bootstrap_toolchain.sh
++ bash -n /home/user/motoko-lab/scripts/bootstrap_toolchain.sh
 
-+ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/check_all_apps.sh
++ bash -n /home/user/motoko-lab/scripts/check_all_apps.sh
 
-+ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/create_issues.sh
++ bash -n /home/user/motoko-lab/scripts/create_issues.sh
 
-+ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/create_labels.sh
++ bash -n /home/user/motoko-lab/scripts/create_labels.sh
 
-+ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/deploy_app.sh
++ bash -n /home/user/motoko-lab/scripts/deploy_app.sh
 
-+ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/run_offline_checks.sh
++ bash -n /home/user/motoko-lab/scripts/run_offline_checks.sh
 
-+ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/toolchain_env.sh
++ bash -n /home/user/motoko-lab/scripts/toolchain_env.sh
 
-+ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/verify_versions.sh
++ bash -n /home/user/motoko-lab/scripts/vendor_core_offline.sh
+
++ bash -n /home/user/motoko-lab/scripts/verify_versions.sh
 
 [2/8] Python source compilation without bytecode output
 ok: scripts/check_api_surface.py
@@ -28,72 +30,46 @@ ok: scripts/validate_kit.py
 compiled: 5 Python files
 
 [3/8] Node syntax
-+ node --check /mnt/data/github.com/hjosugi/motoko-lab/protocol/tools/provenance-cli.mjs
++ node --check /home/user/motoko-lab/protocol/tools/provenance-cli.mjs
 
-+ node --check /mnt/data/github.com/hjosugi/motoko-lab/protocol/tools/provenance-cli.test.mjs
++ node --check /home/user/motoko-lab/protocol/tools/provenance-cli.test.mjs
 
 [4/8] Provenance protocol tests
-+ node /mnt/data/github.com/hjosugi/motoko-lab/protocol/tools/provenance-cli.test.mjs
++ node /home/user/motoko-lab/protocol/tools/provenance-cli.test.mjs
 ok: 2 provenance test vectors
 
 [5/8] Motoko/Candid API surface
-+ python3 /mnt/data/github.com/hjosugi/motoko-lab/scripts/check_api_surface.py /mnt/data/github.com/hjosugi/motoko-lab --json-report /mnt/data/github.com/hjosugi/motoko-lab/validation/api-surface.json --markdown-report /mnt/data/github.com/hjosugi/motoko-lab/validation/API_SURFACE.md
++ python3 /home/user/motoko-lab/scripts/check_api_surface.py /home/user/motoko-lab --json-report /home/user/motoko-lab/validation/api-surface.json --markdown-report /home/user/motoko-lab/validation/API_SURFACE.md
 Motoko/Candid API surface: PASS
-Applications: 5 | Methods: 46
+Applications: 6 | Methods: 55
 
 [6/8] GitHub automation dry-runs
 Dry run only. Set APPLY=1 TARGET_REPO=owner/repo after review.
 label commands: 40
 Dry run only. Set APPLY=1 TARGET_REPO=owner/repo after review.
-issue dry-run output lines: 40
+issue dry-run output lines: 45
 
 [7/8] Structural validation
-+ python3 /mnt/data/github.com/hjosugi/motoko-lab/scripts/validate_kit.py /mnt/data/github.com/hjosugi/motoko-lab --json-report /mnt/data/github.com/hjosugi/motoko-lab/validation/structural-validation.json
++ python3 /home/user/motoko-lab/scripts/validate_kit.py /home/user/motoko-lab --json-report /home/user/motoko-lab/validation/structural-validation.json
 Motoko Mastery Kit structural validation
 Status: PASS
-Files: 217 | Lines: 10785 | Size: 386.6 KiB
-Apps: 5 | Issues: 40 | Numbered docs: 26
+Files: 304 | Lines: 20947 | Size: 856.8 KiB
+Apps: 6 | Issues: 45 | Numbered docs: 26
+
+Warnings:
+- apps/06_distributed_llm/backend/src/main.mo has no Map-backed state; verify persistence design
+- apps/06_distributed_llm/llm_shim/src/main.mo has no Map-backed state; verify persistence design
+- apps/06_distributed_llm/worker/src/main.mo has no Map-backed state; verify persistence design
+- jsonschema is unavailable; protocol example validation skipped
 
 All offline structural checks passed.
 Run check_all_apps.sh for pinned native compilation; PocketIC remains a separate integration gate.
-JSON report: /mnt/data/github.com/hjosugi/motoko-lab/validation/structural-validation.json
+JSON report: /home/user/motoko-lab/validation/structural-validation.json
 
 [8/8] Workspace hygiene
-No node_modules, .mops, or __pycache__ directories are packaged.
+ignored, not packaged: .mops-cache
+ignored, not packaged: apps/06_distributed_llm/tools/.pocket-ic
+ignored, not packaged: apps/06_distributed_llm/tools/node_modules
+No generated dependency or cache directory can reach the package.
 
 OFFLINE CHECKS: PASS
-
-# 2026-08-03 — apps/06_distributed_llm
-
-moc 1.11.1 / pocket-ic 14.0.0 / didc 0.4.0 / node 22
-
-scripts/check_all_apps.sh
-  6/6 apps: mops check, mops test, mops build  PASS
-  mo:core vendored into .mops/ (Mops registry unreachable: icp-api.io blocked)
-
-apps/06_distributed_llm
-  make test-offline      8/8 Motoko test files PASS
-  make sim               cluster of 4 workers + orchestrator + llm shim, moc -r actor scheduler
-  node tools/latency-model.test.mjs   10 strategies x 6 network profiles PASS
-  node tools/pocket-ic-e2e.mjs        6 canisters installed on a replica, benchmark PASS
-
-  benchmark, prompt "speculative decoding uses", 24 tokens, block 4, 2 unmask steps
-  identical on the interpreter and on the replica:
-
-    strategy                       tgtRnd drfRnd accept%  calls   bytes  lossless
-    baseline                           10      0       0      0       0  yes
-    arDraft                             6     24      33      0       0  yes
-    maskedDraft                         6     12      20      0       0  yes
-    shardedArgmax                      10      0       0     40     640  yes
-    shardedDense                       10      0       0     40   27200  yes
-    shardedQuantized/8bit/floor        10      0       0     40    4000  yes
-    shardedQuantized/4bit/nearest      21      0       0     84    4872  NO
-
-  quantization flips, swept over every context position of the corpus:
-    floor rounding    0 / 398 at 2, 4 and 8 bits, both heads
-    nearest rounding  19 / 398 at 8 bits, 43 / 398 at 2 bits (target head)
-
-# Not run
-  icp network start -d / icp deploy   (network launcher is fetched from api.github.com, blocked here)
-  mainnet deployment
-  upgrade rehearsal

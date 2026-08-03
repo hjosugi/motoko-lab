@@ -28,6 +28,8 @@
 - `validation/structural-validation.json`
 - `validation/api-surface.json`
 - `validation/execution-tests.txt`
+- `apps/06_distributed_llm/docs/MEASUREMENTS.md` (app 06の測定記録。`execution-tests.txt`は
+  `run_offline_checks.sh`が毎回上書きするため、手書きの計測結果はこちらに置いています)
 
 ## 2026-08-03に追加で実行済み (apps/06_distributed_llm)
 
@@ -40,7 +42,7 @@
 この過程で`moc` 1.11.1のバグを1件検出しました。`Prim.envVar`は名前が実行時連結の`Text`
 (rope)のとき`ic0.env_var_name_exists: Variable name is not a valid UTF-8 string`でtrap
 します。インタープリタでは再現せず、レプリカへのinstall時にのみ落ちます。詳細と回避策は
-`apps/06_distributed_llm/backend/src/Env.mo`、再現条件は`github/issues/041_*`にあります。
+`apps/06_distributed_llm/backend/src/Env.mo`、upstream報告のtrackingはissue #42です。
 
 ## 未実施のproduction gate
 

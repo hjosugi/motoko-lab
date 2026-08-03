@@ -3,7 +3,7 @@
 このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
 完全性確認には`MANIFEST.sha256`を使用してください。
 
-Indexed files: **303**
+Indexed files: **304**
 
 ## Root
 
@@ -163,6 +163,7 @@ Indexed files: **303**
 - `apps/06_distributed_llm/backend/src/WorkerEngine.mo`
 - `apps/06_distributed_llm/backend/src/main.mo`
 - `apps/06_distributed_llm/docs/DESIGN.md`
+- `apps/06_distributed_llm/docs/MEASUREMENTS.md`
 - `apps/06_distributed_llm/docs/THREAT_MODEL.md`
 - `apps/06_distributed_llm/docs/UPGRADE_PLAN.md`
 - `apps/06_distributed_llm/icp.yaml`
