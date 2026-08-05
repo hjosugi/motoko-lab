@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v2026.08.05
 
 - Added `apps/06_distributed_llm`: distributed decoding across canisters, with six strategies (baseline, speculative, diffusion-style masked draft, and three sharded wire formats) measured on identical terms.
 - Added a deterministic integer-only n-gram model, so scores are bit-identical across replicas and the same model provides both a target and a cheaper draft head.

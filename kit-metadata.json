@@ -13,6 +13,6 @@
   "issueDraftCount": 45,
   "publicApiMethodCount": 63,
   "license": "Apache-2.0",
-  "release": "v2026.07.20",
+  "release": "v2026.08.05",
   "validation": "offline and native Motoko checks passed for all six apps; app 06 additionally verified end to end on pocket-ic 14.0.0, including access control, per-principal quota, cycle metering and byzantine shard detection"
 }
