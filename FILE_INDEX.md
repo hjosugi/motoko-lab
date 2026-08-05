@@ -3,7 +3,7 @@
 このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
 完全性確認には`MANIFEST.sha256`を使用してください。
 
-Indexed files: **304**
+Indexed files: **307**
 
 ## Root
 
@@ -155,6 +155,7 @@ Indexed files: **304**
 - `apps/06_distributed_llm/backend/src/Lm.mo`
 - `apps/06_distributed_llm/backend/src/Pipeline.mo`
 - `apps/06_distributed_llm/backend/src/Quant.mo`
+- `apps/06_distributed_llm/backend/src/Quota.mo`
 - `apps/06_distributed_llm/backend/src/Sharding.mo`
 - `apps/06_distributed_llm/backend/src/Speculative.mo`
 - `apps/06_distributed_llm/backend/src/Tokenizer.mo`
@@ -177,10 +178,12 @@ Indexed files: **304**
 - `apps/06_distributed_llm/test/Lm.test.mo`
 - `apps/06_distributed_llm/test/Pipeline.test.mo`
 - `apps/06_distributed_llm/test/Quant.test.mo`
+- `apps/06_distributed_llm/test/Quota.test.mo`
 - `apps/06_distributed_llm/test/Sharding.test.mo`
 - `apps/06_distributed_llm/test/Speculative.test.mo`
 - `apps/06_distributed_llm/test/Tokenizer.test.mo`
 - `apps/06_distributed_llm/test/Validation.test.mo`
+- `apps/06_distributed_llm/test/fixtures/LyingWorker.mo`
 - `apps/06_distributed_llm/tools/latency-model.mjs`
 - `apps/06_distributed_llm/tools/latency-model.test.mjs`
 - `apps/06_distributed_llm/tools/package-lock.json`

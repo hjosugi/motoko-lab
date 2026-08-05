@@ -6,6 +6,11 @@ type WorkerInfo =
    shardCount: nat;
    vocabSize: nat;
  };
+type Verification = 
+ record {
+   replication: nat;
+   spotCheck: bool;
+ };
 type Strategy = 
  variant {
    arDraft;
@@ -13,30 +18,61 @@ type Strategy =
    maskedDraft;
    shardedArgmax;
    shardedDense;
+   shardedDraft;
    shardedQuantized: record {
                        bits: nat;
                        rounding: Rounding;
                      };
+ };
+type Stats = 
+ record {
+   calls: nat;
+   cyclesBalance: nat;
+   cyclesSpent: nat;
+   faults: nat;
+   quotaRejections: nat;
+   wireBytes: nat;
+   workers: nat;
  };
 type Rounding = 
  variant {
    floor;
    nearest;
  };
-type Result_3 = 
+type Result_7 = 
  variant {
    err: Error;
    ok: vec Report;
  };
-type Result_2 = 
+type Result_6 = 
  variant {
    err: Error;
    ok: Report;
  };
-type Result_1 = 
+type Result_5 = 
+ variant {
+   err: Error;
+   ok: nat;
+ };
+type Result_4 = 
  variant {
    err: Error;
    ok: text;
+ };
+type Result_3 = 
+ variant {
+   err: Error;
+   ok: bool;
+ };
+type Result_2 = 
+ variant {
+   err: Error;
+   ok: Policy;
+ };
+type Result_1 = 
+ variant {
+   err: Error;
+   ok: Verification;
  };
 type Result = 
  variant {
@@ -47,11 +83,14 @@ type Report =
  record {
    acceptanceRatePercent: nat;
    accepted: nat;
+   cyclesSpent: nat;
    draftEvals: nat;
    draftRounds: nat;
    interCanisterCalls: nat;
    lossless: bool;
    proposed: nat;
+   replication: nat;
+   spotChecks: nat;
    strategy: text;
    targetEvals: nat;
    targetRounds: nat;
@@ -59,6 +98,17 @@ type Report =
    tokens: nat;
    wireBytes: nat;
  };
+type Range = 
+ record {
+   hi: nat;
+   lo: nat;
+ };
+type Policy = 
+ record {
+   unitsPerWindow: nat;
+   windowNanos: Nanos;
+ };
+type Nanos = nat;
 type ModelInfo = 
  record {
    corpusTokens: nat;
@@ -76,18 +126,51 @@ type GenerateRequest =
    steps: nat;
    strategy: Strategy;
  };
+type Fault = 
+ variant {
+   disagreement: record {
+                   shard: nat;
+                   workers: record {
+                              nat;
+                              nat;
+                            };
+                 };
+   missing: record {shard: nat;};
+   spotCheckFailed: record {
+                      shard: nat;
+                      worker: nat;
+                    };
+   wrongRange: record {
+                 expected: Range;
+                 got: Range;
+                 shard: nat;
+               };
+ };
+type Exceeded = 
+ record {
+   limit: nat;
+   requested: nat;
+   resetInNanos: Nanos;
+   used: nat;
+ };
 type Error = 
  variant {
    anonymousNotAllowed;
+   faultyWorker: Fault;
    invalidInput: text;
+   lowCycles: record {
+                balance: nat;
+                reserve: nat;
+              };
    notConfigured: text;
+   quotaExceeded: Exceeded;
    unauthorized;
    workerFailed: text;
  };
 /// Orchestrator canister for distributed decoding.
 /// 
 /// It exposes one `generate` entry point over several strategies so the *same*
-/// prompt can be decoded six ways and the results compared on identical terms:
+/// prompt can be decoded seven ways and the results compared on identical terms:
 /// 
 ///   `#baseline`          one target pass per token, no workers.
 ///   `#arDraft`           speculative decoding, sequential draft.
@@ -96,6 +179,9 @@ type Error =
 ///                        return only their local winner.
 ///   `#shardedDense`      same, but workers return the whole score slice.
 ///   `#shardedQuantized`  same, with the slice quantized before it is sent.
+///   `#shardedDraft`      the fan-out drafts, an exact *local* target pass
+///                        verifies. The one sharded strategy whose output a
+///                        malicious worker cannot change.
 /// 
 /// Every report carries `lossless`, computed by re-running `#baseline` locally
 /// and comparing token for token. `#shardedQuantized` is the one strategy that
@@ -104,11 +190,39 @@ type Error =
 /// 
 /// `generate` is an update call by necessity: a query cannot make an
 /// inter-canister call, so any fan-out has to go through consensus.
+/// 
+/// Two things guard the fan-out, because one ingress message can turn into
+/// hundreds of downstream calls:
+/// 
+///   * **Who may call.** Every decoding endpoint requires a non-anonymous,
+///     authorised caller. `setOpenAccess(true)` reopens the canister to any
+///     non-anonymous principal for demos; it is off after install.
+///   * **How much they may spend.** `Quota` charges each caller an upper bound
+///     on the work *before* it runs, and refuses rather than truncates.
+/// 
+/// And the workers themselves are not trusted by default any more than the
+/// callers are: see `setVerification` and `docs/THREAT_MODEL.md`.
 service : {
+  access: () ->
+   (record {
+      allowed: vec principal;
+      open: bool;
+      owner: opt principal;
+      policy: Policy;
+      verification: Verification;
+    }) query;
+  /// Grants principals the right to make this canister work, under the quota.
+  allow: (ids: vec principal) -> (Result_5);
   /// Calls the Internet Computer LLM canister (or the local shim) and returns
   /// its answer. This is the path that reaches a *real* model; everything above
   /// is the on-chain toy model.
-  askLlmCanister: (llmModel: text, prompt: text) -> (Result_1);
+  /// 
+  /// Who pays: this canister does, out of its own balance, and only for the
+  /// owner. A paid model draws `LlmClient.CYCLES_PER_CHAT` per prompt, so
+  /// letting an allowlisted — never mind an anonymous — caller pick the model is
+  /// handing them a spending key. Free models stay open to allowlisted callers
+  /// under the quota, because they cost this canister nothing but the call.
+  askLlmCanister: (llmModel: text, prompt: text) -> (Result_4);
   /// Discovers the cluster from the canister environment.
   /// 
   /// `icp deploy` injects `PUBLIC_CANISTER_ID:<name>` for every canister in the
@@ -121,22 +235,55 @@ service : {
   /// environment does not carry them.
   autoWire: () -> (Result);
   /// Runs every strategy on one prompt. This is the endpoint the README quotes:
-  /// it is the only fair comparison, because all six share a prompt, a token
+  /// it is the only fair comparison, because all of them share a prompt, a token
   /// budget and a reference output.
+  /// 
+  /// It is also the endpoint worth gating: one message here is eight decodes and
+  /// `tokens * workers * replication` inter-canister calls, all of them billed
+  /// to this canister.
   benchmark: (prompt: text, maxTokens: nat, block: nat, steps: nat) ->
-   (Result_3);
-  generate: (request: GenerateRequest) -> (Result_2);
+   (Result_7);
+  generate: (request: GenerateRequest) -> (Result_6);
   llmTarget: () -> (text) query;
   modelInfo: () -> (ModelInfo) query;
+  /// Drops usage records whose window has already ended.
+  /// 
+  /// The ledger holds one record per *authorised* calling principal, so under
+  /// the default posture it is bounded by the allowlist. Under
+  /// `setOpenAccess(true)` it is bounded by the number of principals that ever
+  /// called, which is not a bound. Expired records carry no information — a
+  /// principal with no record is treated as having spent nothing, which is what
+  /// an expired window means — so this frees the state without changing any
+  /// answer. Returns how many were dropped.
+  pruneQuotas: () -> (Result_5);
+  /// What a principal has left this window. A caller that is about to be
+  /// refused should be able to find that out without being refused first.
+  quotaOf: (id: principal) ->
+   (record {
+      exempt: bool;
+      limit: nat;
+      remaining: nat;
+      resetInNanos: nat;
+    }) query;
+  revoke: (ids: vec principal) -> (Result_5);
   /// Points `LlmClient` at a specific LLM canister. Use it to target the local
   /// `llm_shim`; leave it unset to fall back to `PUBLIC_CANISTER_ID:llm` and
   /// then to mainnet.
-  setLlmCanister: (id: opt text) -> (Result_1);
+  setLlmCanister: (id: opt text) -> (Result_4);
+  /// Reopens the canister to every non-anonymous principal, still under the
+  /// quota. This is the demo switch; it is off after install and it should stay
+  /// off anywhere the canister holds cycles worth taking.
+  setOpenAccess: (open: bool) -> (Result_3);
+  setQuota: (next: Policy) -> (Result_2);
+  /// Sets how hard the orchestrator checks its workers.
+  /// 
+  /// `replication = k` has every range scored by `k` distinct workers whose
+  /// replies must match exactly; it costs `k` times the calls and bytes and no
+  /// extra rounds. `spotCheck` has the orchestrator recompute one range per
+  /// round itself; it costs local instructions and no bytes. What each one is
+  /// and is not proof against is tabulated in `docs/THREAT_MODEL.md`.
+  setVerification: (next: Verification) -> (Result_1);
   /// Registers the shard workers and assigns each one its vocabulary slice.
   setWorkers: (ids: vec principal) -> (Result);
-  stats: () -> (record {
-                  calls: nat;
-                  wireBytes: nat;
-                  workers: nat;
-                }) query;
+  stats: () -> (Stats) query;
 }

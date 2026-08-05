@@ -1,17 +1,17 @@
 {
-  "root": "/home/user/motoko-lab",
+  "root": "/mnt/data/github.com/hjosugi/motoko-lab",
   "status": "pass",
   "stats": {
-    "file_count": 304,
-    "directory_count": 78,
-    "total_bytes": 877398,
-    "total_lines": 20947,
+    "file_count": 307,
+    "directory_count": 79,
+    "total_bytes": 994857,
+    "total_lines": 23454,
     "application_count": 6,
     "numbered_doc_count": 26,
     "issue_count": 45,
     "issue_label_count": 38,
     "milestone_count": 6,
-    "public_api_method_count": 55
+    "public_api_method_count": 63
   },
   "passed": {
     "app_required_files": 72,
@@ -19,18 +19,17 @@
     "issue_front_matter": 45,
     "json_parse": 19,
     "metadata_consistency": 1,
-    "motoko_candid_api_surface": 55,
-    "motoko_delimiters": 39,
-    "motoko_imports": 78,
+    "motoko_candid_api_surface": 63,
+    "motoko_delimiters": 42,
+    "motoko_imports": 85,
     "protocol_required_files": 10,
     "relative_links": 40,
     "script_shebang": 14,
     "toml_parse": 6,
-    "utf8_lf": 292,
+    "utf8_lf": 295,
     "yaml_parse": 23
   },
   "warnings": [
-    "apps/06_distributed_llm/backend/src/main.mo has no Map-backed state; verify persistence design",
     "apps/06_distributed_llm/llm_shim/src/main.mo has no Map-backed state; verify persistence design",
     "apps/06_distributed_llm/worker/src/main.mo has no Map-backed state; verify persistence design",
     "jsonschema is unavailable; protocol example validation skipped"

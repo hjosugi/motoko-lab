@@ -4,7 +4,7 @@
   "limitation": "This does not replace compiler-generated Candid or compatibility checking.",
   "status": "pass",
   "application_count": 6,
-  "method_count": 55,
+  "method_count": 63,
   "applications": [
     {
       "app": "01_creator_proof_registry",
@@ -530,6 +530,16 @@
       "app": "06_distributed_llm",
       "motoko_methods": [
         {
+          "name": "access",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
+          "name": "allow",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
           "name": "askLlmCanister",
           "mode": "update",
           "argument_count": 2
@@ -560,7 +570,37 @@
           "argument_count": 0
         },
         {
+          "name": "pruneQuotas",
+          "mode": "update",
+          "argument_count": 0
+        },
+        {
+          "name": "quotaOf",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "revoke",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
           "name": "setLlmCanister",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "setOpenAccess",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "setQuota",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "setVerification",
           "mode": "update",
           "argument_count": 1
         },
@@ -577,6 +617,16 @@
       ],
       "candid_methods": [
         {
+          "name": "access",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
+          "name": "allow",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
           "name": "askLlmCanister",
           "mode": "update",
           "argument_count": 2
@@ -607,7 +657,37 @@
           "argument_count": 0
         },
         {
+          "name": "pruneQuotas",
+          "mode": "update",
+          "argument_count": 0
+        },
+        {
+          "name": "quotaOf",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "revoke",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
           "name": "setLlmCanister",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "setOpenAccess",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "setQuota",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "setVerification",
           "mode": "update",
           "argument_count": 1
         },

@@ -1,6 +1,8 @@
 type WorkerReply = 
  record {
    bytes: nat;
+   hi: nat;
+   lo: nat;
    reply: Reply;
    shard: nat;
  };
@@ -17,6 +19,7 @@ type ShardRequest =
    ctx: Ctx;
    mode: ReplyMode;
    order: nat;
+   range: opt Range;
  };
 type Rounding = 
  variant {
@@ -53,17 +56,56 @@ type Reply =
                 rounding: Rounding;
               };
  };
+type Range = 
+ record {
+   hi: nat;
+   lo: nat;
+ };
 type Quantized = 
  record {
    bits: nat;
    codes: vec nat;
    scale: nat;
  };
+type Nanos = nat;
+type Fault = 
+ variant {
+   disagreement: record {
+                   shard: nat;
+                   workers: record {
+                              nat;
+                              nat;
+                            };
+                 };
+   missing: record {shard: nat;};
+   spotCheckFailed: record {
+                      shard: nat;
+                      worker: nat;
+                    };
+   wrongRange: record {
+                 expected: Range;
+                 got: Range;
+                 shard: nat;
+               };
+ };
+type Exceeded = 
+ record {
+   limit: nat;
+   requested: nat;
+   resetInNanos: Nanos;
+   used: nat;
+ };
 type Error = 
  variant {
    anonymousNotAllowed;
+   faultyWorker: Fault;
    invalidInput: text;
+   lowCycles: record {
+                balance: nat;
+                reserve: nat;
+              };
    notConfigured: text;
+   quotaExceeded: Exceeded;
    unauthorized;
    workerFailed: text;
  };
@@ -88,6 +130,12 @@ service : {
   /// cannot be captured by anyone who can reach the boundary node.
   configure: (shard: nat, count: nat) -> (Result);
   info: () -> (WorkerInfo) query;
-  /// Scores this worker's vocabulary slice for one decoding position.
+  /// Scores a vocabulary range for one decoding position.
+  /// 
+  /// The range is the worker's own slice unless the request names another one.
+  /// Answering somebody else's slice is what makes replicated scoring possible,
+  /// and it gives nothing away: the model is baked into every worker's wasm, the
+  /// reply names the range it covers, and it is the orchestrator that decides
+  /// whether two answers about one range are allowed to differ.
   score: (request: ShardRequest) -> (WorkerReply) query;
 }

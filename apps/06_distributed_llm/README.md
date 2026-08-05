@@ -1,8 +1,9 @@
 # 06 Distributed LLM
 
-分散推論を Motoko で実際に動かして測るためのアプリです。6 つの復号戦略を同一の
+分散推論を Motoko で実際に動かして測るためのアプリです。7 つの復号戦略を同一の
 プロンプト・同一のトークン予算・同一の参照出力で比較し、**何回ネットワークを往復
-したか**と**何バイト流れたか**を数えます。
+したか**と**何バイト流れたか**を数えます。ワーカーを信用しない設定と、呼び出し側を
+信用しない設定も、有効にしたときの費用を数えたうえで用意しています。
 
 対象は 3 つのキャニスターです。
 
@@ -31,7 +32,7 @@ make latency    # 測定したカウンターをネットワーク条件別の�
 通ります — レジストリが必要なのはパッケージの取得だけで、検査には要らないためです。
 `make check-offline` / `make test-offline` は `mops` を介さず `moc` を直接呼ぶ経路です。
 
-## 6 つの戦略
+## 7 つの戦略
 
 | 戦略 | 何が違うか |
 |---|---|
@@ -41,6 +42,7 @@ make latency    # 測定したカウンターをネットワーク条件別の�
 | `shardedArgmax` | 語彙並列。各ワーカーは自分のシャードの最大値だけ返す |
 | `shardedDense` | 同上、ただしスコアスライス全体を返す |
 | `shardedQuantized` | 同上、送る前に量子化する (`bits` と丸めモードを指定) |
+| `shardedDraft` | 語彙並列で**ドラフトを作り**、ターゲットの厳密な検証はオーケストレーター側でローカルに行う。悪意あるワーカーが出力を変えられない唯一の分散戦略 |
 
 検証規則は 1 つだけです。ターゲットの貪欲トークン `t_i` を、プロンプト +
 `draft[0..i-1]` で求め、`draft[i] != t_i` になる最初の `i` までを採用して `t_i` を出力
@@ -87,6 +89,23 @@ quantized 2b near         15     60    2220  NO
 ```
 
 最大値リダクションで済むなら `argmax` が 42 倍安く、しかも厳密です。
+
+### ワーカーを信用しない場合の費用
+
+```
+configuration             rounds  calls  bytes   lossless
+dense, replication 1      10      40     27200   yes
+dense, replication 2      10      80     54400   yes
+dense, replication 4      10      160    108800  yes
+dense, spot check         10      40     27200   yes
+sharded draft             6+24    96     1536    yes   accept 33%
+```
+
+複製は**バイトと呼び出し回数に比例し、ラウンド数は増えません**。呼び出しは互いに
+独立で最初の `await` より前に全部発射されるので、`k` 重複は同じレイテンシで `k` 倍の
+帯域を使います。合意ラウンドが支配的な ICP サブネットでは安い側の軸で、10 Mbit/s の
+回線では高い側の軸です。スポットチェックはバイトを増やさず、ローカル命令だけを
+使います。
 
 ### 量子化が答えを変えるのはいつか
 
@@ -148,6 +167,86 @@ ICP のサブネット上では合意ラウンドが 1 往復ぶんの支配項�
 なり、圧縮が効きます。同じ「分散推論」でも、どちらのレバーを引くべきかは配置で
 決まります。
 
+## ワーカーを信用しない
+
+語彙並列の最大値リダクションは、**そのシャードを誰も再計算しない**という前提の上に
+成り立っています。つまりワーカー 1 台が自分の範囲について嘘のスコアを返せば、その
+範囲の任意のトークンを毎ステップ強制できます。マージには照合がなく、気付きません。
+
+`test/fixtures/LyingWorker.mo` は本物のワーカーと同じ Candid を提供し、範囲は正直に
+採点したうえで結果だけを偽るキャニスターです。型ではオーケストレーターから区別
+できません。これをシャード 3 に据えて pocket-ic 上で測った結果です。
+
+```
+configuration             calls  bytes   probes  output=honest  outcome
+trusting (replication 1)  96     1536    0       NO             believed, and WRONG
+replication 2             8      128     0       -              rejected on round 0: disagreement shard 2, workers 2/3
+replication 4             16     256     0       -              rejected on round 0: disagreement shard 0, workers 0/3
+spot check (rotating)     16     256     4       -              rejected on round 3: spot check failed, shard 3, worker 3
+sharded draft, verified   160    2560    0       yes            believed, and correct, accept 0%
+```
+
+正直な出力が `a diffusion model can fill many positions in parallel.` なのに対し、
+偽られた出力は `sharding sharding sharding ...` です。336 語彙のうち 84 を持つ 1 台で
+これができます。
+
+`setVerification` で 2 つの対策を選べます。
+
+* **`replication = k`** — 各範囲を `k` 台の**別々の**ワーカーに採点させ、返答が完全に
+  一致しなければラウンドごと拒否します。1 台の嘘は決定的に検出されます。費用は呼び
+  出しとバイトが `k` 倍、ラウンドは不変。
+* **`spotCheck`** — オーケストレーターが 1 ラウンドにつき 1 範囲を自分で再計算して
+  照合します。バイトは増えません。巡回は `round % shards` で**公開**です。キャニス
+  ターに私的な乱数はなく、`raw_rand` は 1 ラウンドあたり非同期呼び出し 1 回を足す
+  ためです。毎回嘘をつくワーカーは `shards` ラウンド以内に必ず捕まります (実測で
+  4 シャード中ラウンド 3)。見られていないときだけ嘘をつくワーカーは捕まりません。
+
+そして `shardedDraft` は、対策ではなく**構成そのもの**で問題を消します。ワーカーは
+ドラフトを作るだけで、出力を決めるのはローカルの厳密なターゲット検証です。嘘をつく
+ワーカーがいても出力は 1 ノードの出力と一致し、実測では呼び出しが 96 → 160 に増え、
+受理率が 33% → 0% に落ちました。**嘘は正しさではなく受理率を削ります。**
+
+既定は `replication = 1` / スポットチェックなし、つまり「ワーカーは同一運用者の
+インフラである」という信頼モデルです。`icp.yaml` を素直に読めばそうなっています
+(同じプロジェクト、同じプリンシパル、同じ wasm)。第三者ノードを使う配置に持って
+いくときに何を選ぶべきかは `docs/THREAT_MODEL.md` に表で置いてあります。
+
+## アクセス制御とクォータ
+
+`benchmark` は 1 回の ingress メッセージが 8 回の復号と
+`tokens x workers x replication` 回の inter-canister call になります。費用は全額この
+キャニスター持ちで、呼び出し側は 1 メッセージ分しか払いません。参照アプリとしては
+正しく、サイクルを持つ配置としては誤りです。
+
+* **誰が呼べるか。** 復号系エンドポイントは匿名を拒否し、オーナーか許可リストの
+  プリンシパルだけを通します。オーナーは管理エンドポイントを最初に呼んだ非匿名の
+  プリンシパルです。`setOpenAccess(true)` でデモ用に開放できます (既定は閉)。
+* **どれだけ使えるか。** `Quota` は 1 ウィンドウあたりの**モデルパス数**で課金し、
+  実行**前**に上限で見積もって、超えるなら**切り詰めずに拒否**します。切り詰めると
+  「モデルが早く止まった」のか「予算切れ」なのか呼び出し側から区別できません。
+* **`askLlmCanister` の支払い。** 有料モデルはオーナー限定です (1 プロンプトで 100B
+  サイクル、モデル選択を他人に渡すのは支払鍵を渡すのと同じ)。無料モデルは許可リスト
+  のプリンシパルにクォータ内で開いています。
+* **凍結しきい値。** 残高が `MIN_CYCLE_RESERVE` (3T) を割ると全ゲート済み
+  エンドポイントが `#lowCycles` で拒否します。凍結したキャニスターは診断や補充の
+  ためのエンドポイントごと応答しなくなるためです。
+
+```
+anonymous principal        generate / benchmark / askLlmCanister  -> #anonymousNotAllowed
+unknown principal          generate                               -> #unauthorized (stats().calls は不変)
+allowlisted principal      generate                               -> ok
+                           askLlmCanister("gemma3:27b", ...)      -> #unauthorized
+fresh principal            remaining 200 -> 24 トークン復号 -> remaining 176
+                           benchmark -> #quotaExceeded { limit 200, used 24, requested 672 }
+owner                      benchmark ok / quotaOf().exempt = true
+1T のキャニスター          generate -> #lowCycles { balance 918_327_983_516; reserve 3_000_000_000_000 }
+```
+
+サイクルは `Report.cyclesSpent` と `stats()` で見えます。実測では 1 回の `benchmark`
+で外から観測した残高減少が 3.21G、レポートの合計が 2.80G でした。レポートは
+メッセージ**内**の残高差なので送った呼び出しの費用を含み、そのメッセージ自身の実行
+課金はメッセージ終了後に引かれるため外から見た値のほうが大きくなります。
+
 ## LLM キャニスターとの接続
 
 `backend/src/LlmClient.mo` は `mo:llm` (dfinity/llm の Motoko パッケージ) と同じワイヤ
@@ -192,7 +291,8 @@ pocket-ic を使う経路もあります。こちらは本アプリの検証で�
 
 ```bash
 node tools/pocket-ic-setup.mjs   # pocket-ic と didc を取得する
-node tools/pocket-ic-e2e.mjs     # 6 キャニスターを配備して benchmark を実行
+node tools/pocket-ic-e2e.mjs     # 8 キャニスターを配備し、benchmark とアクセス制御・
+                                 # クォータ・サイクル・ビザンチン検出の 55 項目を検証
 ```
 
 ## 注意している設計上の制約
@@ -236,13 +336,17 @@ ic0.env_var_name_exists: Variable name is not a valid UTF-8 string
 |---|---|
 | `backend/src/Lm.mo` | 整数演算のみの 3-gram バックオフモデル。`TARGET` (order 3) と `DRAFT` (order 2) の 2 ヘッド |
 | `backend/src/Speculative.mo` | 3 つの復号器と共通の検証規則 |
-| `backend/src/Sharding.mo` | 語彙分割と 3 つのワイヤ形式、マージ規則 |
+| `backend/src/Sharding.mo` | 語彙分割と 3 つのワイヤ形式、マージ規則、複製割り当てと照合 |
+| `backend/src/Quota.mo` | プリンシパル単位のレート会計。`now` を引数に取る純粋関数 |
 | `backend/src/Quant.mo` | 整数量子化。`#floor` と `#nearest` |
 | `backend/src/Pipeline.mo` | パイプライン並列と、量子化が損失を出す唯一の場所 |
 | `backend/src/LlmClient.mo` | LLM キャニスターのクライアント (`mo:llm` 互換) |
 | `backend/src/Env.mo` | 環境変数と rope 回避 |
 | `../../scripts/vendor_core_offline.sh` | レジストリなしで `mo:core` を `.mops/` に置く |
-| `sim/Cluster.mo` | インタープリタ上で動くクラスタ全体 |
+| `sim/Cluster.mo` | インタープリタ上で動くクラスタ全体 (嘘をつくワーカーを含む) |
+| `test/fixtures/LyingWorker.mo` | 本物のワーカーと同じ Candid を提供するビザンチンノード (テスト専用、配備しない) |
 | `tools/latency-model.mjs` | カウンター → レイテンシ推定 |
 | `tools/pocket-ic-e2e.mjs` | 実レプリカでの end-to-end 実行 |
 | `docs/DESIGN.md` | 設計と、測定から言えること・言えないこと |
+| `docs/THREAT_MODEL.md` | 戦略ごとの「1 台の悪意あるワーカーが出力を変えられるか」と、対策の実測費用 |
+| `docs/MEASUREMENTS.md` | 全測定値と再現手順 |

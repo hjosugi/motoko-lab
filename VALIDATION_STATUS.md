@@ -14,7 +14,7 @@
 - appごとの必須構成、version pin、recipe pin確認
 - Issue draft 40件のfront matter、連番、labels、milestones確認
 - Motoko sourceのdelimiter、local import、`persistent actor`、主要core APIの静的確認
-- 6アプリ・55 public methodsのMotoko/Candid method名、query/update mode、引数個数の機械照合
+- 6アプリ・63 public methodsのMotoko/Candid method名、query/update mode、引数個数の機械照合
 - 全6アプリの`mops install`、`mops check`、Motoko unit test
 - pinned `moc` 1.11.1による全6アプリのWasm build
 - 全6アプリのcompiler-generated Candid compatibility check
@@ -44,11 +44,30 @@
 します。インタープリタでは再現せず、レプリカへのinstall時にのみ落ちます。詳細と回避策は
 `apps/06_distributed_llm/backend/src/Env.mo`、upstream報告のtrackingはissue #42です。
 
+## 2026-08-05に追加で実行済み (apps/06_distributed_llm, issue #44 / #45)
+
+- pocket-ic 14.0.0上で55 assertion。honest worker 4基に加えて、同一Candidを提供する
+  ビザンチンノード (`test/fixtures/LyingWorker.mo`) と、残高1Tのオーケストレーターを配備
+- アクセス制御: 匿名 / 未許可 / 許可済み / open access の各プリンシパルに対する
+  `generate`・`benchmark`・`askLlmCanister` の可否。拒否時に`stats().calls`が増えないこと
+  (=fan-outが起きていないこと) まで確認
+- クォータ: ウィンドウ予算の消費、超過時に**切り詰めではなく拒否**されること、部分結果が
+  残らないこと、owner exemptionの確認。ウィンドウのロールオーバー自体は`now`を引数に取る
+  `test/Quota.test.mo`側で確認 (レプリカを1時間進める代わり)
+- サイクル計測: `benchmark` 1回で外部観測の残高減少3.21G ≧ `Report.cyclesSpent`合計2.80G
+  (差分はメッセージ自身の実行課金がメッセージ終了後に引かれるため)
+- 凍結しきい値: 残高1Tのキャニスターが全ゲート済みエンドポイントを`#lowCycles`で拒否
+- ビザンチン検出: 無防備な構成では出力が実際に書き換わること (対照条件) を確認したうえで、
+  `replication >= 2`はround 0で、rotating spot checkはround 3で検出。`shardedDraft`は
+  嘘をつくワーカーがいても出力が単一ノードと一致し、受理率だけが33% → 0%に落ちること
+- `make sim`でも同じ構成をインタープリタ上で再現 (カウンターは一致)
+
 ## 未実施のproduction gate
 
 - `icp network start -d`
 - `icp deploy`
 - PocketIC integration test (apps/01-05。app 06は実行済み)
+- 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - canister upgrade rehearsal
 - mainnet deployment
 - third-party security audit

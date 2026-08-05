@@ -47,7 +47,13 @@ persistent actor Worker {
     engine.info(shardIndex, shardCount);
   };
 
-  /// Scores this worker's vocabulary slice for one decoding position.
+  /// Scores a vocabulary range for one decoding position.
+  ///
+  /// The range is the worker's own slice unless the request names another one.
+  /// Answering somebody else's slice is what makes replicated scoring possible,
+  /// and it gives nothing away: the model is baked into every worker's wasm, the
+  /// reply names the range it covers, and it is the orchestrator that decides
+  /// whether two answers about one range are allowed to differ.
   public query func score(request : Types.ShardRequest) : async Sharding.WorkerReply {
     engine.handle(shardIndex, shardCount, request);
   };

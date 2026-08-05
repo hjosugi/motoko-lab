@@ -1,5 +1,7 @@
 ROOT := ../..
-MOC := $(shell mops toolchain bin moc 2>/dev/null)
+# `?=` so an environment that already knows where `moc` is - a Nix shell, a
+# vendored toolchain, CI - does not need the Mops registry to find it.
+MOC ?= $(shell mops toolchain bin moc 2>/dev/null)
 CORE := .mops/core@2.6.0/src
 SRC := backend/src
 MOFLAGS := --package core $(CORE)
@@ -44,6 +46,7 @@ check-offline: vendor
 	$(MOC) --check $(MOFLAGS) $(SRC)/main.mo
 	$(MOC) --check $(MOFLAGS) worker/src/main.mo
 	$(MOC) --check $(MOFLAGS) llm_shim/src/main.mo
+	$(MOC) --check $(MOFLAGS) test/fixtures/LyingWorker.mo
 
 test-offline: vendor
 	@for f in test/*.test.mo; do \
@@ -65,7 +68,9 @@ latency:
 	node tools/latency-model.test.mjs
 
 # The same cluster on a real replica: canister installation, Candid on the wire,
-# the `ic0.*` system API. `sim` cannot exercise any of those.
+# the `ic0.*` system API, cycle accounting and a real `caller`. `sim` cannot
+# exercise any of those, which is where the access, quota, cycle and byzantine
+# checks live.
 e2e:
 	node tools/pocket-ic-setup.mjs
 	node tools/pocket-ic-e2e.mjs

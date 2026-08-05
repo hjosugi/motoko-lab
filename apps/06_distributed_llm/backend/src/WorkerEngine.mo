@@ -7,13 +7,18 @@
 /// actor, where it can be a stable variable and survive an upgrade, and it
 /// keeps this module trivially testable.
 ///
+/// A request may name the range it wants instead of taking the worker's own
+/// slice. That is what makes replicated scoring possible — a range has to be
+/// answerable by more than the one node that owns it — and it costs nothing in
+/// trust, because the reply carries the range it covers and the orchestrator
+/// rejects any reply that does not answer the question it was asked.
+///
 /// Honest limitation: the worker fits the whole model and then only ever
-/// evaluates its own vocabulary range. A production shard would hold just its
-/// slice of the parameters; what is demonstrated here is the communication
+/// evaluates the requested vocabulary range. A production shard would hold just
+/// its slice of the parameters; what is demonstrated here is the communication
 /// pattern, not the memory saving.
 import Corpus "Corpus";
 import Lm "Lm";
-import Quant "Quant";
 import Sharding "Sharding";
 import Types "Types";
 
@@ -35,27 +40,28 @@ module {
       };
     };
 
-    /// Scores this worker's vocabulary slice and answers in the requested wire
-    /// format.
-    public func handle(shard : Nat, count : Nat, request : Types.ShardRequest) : Sharding.WorkerReply {
-      let r = Sharding.range(model.vocabSize, shard, count);
-      let ctx : Lm.Ctx = { prev2 = request.ctx.prev2; prev1 = request.ctx.prev1 };
-      let scores = Lm.scoreRange(model, request.order, ctx, r.lo, r.hi);
-
-      let reply : Sharding.Reply = switch (request.mode) {
-        case (#argmax) {
-          let (localIndex, score) = Lm.argmax(scores);
-          #argmax { token = r.lo + localIndex; score };
-        };
-        case (#dense) #dense { lo = r.lo; scores };
-        case (#quantized q) #quantized {
-          lo = r.lo;
-          codes = Quant.quantizeWith(scores, if (q.bits == 0) 8 else q.bits, q.rounding);
-          rounding = q.rounding;
+    /// Range this request is about: the one it names, or the worker's own slice
+    /// when it names none. Clamped to the vocabulary, so an out-of-range request
+    /// comes back as a narrower range rather than as a trap — and the mismatch
+    /// is then visible to the orchestrator.
+    func requested(shard : Nat, count : Nat, request : Types.ShardRequest) : Sharding.Range {
+      switch (request.range) {
+        case null Sharding.range(model.vocabSize, shard, count);
+        case (?r) {
+          let hi = if (r.hi > model.vocabSize) model.vocabSize else r.hi;
+          { lo = if (r.lo > hi) hi else r.lo; hi };
         };
       };
+    };
 
-      { shard; reply; bytes = Sharding.replyBytes(reply) };
+    /// Scores a vocabulary range and answers in the requested wire format.
+    public func handle(shard : Nat, count : Nat, request : Types.ShardRequest) : Sharding.WorkerReply {
+      let r = requested(shard, count, request);
+      let ctx : Lm.Ctx = { prev2 = request.ctx.prev2; prev1 = request.ctx.prev1 };
+      let scores = Lm.scoreRange(model, request.order, ctx, r.lo, r.hi);
+      let reply = Sharding.encode(request.mode, r.lo, scores);
+
+      { shard; lo = r.lo; hi = r.hi; reply; bytes = Sharding.replyBytes(reply) };
     };
   };
 };
