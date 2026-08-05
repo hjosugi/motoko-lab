@@ -1,0 +1,20 @@
+// The "released" interface every fixture in this directory is compared against.
+//
+// Shaped like the reference apps: a result variant, an error variant, a record
+// with required fields, and a status variant used both as an argument and,
+// under an `opt`, as a result. Each fixture changes exactly one thing about it.
+//
+// `Status` deliberately never appears as a bare result. That is what isolates
+// the `added-variant-tag` case: it makes the change type check and lose data
+// instead of failing outright, which is the whole reason this suite exists.
+type Status = variant { active; retired };
+type Error = variant { notFound; unauthorized; invalidInput : text };
+type Result = variant { ok : nat; err : Error };
+type Entry = record { id : nat; owner : principal; note : text };
+service : {
+  count : () -> (nat) query;
+  get : (nat) -> (opt record { id : nat; owner : principal; note : text; extra : nat; }) query;
+  list : (Status) -> (vec Entry) query;
+  peek : () -> (opt Status) query;
+  put : (Entry) -> (Result);
+}

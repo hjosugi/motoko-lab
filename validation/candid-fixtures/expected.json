@@ -1,0 +1,51 @@
+{
+  "purpose": "A compatibility gate that has never rejected anything is indistinguishable from one that cannot. Each case names the verdict it must produce; scripts/check_candid_compat.py --self-test fails if any of them stops producing it.",
+  "baseline": "baseline.did",
+  "cases": [
+    {
+      "file": "additive-method.did",
+      "expected": "pass",
+      "why": "a new method is invisible to clients written against the release"
+    },
+    {
+      "file": "optional-argument-field.did",
+      "expected": "pass",
+      "why": "an optional argument field is the backwards-compatible way to extend an input: a caller that omits it sends null, which is a valid value"
+    },
+    {
+      "file": "added-result-field.did",
+      "expected": "pass",
+      "why": "a record with more fields is a subtype, and results are covariant, so an old client simply ignores the new field"
+    },
+    {
+      "file": "removed-method.did",
+      "expected": "fail",
+      "why": "a client that calls the removed method gets no such method after the upgrade"
+    },
+    {
+      "file": "renamed-method.did",
+      "expected": "fail",
+      "why": "a rename is a removal and an addition; Candid sees only the removal"
+    },
+    {
+      "file": "required-argument-field.did",
+      "expected": "fail",
+      "why": "an existing caller cannot supply a field it has never heard of, so the new required field rejects every old call"
+    },
+    {
+      "file": "narrowed-argument.did",
+      "expected": "fail",
+      "why": "nat32 is not a supertype of nat; arguments are contravariant, so narrowing one rejects values the release accepted"
+    },
+    {
+      "file": "removed-variant-tag.did",
+      "expected": "fail",
+      "why": "the tag is removed from a variant used as an argument, so a caller that still sends it is rejected"
+    },
+    {
+      "file": "added-variant-tag.did",
+      "expected": "fail",
+      "why": "didc exits 0 here: Candid's special opt rule lets an old client decode the unknown tag as null rather than trap, so the call succeeds and the client silently sees nothing. The exit code says compatible and the deployment says data loss, which is why the checker treats the FIX ME banner as a break"
+    }
+  ]
+}

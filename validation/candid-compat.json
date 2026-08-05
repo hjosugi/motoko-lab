@@ -1,0 +1,157 @@
+{
+  "check": "candid-drift-and-compatibility",
+  "baseline": "v2026.08.05",
+  "status": "pass",
+  "findings": [
+    {
+      "canister": "01_creator_proof_registry/backend",
+      "check": "drift",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "canister": "01_creator_proof_registry/backend",
+      "check": "compat",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "canister": "02_merkle_anchor/backend",
+      "check": "drift",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "canister": "02_merkle_anchor/backend",
+      "check": "compat",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "canister": "03_license_marketplace/backend",
+      "check": "drift",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "canister": "03_license_marketplace/backend",
+      "check": "compat",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "canister": "04_bounty_board/backend",
+      "check": "drift",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "canister": "04_bounty_board/backend",
+      "check": "compat",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "canister": "05_usage_metered_saas/backend",
+      "check": "drift",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "canister": "05_usage_metered_saas/backend",
+      "check": "compat",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "canister": "06_distributed_llm/backend",
+      "check": "drift",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "canister": "06_distributed_llm/backend",
+      "check": "compat",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "canister": "06_distributed_llm/llm_shim",
+      "check": "drift",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "canister": "06_distributed_llm/llm_shim",
+      "check": "compat",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "canister": "06_distributed_llm/worker_0",
+      "check": "drift",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "canister": "06_distributed_llm/worker_0",
+      "check": "compat",
+      "status": "pass",
+      "detail": ""
+    },
+    {
+      "canister": "fixture/additive-method.did",
+      "check": "self-test",
+      "status": "pass",
+      "detail": "a new method is invisible to clients written against the release"
+    },
+    {
+      "canister": "fixture/optional-argument-field.did",
+      "check": "self-test",
+      "status": "pass",
+      "detail": "an optional argument field is the backwards-compatible way to extend an input: a caller that omits it sends null, which is a valid value"
+    },
+    {
+      "canister": "fixture/added-result-field.did",
+      "check": "self-test",
+      "status": "pass",
+      "detail": "a record with more fields is a subtype, and results are covariant, so an old client simply ignores the new field"
+    },
+    {
+      "canister": "fixture/removed-method.did",
+      "check": "self-test",
+      "status": "pass",
+      "detail": "a client that calls the removed method gets no such method after the upgrade"
+    },
+    {
+      "canister": "fixture/renamed-method.did",
+      "check": "self-test",
+      "status": "pass",
+      "detail": "a rename is a removal and an addition; Candid sees only the removal"
+    },
+    {
+      "canister": "fixture/required-argument-field.did",
+      "check": "self-test",
+      "status": "pass",
+      "detail": "an existing caller cannot supply a field it has never heard of, so the new required field rejects every old call"
+    },
+    {
+      "canister": "fixture/narrowed-argument.did",
+      "check": "self-test",
+      "status": "pass",
+      "detail": "nat32 is not a supertype of nat; arguments are contravariant, so narrowing one rejects values the release accepted"
+    },
+    {
+      "canister": "fixture/removed-variant-tag.did",
+      "check": "self-test",
+      "status": "pass",
+      "detail": "the tag is removed from a variant used as an argument, so a caller that still sends it is rejected"
+    },
+    {
+      "canister": "fixture/added-variant-tag.did",
+      "check": "self-test",
+      "status": "pass",
+      "detail": "didc exits 0 here: Candid's special opt rule lets an old client decode the unknown tag as null rather than trap, so the call succeeds and the client silently sees nothing. The exit code says compatible and the deployment says data loss, which is why the checker treats the FIX ME banner as a break"
+    }
+  ]
+}
