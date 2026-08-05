@@ -31,7 +31,7 @@
 | `03_license_marketplace` | listing、payment receipt、immutable grant | licensing marketplace |
 | `04_bounty_board` | bounty、submission、award | creative work procurement |
 | `05_usage_metered_saas` | tenant、API key hash、idempotency、quota | B2B metered SaaS |
-| `06_distributed_llm` | inter-canister fan-out、投機的復号、量子化転送、LLM canister連携 | 分散推論オーケストレーター |
+| `06_distributed_llm` | inter-canister fan-out、投機的復号、量子化転送、LLM canister連携、ビザンチンshard検出、per-principal quota | 分散推論オーケストレーター |
 
 ## Issue backlogの使い方
 

@@ -11,6 +11,11 @@
 - Fixed a latent unsoundness in the new tokenizer's binary search: `<unk>` at index 0 is out of sort order, so the searchable region starts at 1.
 - Fixed `scripts/check_api_surface.py`, which skipped every `public shared func` declared without a caller pattern, and could not parse a `.did` containing doc comments or an inline record return type.
 - Documented a `moc` 1.11.1 bug found while bringing up the replica: `Prim.envVar` traps when the variable name is a runtime-concatenated `Text`.
+- Added byzantine shard detection to `apps/06_distributed_llm` (#44): overlapping shard assignment with an exact cross-check, a rotating orchestrator-side spot check, and a range check on every reply. Measured against a lying worker canister on `pocket-ic`, with the unprotected run as the control.
+- Added `#shardedDraft`, the one sharded strategy whose output a malicious worker cannot change: the fan-out drafts and an exact local target pass decides. The lie costs acceptance (33% -> 0%), not correctness.
+- Added access control and per-principal quotas to the orchestrator's fan-out endpoints (#45). Anonymous callers are refused, the allowlist is empty after install, and an over-budget request is rejected before it runs rather than truncated.
+- Added cycle metering: `Report.cyclesSpent`, `stats().cyclesBalance`, and a self-imposed 3T floor below which every gated endpoint refuses rather than running the canister towards its freezing threshold.
+- Added `pruneQuotas`, because the usage ledger is unbounded under `setOpenAccess(true)` and an unbounded rate limiter is itself a denial-of-service vector.
 
 ## v2026.07.20
 

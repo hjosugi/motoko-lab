@@ -111,7 +111,13 @@ module {
   /// Every `t_i` depends only on the prompt and on already-fixed draft tokens,
   /// so all `block + 1` evaluations are independent and belong to a single
   /// batched pass — one round trip, not `block + 1` of them.
-  func verifyBlock(
+  ///
+  /// Public because where the draft came from does not matter: the emitted
+  /// sequence is the target's own greedy continuation whatever the draft said.
+  /// That is what lets the orchestrator take a draft from *untrusted worker
+  /// canisters* and still be unable to emit a token the target did not choose —
+  /// a lying worker costs acceptance rate, not correctness.
+  public func verifyBlock(
     model : Lm.Model,
     history : [TokenId],
     draft : [TokenId],
@@ -139,7 +145,11 @@ module {
     { emitted = Array.concat(emitted, [bonus]); accepted; evals = evals + 1 };
   };
 
-  func truncateAtStop(model : Lm.Model, tokens : [TokenId], budget : Nat) : [TokenId] {
+  /// Cuts an emitted block down to the remaining budget, stopping at the stop
+  /// token. Public alongside `verifyBlock`, because a caller that supplies its
+  /// own draft has to finish the block the same way this module does or the
+  /// output stops being comparable.
+  public func truncateAtStop(model : Lm.Model, tokens : [TokenId], budget : Nat) : [TokenId] {
     var out : [TokenId] = [];
     var i = 0;
     while (i < tokens.size() and out.size() < budget) {
@@ -150,7 +160,7 @@ module {
     out;
   };
 
-  func hitStop(model : Lm.Model, tokens : [TokenId]) : Bool {
+  public func hitStop(model : Lm.Model, tokens : [TokenId]) : Bool {
     for (t in tokens.vals()) { if (t == model.stop) return true };
     false;
   };

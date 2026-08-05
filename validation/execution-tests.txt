@@ -1,25 +1,25 @@
 Motoko Mastery Kit offline execution checks
 Snapshot: 2026-07-20 JST
-Root: /home/user/motoko-lab
+Root: /mnt/data/github.com/hjosugi/motoko-lab
 
 [1/8] Shell syntax
-+ bash -n /home/user/motoko-lab/scripts/bootstrap_toolchain.sh
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/bootstrap_toolchain.sh
 
-+ bash -n /home/user/motoko-lab/scripts/check_all_apps.sh
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/check_all_apps.sh
 
-+ bash -n /home/user/motoko-lab/scripts/create_issues.sh
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/create_issues.sh
 
-+ bash -n /home/user/motoko-lab/scripts/create_labels.sh
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/create_labels.sh
 
-+ bash -n /home/user/motoko-lab/scripts/deploy_app.sh
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/deploy_app.sh
 
-+ bash -n /home/user/motoko-lab/scripts/run_offline_checks.sh
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/run_offline_checks.sh
 
-+ bash -n /home/user/motoko-lab/scripts/toolchain_env.sh
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/toolchain_env.sh
 
-+ bash -n /home/user/motoko-lab/scripts/vendor_core_offline.sh
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/vendor_core_offline.sh
 
-+ bash -n /home/user/motoko-lab/scripts/verify_versions.sh
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/verify_versions.sh
 
 [2/8] Python source compilation without bytecode output
 ok: scripts/check_api_surface.py
@@ -30,18 +30,18 @@ ok: scripts/validate_kit.py
 compiled: 5 Python files
 
 [3/8] Node syntax
-+ node --check /home/user/motoko-lab/protocol/tools/provenance-cli.mjs
++ node --check /mnt/data/github.com/hjosugi/motoko-lab/protocol/tools/provenance-cli.mjs
 
-+ node --check /home/user/motoko-lab/protocol/tools/provenance-cli.test.mjs
++ node --check /mnt/data/github.com/hjosugi/motoko-lab/protocol/tools/provenance-cli.test.mjs
 
 [4/8] Provenance protocol tests
-+ node /home/user/motoko-lab/protocol/tools/provenance-cli.test.mjs
++ node /mnt/data/github.com/hjosugi/motoko-lab/protocol/tools/provenance-cli.test.mjs
 ok: 2 provenance test vectors
 
 [5/8] Motoko/Candid API surface
-+ python3 /home/user/motoko-lab/scripts/check_api_surface.py /home/user/motoko-lab --json-report /home/user/motoko-lab/validation/api-surface.json --markdown-report /home/user/motoko-lab/validation/API_SURFACE.md
++ python3 /mnt/data/github.com/hjosugi/motoko-lab/scripts/check_api_surface.py /mnt/data/github.com/hjosugi/motoko-lab --json-report /mnt/data/github.com/hjosugi/motoko-lab/validation/api-surface.json --markdown-report /mnt/data/github.com/hjosugi/motoko-lab/validation/API_SURFACE.md
 Motoko/Candid API surface: PASS
-Applications: 6 | Methods: 55
+Applications: 6 | Methods: 63
 
 [6/8] GitHub automation dry-runs
 Dry run only. Set APPLY=1 TARGET_REPO=owner/repo after review.
@@ -50,26 +50,26 @@ Dry run only. Set APPLY=1 TARGET_REPO=owner/repo after review.
 issue dry-run output lines: 45
 
 [7/8] Structural validation
-+ python3 /home/user/motoko-lab/scripts/validate_kit.py /home/user/motoko-lab --json-report /home/user/motoko-lab/validation/structural-validation.json
++ python3 /mnt/data/github.com/hjosugi/motoko-lab/scripts/validate_kit.py /mnt/data/github.com/hjosugi/motoko-lab --json-report /mnt/data/github.com/hjosugi/motoko-lab/validation/structural-validation.json
 Motoko Mastery Kit structural validation
 Status: PASS
-Files: 304 | Lines: 20947 | Size: 856.8 KiB
+Files: 307 | Lines: 23454 | Size: 971.5 KiB
 Apps: 6 | Issues: 45 | Numbered docs: 26
 
 Warnings:
-- apps/06_distributed_llm/backend/src/main.mo has no Map-backed state; verify persistence design
 - apps/06_distributed_llm/llm_shim/src/main.mo has no Map-backed state; verify persistence design
 - apps/06_distributed_llm/worker/src/main.mo has no Map-backed state; verify persistence design
 - jsonschema is unavailable; protocol example validation skipped
 
 All offline structural checks passed.
 Run check_all_apps.sh for pinned native compilation; PocketIC remains a separate integration gate.
-JSON report: /home/user/motoko-lab/validation/structural-validation.json
+JSON report: /mnt/data/github.com/hjosugi/motoko-lab/validation/structural-validation.json
 
 [8/8] Workspace hygiene
-ignored, not packaged: .mops-cache
 ignored, not packaged: apps/06_distributed_llm/tools/.pocket-ic
 ignored, not packaged: apps/06_distributed_llm/tools/node_modules
+ignored, not packaged: apps/06_distributed_llm/.mops
+ignored, not packaged: .mops-cache
 No generated dependency or cache directory can reach the package.
 
 OFFLINE CHECKS: PASS
