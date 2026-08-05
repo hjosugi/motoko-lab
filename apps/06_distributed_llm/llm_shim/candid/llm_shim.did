@@ -1,0 +1,83 @@
+type ToolCallArgument = 
+ record {
+   name: text;
+   value: text;
+ };
+type ToolCall = 
+ record {
+   function: FunctionCall;
+   id: text;
+ };
+type Tool = variant {function: Function;};
+type Response = record {message: AssistantMessage;};
+type Request = 
+ record {
+   messages: vec ChatMessage;
+   model: text;
+   tools: opt vec Tool;
+ };
+type Property = 
+ record {
+   description: opt text;
+   enum: opt vec text;
+   name: text;
+   "type": text;
+ };
+type Parameters = 
+ record {
+   properties: opt vec Property;
+   required: opt vec text;
+   "type": text;
+ };
+type FunctionCall = 
+ record {
+   arguments: vec ToolCallArgument;
+   name: text;
+ };
+type Function = 
+ record {
+   description: opt text;
+   name: text;
+   parameters: opt Parameters;
+ };
+type ChatMessage = 
+ variant {
+   assistant: AssistantMessage;
+   system: record {content: text;};
+   tool: record {
+           content: text;
+           tool_call_id: text;
+         };
+   user: record {content: text;};
+ };
+type AssistantMessage = 
+ record {
+   content: opt text;
+   tool_calls: vec ToolCall;
+ };
+/// Local stand-in for the Internet Computer LLM canister.
+/// 
+/// It serves the same `v1_chat` interface as `w36hm-eqaaa-aaaal-qr76a-cai`, so
+/// code written against `mo:llm` (or against `LlmClient.mo` in this app) runs
+/// unchanged against it. What it does *not* do is run Llama: it answers from the
+/// on-chain n-gram model in `Lm.mo`.
+/// 
+/// Why this exists. The documented local workflow for the real LLM canister is
+/// `dfx deps pull` plus either a local Ollama serving `llama3.1:8b` (a ~4 GiB
+/// download and a process outside the replica) or an Intelligence Gateway API
+/// key. Both are reasonable on a workstation and both are unavailable in a
+/// sandbox, in CI, and on any machine without the model cached. This shim keeps
+/// the *shape* of the integration testable everywhere; swap the target back to
+/// the pulled `llm` canister for a real model.
+/// 
+/// It is deliberately obvious that this is not a real LLM: the response is
+/// prefixed so no test can mistake shim output for model output.
+service : {
+  setMaxTokens: (n: nat) -> (nat);
+  stats: () -> (record {
+                  calls: nat;
+                  maxTokens: nat;
+                  vocabSize: nat;
+                }) query;
+  v1_chat: (request: Request) -> (Response);
+}

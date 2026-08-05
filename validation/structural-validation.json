@@ -1,35 +1,39 @@
 {
-  "root": "/mnt/data/github.com/hjosugi/motoko-lab",
+  "root": "/home/user/motoko-lab",
   "status": "pass",
   "stats": {
-    "file_count": 217,
-    "directory_count": 52,
-    "total_bytes": 396328,
-    "total_lines": 10798,
-    "application_count": 5,
+    "file_count": 304,
+    "directory_count": 78,
+    "total_bytes": 877398,
+    "total_lines": 20947,
+    "application_count": 6,
     "numbered_doc_count": 26,
-    "issue_count": 40,
+    "issue_count": 45,
     "issue_label_count": 38,
     "milestone_count": 6,
-    "public_api_method_count": 46
+    "public_api_method_count": 55
   },
   "passed": {
-    "app_required_files": 60,
-    "candid_structure": 5,
-    "issue_front_matter": 40,
-    "json_parse": 14,
+    "app_required_files": 72,
+    "candid_structure": 8,
+    "issue_front_matter": 45,
+    "json_parse": 19,
     "metadata_consistency": 1,
-    "motoko_candid_api_surface": 46,
-    "motoko_delimiters": 15,
-    "motoko_imports": 10,
+    "motoko_candid_api_surface": 55,
+    "motoko_delimiters": 39,
+    "motoko_imports": 78,
     "protocol_required_files": 10,
-    "protocol_schema_examples": 2,
     "relative_links": 40,
-    "script_shebang": 13,
-    "toml_parse": 5,
-    "utf8_lf": 209,
-    "yaml_parse": 20
+    "script_shebang": 14,
+    "toml_parse": 6,
+    "utf8_lf": 292,
+    "yaml_parse": 23
   },
-  "warnings": [],
+  "warnings": [
+    "apps/06_distributed_llm/backend/src/main.mo has no Map-backed state; verify persistence design",
+    "apps/06_distributed_llm/llm_shim/src/main.mo has no Map-backed state; verify persistence design",
+    "apps/06_distributed_llm/worker/src/main.mo has no Map-backed state; verify persistence design",
+    "jsonschema is unavailable; protocol example validation skipped"
+  ],
   "errors": []
 }

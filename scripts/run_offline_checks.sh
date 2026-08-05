@@ -65,10 +65,27 @@ run python3 "$ROOT/scripts/validate_kit.py" "$ROOT" \
 
 echo "[8/8] Workspace hygiene"
 find "$ROOT" -type d -name __pycache__ -prune -exec rm -rf {} +
-if find "$ROOT" -type d \( -name node_modules -o -name .mops -o -name __pycache__ \) -print -quit | grep -q .; then
-  echo "unexpected generated dependency/cache directory found" >&2
+
+# What matters is that no generated directory can be packaged, not that none
+# exists on disk. `apps/06_distributed_llm/tools` legitimately holds an npm tree
+# and a downloaded replica after its harness has been run, and both are ignored.
+# So: a generated directory is acceptable exactly when git ignores it. Without
+# git (a ZIP distribution, say) fall back to requiring that none exist at all.
+unexpected=0
+while IFS= read -r directory; do
+  if git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+    if git -C "$ROOT" check-ignore -q "$directory"; then
+      echo "ignored, not packaged: ${directory#"$ROOT/"}"
+      continue
+    fi
+  fi
+  echo "generated directory is not ignored and would be packaged: ${directory#"$ROOT/"}" >&2
+  unexpected=1
+done < <(find "$ROOT" -type d \( -name node_modules -o -name .mops -o -name .mops-cache -o -name .pocket-ic -o -name __pycache__ \) -prune -print)
+
+if (( unexpected )); then
   exit 1
 fi
-echo "No node_modules, .mops, or __pycache__ directories are packaged."
+echo "No generated dependency or cache directory can reach the package."
 echo
 echo "OFFLINE CHECKS: PASS"

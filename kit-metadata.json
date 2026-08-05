@@ -9,10 +9,10 @@
   "nodeMotokoObserved": "4.10.0",
   "icpCliObserved": "1.1.0",
   "icWasmObserved": "0.9.11",
-  "applicationCount": 5,
-  "issueDraftCount": 40,
-  "publicApiMethodCount": 46,
+  "applicationCount": 6,
+  "issueDraftCount": 45,
+  "publicApiMethodCount": 55,
   "license": "Apache-2.0",
   "release": "v2026.07.20",
-  "validation": "offline and native Motoko checks passed for all five apps; PocketIC pending"
+  "validation": "offline and native Motoko checks passed for all six apps; app 06 additionally verified end to end on pocket-ic 14.0.0"
 }

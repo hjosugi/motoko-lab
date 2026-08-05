@@ -68,9 +68,10 @@ EXPECTED_APP_DIRS = {
     "03_license_marketplace",
     "04_bounty_board",
     "05_usage_metered_saas",
+    "06_distributed_llm",
 }
 EXPECTED_DOCS = {f"{i:02d}_" for i in range(26)}
-EXPECTED_ISSUE_COUNT = 40
+EXPECTED_ISSUE_COUNT = 45
 EXPECTED_MOC = "1.11.1"
 EXPECTED_CORE = "2.6.0"
 EXPECTED_RECIPE = "@dfinity/motoko@v5.0.0"
@@ -98,9 +99,14 @@ def rel(root: Path, path: Path) -> str:
     return path.relative_to(root).as_posix()
 
 
+# Generated or downloaded trees that are not kit content: package caches and the
+# replica/Candid binaries `apps/06_distributed_llm/tools` fetches on demand.
+IGNORED_DIRS = {".git", "node_modules", ".mops", ".mops-cache", ".pocket-ic", "__pycache__"}
+
+
 def iter_files(root: Path) -> Iterable[Path]:
     for path in sorted(root.rglob("*")):
-        if path.is_file() and not any(part in {".git", "node_modules", ".mops", "__pycache__"} for part in path.parts):
+        if path.is_file() and not any(part in IGNORED_DIRS for part in path.parts):
             yield path
 
 
@@ -494,8 +500,7 @@ def run_validation(root: Path) -> Report:
         sum(
             1
             for path in report.root.rglob("*")
-            if path.is_dir()
-            and not any(part in {".git", "node_modules", ".mops", "__pycache__"} for part in path.parts)
+            if path.is_dir() and not any(part in IGNORED_DIRS for part in path.parts)
         )
         + 1
     )

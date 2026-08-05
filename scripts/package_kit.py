@@ -13,7 +13,7 @@ import zipfile
 from pathlib import Path
 
 FIXED_ZIP_TIME = (2026, 7, 20, 0, 0, 0)
-EXCLUDED_DIRS = {".git", "node_modules", ".mops", "__pycache__"}
+EXCLUDED_DIRS = {".git", "node_modules", ".mops", ".mops-cache", ".pocket-ic", "__pycache__"}
 
 
 def files_in(root: Path) -> list[Path]:

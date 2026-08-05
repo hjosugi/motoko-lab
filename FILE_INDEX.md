@@ -3,13 +3,15 @@
 このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
 完全性確認には`MANIFEST.sha256`を使用してください。
 
-Indexed files: **217**
+Indexed files: **304**
 
 ## Root
 
 - `.gitignore`
+- `AGENTS.md`
 - `BUILD_REPORT.md`
 - `CHANGELOG.md`
+- `CLAUDE.md`
 - `CONTENTS.md`
 - `FILE_INDEX.md`
 - `LICENSE`
@@ -21,6 +23,48 @@ Indexed files: **217**
 - `VERSION_SNAPSHOT.md`
 - `kit-metadata.json`
 
+## `.claude/`
+
+- `.claude/CLAUDE.md`
+- `.claude/settings.json`
+- `.claude/skills/graphify/.graphify_version`
+- `.claude/skills/graphify/SKILL.md`
+- `.claude/skills/graphify/references/add-watch.md`
+- `.claude/skills/graphify/references/exports.md`
+- `.claude/skills/graphify/references/extraction-spec.md`
+- `.claude/skills/graphify/references/github-and-merge.md`
+- `.claude/skills/graphify/references/hooks.md`
+- `.claude/skills/graphify/references/query.md`
+- `.claude/skills/graphify/references/transcribe.md`
+- `.claude/skills/graphify/references/update.md`
+
+## `.codex/`
+
+- `.codex/hooks.json`
+- `.codex/skills/graphify/.graphify_version`
+- `.codex/skills/graphify/SKILL.md`
+- `.codex/skills/graphify/references/add-watch.md`
+- `.codex/skills/graphify/references/exports.md`
+- `.codex/skills/graphify/references/extraction-spec.md`
+- `.codex/skills/graphify/references/github-and-merge.md`
+- `.codex/skills/graphify/references/hooks.md`
+- `.codex/skills/graphify/references/query.md`
+- `.codex/skills/graphify/references/transcribe.md`
+- `.codex/skills/graphify/references/update.md`
+
+## `.copilot/`
+
+- `.copilot/skills/graphify/.graphify_version`
+- `.copilot/skills/graphify/SKILL.md`
+- `.copilot/skills/graphify/references/add-watch.md`
+- `.copilot/skills/graphify/references/exports.md`
+- `.copilot/skills/graphify/references/extraction-spec.md`
+- `.copilot/skills/graphify/references/github-and-merge.md`
+- `.copilot/skills/graphify/references/hooks.md`
+- `.copilot/skills/graphify/references/query.md`
+- `.copilot/skills/graphify/references/transcribe.md`
+- `.copilot/skills/graphify/references/update.md`
+
 ## `.github/`
 
 - `.github/CODEOWNERS`
@@ -30,6 +74,7 @@ Indexed files: **217**
 - `.github/ISSUE_TEMPLATE/feature.yml`
 - `.github/ISSUE_TEMPLATE/research.yml`
 - `.github/PULL_REQUEST_TEMPLATE.md`
+- `.github/copilot-instructions.md`
 - `.github/workflows/ci.yml`
 
 ## `apps/`
@@ -99,6 +144,51 @@ Indexed files: **217**
 - `apps/05_usage_metered_saas/mops.lock`
 - `apps/05_usage_metered_saas/mops.toml`
 - `apps/05_usage_metered_saas/test/Validation.test.mo`
+- `apps/06_distributed_llm/.gitignore`
+- `apps/06_distributed_llm/Makefile`
+- `apps/06_distributed_llm/README.md`
+- `apps/06_distributed_llm/backend/candid/backend.did`
+- `apps/06_distributed_llm/backend/canister.yaml`
+- `apps/06_distributed_llm/backend/src/Corpus.mo`
+- `apps/06_distributed_llm/backend/src/Env.mo`
+- `apps/06_distributed_llm/backend/src/LlmClient.mo`
+- `apps/06_distributed_llm/backend/src/Lm.mo`
+- `apps/06_distributed_llm/backend/src/Pipeline.mo`
+- `apps/06_distributed_llm/backend/src/Quant.mo`
+- `apps/06_distributed_llm/backend/src/Sharding.mo`
+- `apps/06_distributed_llm/backend/src/Speculative.mo`
+- `apps/06_distributed_llm/backend/src/Tokenizer.mo`
+- `apps/06_distributed_llm/backend/src/Types.mo`
+- `apps/06_distributed_llm/backend/src/Validation.mo`
+- `apps/06_distributed_llm/backend/src/WorkerEngine.mo`
+- `apps/06_distributed_llm/backend/src/main.mo`
+- `apps/06_distributed_llm/docs/DESIGN.md`
+- `apps/06_distributed_llm/docs/MEASUREMENTS.md`
+- `apps/06_distributed_llm/docs/THREAT_MODEL.md`
+- `apps/06_distributed_llm/docs/UPGRADE_PLAN.md`
+- `apps/06_distributed_llm/icp.yaml`
+- `apps/06_distributed_llm/llm_shim/candid/llm_shim.did`
+- `apps/06_distributed_llm/llm_shim/canister.yaml`
+- `apps/06_distributed_llm/llm_shim/src/main.mo`
+- `apps/06_distributed_llm/mops.lock`
+- `apps/06_distributed_llm/mops.toml`
+- `apps/06_distributed_llm/sim/Cluster.mo`
+- `apps/06_distributed_llm/test/Env.test.mo`
+- `apps/06_distributed_llm/test/Lm.test.mo`
+- `apps/06_distributed_llm/test/Pipeline.test.mo`
+- `apps/06_distributed_llm/test/Quant.test.mo`
+- `apps/06_distributed_llm/test/Sharding.test.mo`
+- `apps/06_distributed_llm/test/Speculative.test.mo`
+- `apps/06_distributed_llm/test/Tokenizer.test.mo`
+- `apps/06_distributed_llm/test/Validation.test.mo`
+- `apps/06_distributed_llm/tools/latency-model.mjs`
+- `apps/06_distributed_llm/tools/latency-model.test.mjs`
+- `apps/06_distributed_llm/tools/package-lock.json`
+- `apps/06_distributed_llm/tools/package.json`
+- `apps/06_distributed_llm/tools/pocket-ic-e2e.mjs`
+- `apps/06_distributed_llm/tools/pocket-ic-setup.mjs`
+- `apps/06_distributed_llm/worker/candid/worker.did`
+- `apps/06_distributed_llm/worker/src/main.mo`
 
 ## `career/`
 
@@ -198,6 +288,11 @@ Indexed files: **217**
 - `github/issues/038-add-content-availability-adapters-and-integrity-monitoring.md`
 - `github/issues/039-define-ai-tool-and-model-attestation-schema.md`
 - `github/issues/040-prepare-governance-and-sns-readiness-decision-record.md`
+- `github/issues/041-report-the-prim-envvar-rope-trap-to-the-motoko-compiler.md`
+- `github/issues/042-measure-speculative-acceptance-against-a-real-draft-target-pair.md`
+- `github/issues/043-detect-byzantine-shards-in-vocabulary-parallel-decoding.md`
+- `github/issues/044-gate-and-meter-the-distributed-llm-orchestrator-endpoints.md`
+- `github/issues/045-deploy-the-distributed-llm-app-against-the-real-llm-canister.md`
 - `github/labels.md`
 - `github/milestones.md`
 - `github/workflows/ci.yml`
@@ -249,6 +344,7 @@ Indexed files: **217**
 - `scripts/run_offline_checks.sh`
 - `scripts/toolchain_env.sh`
 - `scripts/validate_kit.py`
+- `scripts/vendor_core_offline.sh`
 - `scripts/verify_versions.sh`
 
 ## `validation/`

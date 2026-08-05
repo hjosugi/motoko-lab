@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://github.com/dfinity/icp-cli/raw/refs/tags/v0.1.0/docs/schemas/icp-yaml-schema.json
+
+# `backend` and `llm_shim` resolve to their canister.yaml manifests. The four
+# workers share one source file (`worker/src/main.mo`, mapped per canister in
+# mops.toml) and differ only in the shard the orchestrator assigns them, so they
+# are declared inline rather than duplicated as four directories.
+canisters:
+  - backend
+  - llm_shim
+  - name: worker_0
+    recipe:
+      type: "@dfinity/motoko@v5.0.0"
+  - name: worker_1
+    recipe:
+      type: "@dfinity/motoko@v5.0.0"
+  - name: worker_2
+    recipe:
+      type: "@dfinity/motoko@v5.0.0"
+  - name: worker_3
+    recipe:
+      type: "@dfinity/motoko@v5.0.0"

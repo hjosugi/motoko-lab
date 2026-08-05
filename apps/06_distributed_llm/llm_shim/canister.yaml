@@ -1,0 +1,3 @@
+name: llm_shim
+recipe:
+  type: "@dfinity/motoko@v5.0.0"
