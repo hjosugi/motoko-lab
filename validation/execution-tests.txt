@@ -68,7 +68,6 @@ JSON report: /mnt/data/github.com/hjosugi/motoko-lab/validation/structural-valid
 [8/8] Workspace hygiene
 ignored, not packaged: apps/06_distributed_llm/tools/.pocket-ic
 ignored, not packaged: apps/06_distributed_llm/tools/node_modules
-ignored, not packaged: apps/06_distributed_llm/.mops
 ignored, not packaged: .mops-cache
 No generated dependency or cache directory can reach the package.
 
