@@ -3,7 +3,7 @@
 このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
 完全性確認には`MANIFEST.sha256`を使用してください。
 
-Indexed files: **307**
+Indexed files: **322**
 
 ## Root
 
@@ -338,10 +338,12 @@ Indexed files: **307**
 - `scripts/bootstrap_toolchain.sh`
 - `scripts/check_all_apps.sh`
 - `scripts/check_api_surface.py`
+- `scripts/check_candid_compat.py`
 - `scripts/create_issues.sh`
 - `scripts/create_labels.sh`
 - `scripts/deploy_app.sh`
 - `scripts/generate_file_index.py`
+- `scripts/install_didc.sh`
 - `scripts/issue_loader.py`
 - `scripts/package_kit.py`
 - `scripts/run_offline_checks.sh`
@@ -353,6 +355,19 @@ Indexed files: **307**
 ## `validation/`
 
 - `validation/API_SURFACE.md`
+- `validation/CANDID_COMPAT.md`
 - `validation/api-surface.json`
+- `validation/candid-compat.json`
+- `validation/candid-fixtures/added-result-field.did`
+- `validation/candid-fixtures/added-variant-tag.did`
+- `validation/candid-fixtures/additive-method.did`
+- `validation/candid-fixtures/baseline.did`
+- `validation/candid-fixtures/expected.json`
+- `validation/candid-fixtures/narrowed-argument.did`
+- `validation/candid-fixtures/optional-argument-field.did`
+- `validation/candid-fixtures/removed-method.did`
+- `validation/candid-fixtures/removed-variant-tag.did`
+- `validation/candid-fixtures/renamed-method.did`
+- `validation/candid-fixtures/required-argument-field.did`
 - `validation/execution-tests.txt`
 - `validation/structural-validation.json`

@@ -10,12 +10,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # The Candid gate compares against the interface in the last release
+          # tag, so the tags have to come with the checkout.
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: '22'
       - name: Install ICP and Motoko tooling
         run: ./scripts/bootstrap_toolchain.sh
+      - name: Install didc
+        run: ./scripts/install_didc.sh
       - name: Run offline checks
         run: ./scripts/run_offline_checks.sh
       - name: Check all Motoko apps
         run: ./scripts/check_all_apps.sh
+      - name: Check Candid drift and release compatibility
+        # After check_all_apps.sh, because that is what populates each app's
+        # .mops/, which `moc --idl` needs on the package path.
+        run: |
+          source ./scripts/toolchain_env.sh
+          motoko_add_toolchain_to_path
+          python3 ./scripts/check_candid_compat.py . --self-test

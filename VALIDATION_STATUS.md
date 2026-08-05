@@ -15,6 +15,8 @@
 - Issue draft 40件のfront matter、連番、labels、milestones確認
 - Motoko sourceのdelimiter、local import、`persistent actor`、主要core APIの静的確認
 - 6アプリ・63 public methodsのMotoko/Candid method名、query/update mode、引数個数の機械照合
+- 全8 canister interfaceのCandid drift検査 (pinned compilerの出力とcommitted `.did`の構造的一致) と、
+  直近release tagに対するsubtyping互換検査 (`scripts/check_candid_compat.py`)
 - 全6アプリの`mops install`、`mops check`、Motoko unit test
 - pinned `moc` 1.11.1による全6アプリのWasm build
 - 全6アプリのcompiler-generated Candid compatibility check
@@ -61,6 +63,18 @@
   `replication >= 2`はround 0で、rotating spot checkはround 3で検出。`shardedDraft`は
   嘘をつくワーカーがいても出力が単一ノードと一致し、受理率だけが33% → 0%に落ちること
 - `make sim`でも同じ構成をインタープリタ上で再現 (カウンターは一致)
+
+## 2026-08-06に追加で実行済み (issue #17)
+
+- `scripts/check_candid_compat.py`: 全6アプリ・8 canister pairでdrift検査とrelease互換検査。
+  baselineは`v2026.08.05` tag (tag付きツリーそのものがinterface artifact)
+- fixture 9件の判定確認 (`--self-test`)。additive/optional argument field/result field追加はpass、
+  method削除・rename、必須argument field追加、argument型の縮小、argument variantのtag削除はfail
+- **`didc check`のexit codeだけでは不十分**であることを確認: 結果variantへのtag追加はexit 0を返すが、
+  Candidのspecial `opt` ruleにより古いclientが未知のtagを`null`としてdecodeするため、呼び出しは
+  成功してclientは黙って何も見ません。checkerは`FIX ME!` bannerを破壊的変更として扱います
+- 実アプリでの実証: `apps/02_merkle_anchor`の`.did`にmethodを1つ手で足すとdrift検査が落ちること、
+  および`--baseline v2026.07.20`ではapp 06の全canisterが`new` (当時未存在) と報告されることを確認
 
 ## 未実施のproduction gate
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Added `scripts/check_candid_compat.py` (#17): regenerates every app's `.did` with the pinned compiler and rejects drift, then checks the committed interface is a Candid subtype of the one in the last release tag. The tagged tree is the baseline, so there is no copy to keep in step with what was actually released.
+- Treat `didc`'s `FIX ME! ... special opt rule` banner as a break. Adding a variant tag to a result exits 0 and lets an old client decode the unknown tag as `null` instead of trapping — the call succeeds and the client silently sees nothing.
+- Added `validation/candid-fixtures/`, nine interface pairs whose verdict is known, so a gate that has stopped rejecting anything fails instead of passing quietly.
+- Added `scripts/install_didc.sh`, pinning `didc` 0.4.0 to the same release the pocket-ic harness uses.
+- Wired both into CI, with `fetch-depth: 0` so the release tag is available to compare against, and documented the allowed and deprecated interface changes in `docs/06_TESTING_CI_DEPLOYMENT.md`.
+
 ## v2026.08.05
 
 - Added `apps/06_distributed_llm`: distributed decoding across canisters, with six strategies (baseline, speculative, diffusion-style masked draft, and three sharded wire formats) measured on identical terms.

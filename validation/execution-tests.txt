@@ -13,6 +13,8 @@ Root: /mnt/data/github.com/hjosugi/motoko-lab
 
 + bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/deploy_app.sh
 
++ bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/install_didc.sh
+
 + bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/run_offline_checks.sh
 
 + bash -n /mnt/data/github.com/hjosugi/motoko-lab/scripts/toolchain_env.sh
@@ -23,11 +25,12 @@ Root: /mnt/data/github.com/hjosugi/motoko-lab
 
 [2/8] Python source compilation without bytecode output
 ok: scripts/check_api_surface.py
+ok: scripts/check_candid_compat.py
 ok: scripts/generate_file_index.py
 ok: scripts/issue_loader.py
 ok: scripts/package_kit.py
 ok: scripts/validate_kit.py
-compiled: 5 Python files
+compiled: 6 Python files
 
 [3/8] Node syntax
 + node --check /mnt/data/github.com/hjosugi/motoko-lab/protocol/tools/provenance-cli.mjs
@@ -53,7 +56,7 @@ issue dry-run output lines: 45
 + python3 /mnt/data/github.com/hjosugi/motoko-lab/scripts/validate_kit.py /mnt/data/github.com/hjosugi/motoko-lab --json-report /mnt/data/github.com/hjosugi/motoko-lab/validation/structural-validation.json
 Motoko Mastery Kit structural validation
 Status: PASS
-Files: 307 | Lines: 23454 | Size: 971.5 KiB
+Files: 322 | Lines: 24499 | Size: 1014.5 KiB
 Apps: 6 | Issues: 45 | Numbered docs: 26
 
 Warnings:
@@ -66,8 +69,14 @@ Run check_all_apps.sh for pinned native compilation; PocketIC remains a separate
 JSON report: /mnt/data/github.com/hjosugi/motoko-lab/validation/structural-validation.json
 
 [8/8] Workspace hygiene
+ignored, not packaged: apps/01_creator_proof_registry/.mops
+ignored, not packaged: apps/02_merkle_anchor/.mops
+ignored, not packaged: apps/03_license_marketplace/.mops
+ignored, not packaged: apps/04_bounty_board/.mops
+ignored, not packaged: apps/05_usage_metered_saas/.mops
 ignored, not packaged: apps/06_distributed_llm/tools/.pocket-ic
 ignored, not packaged: apps/06_distributed_llm/tools/node_modules
+ignored, not packaged: apps/06_distributed_llm/.mops
 ignored, not packaged: .mops-cache
 No generated dependency or cache directory can reach the package.
 

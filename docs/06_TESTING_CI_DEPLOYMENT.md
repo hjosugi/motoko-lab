@@ -46,11 +46,68 @@ PocketIC等で次を実行します。
 3. `mops check`
 4. unit test
 5. `mops build`
-6. generated Candid diff
-7. stable compatibility check
-8. PocketIC integration
-9. dependency/license scan
-10. reproducible Wasm hash
+6. generated Candid diff — `scripts/check_candid_compat.py`
+7. released-interface compatibility — 同スクリプト
+8. stable compatibility check
+9. PocketIC integration
+10. dependency/license scan
+11. reproducible Wasm hash
+
+このリポジトリで実際に走っているのは 2-7 です (`.github/workflows/ci.yml`)。8-11 は
+backlog の gate で、Issue で追跡しています。
+
+## Candid compatibility
+
+canister の upgrade は、client が既に握っている principal の裏側で service を差し替え
+ます。だから interface について確認すべきことは 2 つあり、**落ち方が違うので別々に**
+検査します。
+
+| 検査 | 問い | 失敗が意味すること |
+|---|---|---|
+| drift | committed `.did` は、pinned compiler が source から吐くものと今も一致するか | `.did` が嘘をついている。client が binding を生成して初めて露見する |
+| compatibility | 現在の interface は、直近 release の interface の Candid subtype か | upgrade が既存 client を壊す |
+
+baseline は **git tag そのもの**です。全 `.did` は tag 付きツリーの中にあり、immutable
+で公開済みなので、リポジトリに複製を置く必要も、それが実際の release とずれる余地も
+ありません。
+
+```bash
+./scripts/install_didc.sh                       # pinned didc (0.4.0)
+python3 scripts/check_candid_compat.py . --self-test
+python3 scripts/check_candid_compat.py . --baseline v2026.07.20
+```
+
+### 許される変更・許されない変更
+
+Candid の subtyping 規則そのものです。引数は反変、結果は共変。
+
+| 変更 | 判定 | なぜ |
+|---|---|---|
+| method 追加 | **allowed** | release 時点の client からは見えない |
+| method 削除 / rename | **breaking** | rename は削除 + 追加であり、Candid には削除しか見えない |
+| 引数 record に必須 field 追加 | **breaking** | 既存 client は知らない field を送れない |
+| 引数 record に `opt` field 追加 | allowed | 省略が有効な値になる |
+| 引数の型を狭める (`nat` -> `nat32`) | **breaking** | release が受け付けていた値を拒否する |
+| 引数 variant から tag 削除 | **breaking** | まだその tag を送る client を拒否する |
+| 引数 variant に tag 追加 | allowed | 受け付ける値が増えるだけ |
+| 結果 variant に tag 追加 | **deprecated** | 下記 |
+| 結果 record に field 追加 | allowed | 古い client は無視する |
+
+**結果 variant への tag 追加が最も危険です。** `didc check` は exit 0 を返します —
+Candid の special `opt` rule により、古い client は未知の tag を trap ではなく `null`
+として decode できてしまうからです。呼び出しは成功し、client は**黙って何も見ません**。
+exit code は「互換」と言い、運用上は data loss です。`check_candid_compat.py` はこの
+`FIX ME!` banner を破壊的変更として扱います。
+
+破壊的変更をどうしても入れる場合は、interface を分岐させます (新しい method 名、または
+新しい canister) 。既存 method の型を変えるのは、全 client を同時に更新できる場合に
+限られ、mainnet ではまず成立しません。
+
+### gate が実際に噛むことの確認
+
+`validation/candid-fixtures/` に、判定が既知の interface 対を置いてあります。
+`--self-test` が各 case を期待どおりに判定できなければ CI が落ちます。**一度も何も
+拒否したことのない gate は、拒否できない gate と区別がつかない**ためです。
 
 ## Environments
 
@@ -63,7 +120,7 @@ config、identity、canister IDを混在させません。
 ## Release procedure
 
 1. issue/PR scope fixed
-2. migration and Candid review
+2. migration and Candid review — `scripts/check_candid_compat.py . --self-test --require-baseline`
 3. staging upgrade rehearsal
 4. state/export checksum
 5. Wasm hash approval
