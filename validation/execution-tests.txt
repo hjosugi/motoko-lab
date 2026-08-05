@@ -56,7 +56,7 @@ issue dry-run output lines: 45
 + python3 /mnt/data/github.com/hjosugi/motoko-lab/scripts/validate_kit.py /mnt/data/github.com/hjosugi/motoko-lab --json-report /mnt/data/github.com/hjosugi/motoko-lab/validation/structural-validation.json
 Motoko Mastery Kit structural validation
 Status: PASS
-Files: 322 | Lines: 24499 | Size: 1014.5 KiB
+Files: 322 | Lines: 24514 | Size: 1016.9 KiB
 Apps: 6 | Issues: 45 | Numbered docs: 26
 
 Warnings:
@@ -69,14 +69,8 @@ Run check_all_apps.sh for pinned native compilation; PocketIC remains a separate
 JSON report: /mnt/data/github.com/hjosugi/motoko-lab/validation/structural-validation.json
 
 [8/8] Workspace hygiene
-ignored, not packaged: apps/01_creator_proof_registry/.mops
-ignored, not packaged: apps/02_merkle_anchor/.mops
-ignored, not packaged: apps/03_license_marketplace/.mops
-ignored, not packaged: apps/04_bounty_board/.mops
-ignored, not packaged: apps/05_usage_metered_saas/.mops
 ignored, not packaged: apps/06_distributed_llm/tools/.pocket-ic
 ignored, not packaged: apps/06_distributed_llm/tools/node_modules
-ignored, not packaged: apps/06_distributed_llm/.mops
 ignored, not packaged: .mops-cache
 No generated dependency or cache directory can reach the package.
 
