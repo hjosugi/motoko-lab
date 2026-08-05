@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v2026.08.06
 
 - Added `scripts/check_candid_compat.py` (#17): regenerates every app's `.did` with the pinned compiler and rejects drift, then checks the committed interface is a Candid subtype of the one in the last release tag. The tagged tree is the baseline, so there is no copy to keep in step with what was actually released.
 - Treat `didc`'s `FIX ME! ... special opt rule` banner as a break. Adding a variant tag to a result exits 0 and lets an old client decode the unknown tag as `null` instead of trapping — the call succeeds and the client silently sees nothing.
