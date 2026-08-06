@@ -1,4 +1,4 @@
-.PHONY: validate api-surface check-apps protocol-test issues-dry-run labels-dry-run offline-checks package
+.PHONY: docs docs-serve validate api-surface check-apps protocol-test issues-dry-run labels-dry-run offline-checks package
 
 validate:
 	python3 scripts/validate_kit.py
@@ -23,3 +23,13 @@ offline-checks:
 
 package:
 	python3 scripts/package_kit.py
+
+# Documentation site. `site-src/` is staged from the repository rather than
+# being a second copy of it; see scripts/build_docs_site.py.
+docs:
+	python3 scripts/build_docs_site.py --check
+	mkdocs build --strict
+
+docs-serve:
+	python3 scripts/build_docs_site.py --check
+	mkdocs serve

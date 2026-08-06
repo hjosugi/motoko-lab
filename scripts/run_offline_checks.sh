@@ -81,7 +81,7 @@ while IFS= read -r directory; do
   fi
   echo "generated directory is not ignored and would be packaged: ${directory#"$ROOT/"}" >&2
   unexpected=1
-done < <(find "$ROOT" -type d \( -name node_modules -o -name .mops -o -name .mops-cache -o -name .pocket-ic -o -name __pycache__ -o -path '*/.icp/cache' \) -prune -print)
+done < <(find "$ROOT" -type d \( -name node_modules -o -name .mops -o -name .mops-cache -o -name .pocket-ic -o -name __pycache__ -o -name site -o -name site-src -o -name .venv-docs -o -path '*/.icp/cache' \) -prune -print)
 
 if (( unexpected )); then
   exit 1

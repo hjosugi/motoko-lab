@@ -2,10 +2,10 @@
   "root": "/home/user/motoko-lab",
   "status": "pass",
   "stats": {
-    "file_count": 325,
+    "file_count": 328,
     "directory_count": 82,
-    "total_bytes": 1056207,
-    "total_lines": 24836,
+    "total_bytes": 1073695,
+    "total_lines": 25291,
     "application_count": 6,
     "numbered_doc_count": 26,
     "issue_count": 45,
@@ -24,13 +24,12 @@
     "motoko_imports": 85,
     "protocol_required_files": 10,
     "relative_links": 40,
-    "script_shebang": 16,
+    "script_shebang": 17,
     "toml_parse": 6,
-    "utf8_lf": 313,
-    "yaml_parse": 23
+    "utf8_lf": 316,
+    "yaml_parse": 25
   },
   "warnings": [
-    ".claude/scheduled_tasks.lock does not end with LF",
     "apps/06_distributed_llm/llm_shim/src/main.mo has no Map-backed state; verify persistence design",
     "apps/06_distributed_llm/worker/src/main.mo has no Map-backed state; verify persistence design",
     "jsonschema is unavailable; protocol example validation skipped"

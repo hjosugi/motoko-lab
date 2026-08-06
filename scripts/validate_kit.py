@@ -106,7 +106,7 @@ def rel(root: Path, path: Path) -> str:
 # state tree under `.icp/cache`, which is gitignored and can be hundreds of
 # megabytes. Only the `cache` subtree is generated, so this matches the sequence
 # rather than the bare name.
-IGNORED_DIRS = {".git", "node_modules", ".mops", ".mops-cache", ".pocket-ic", "__pycache__"}
+IGNORED_DIRS = {".git", "node_modules", ".mops", ".mops-cache", ".pocket-ic", "__pycache__", "site", "site-src", ".venv-docs"}
 IGNORED_SEQUENCES = ((".icp", "cache"),)
 
 

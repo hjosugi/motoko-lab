@@ -9,3 +9,8 @@ node_modules/
 .env.*
 !*.env.example
 .mops-cache/
+
+# Documentation site: site-src/ is staged from the repo, site/ is the build output.
+site/
+site-src/
+.venv-docs/

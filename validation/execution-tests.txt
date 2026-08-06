@@ -24,13 +24,14 @@ Root: /home/user/motoko-lab
 + bash -n /home/user/motoko-lab/scripts/verify_versions.sh
 
 [2/8] Python source compilation without bytecode output
+ok: scripts/build_docs_site.py
 ok: scripts/check_api_surface.py
 ok: scripts/check_candid_compat.py
 ok: scripts/generate_file_index.py
 ok: scripts/issue_loader.py
 ok: scripts/package_kit.py
 ok: scripts/validate_kit.py
-compiled: 6 Python files
+compiled: 7 Python files
 
 [3/8] Node syntax
 + node --check /home/user/motoko-lab/protocol/tools/provenance-cli.mjs
@@ -56,11 +57,10 @@ issue dry-run output lines: 45
 + python3 /home/user/motoko-lab/scripts/validate_kit.py /home/user/motoko-lab --json-report /home/user/motoko-lab/validation/structural-validation.json
 Motoko Mastery Kit structural validation
 Status: PASS
-Files: 325 | Lines: 24836 | Size: 1.0 MiB
+Files: 328 | Lines: 25291 | Size: 1.0 MiB
 Apps: 6 | Issues: 45 | Numbered docs: 26
 
 Warnings:
-- .claude/scheduled_tasks.lock does not end with LF
 - apps/06_distributed_llm/llm_shim/src/main.mo has no Map-backed state; verify persistence design
 - apps/06_distributed_llm/worker/src/main.mo has no Map-backed state; verify persistence design
 - jsonschema is unavailable; protocol example validation skipped
@@ -71,6 +71,7 @@ JSON report: /home/user/motoko-lab/validation/structural-validation.json
 
 [8/8] Workspace hygiene
 ignored, not packaged: .mops-cache
+ignored, not packaged: site-src
 ignored, not packaged: apps/04_bounty_board/.mops
 ignored, not packaged: apps/06_distributed_llm/backend/.mops
 ignored, not packaged: apps/06_distributed_llm/tools/.pocket-ic
@@ -81,6 +82,7 @@ ignored, not packaged: apps/03_license_marketplace/.mops
 ignored, not packaged: apps/05_usage_metered_saas/.mops
 ignored, not packaged: apps/02_merkle_anchor/.mops
 ignored, not packaged: apps/01_creator_proof_registry/.mops
+ignored, not packaged: site
 No generated dependency or cache directory can reach the package.
 
 OFFLINE CHECKS: PASS

@@ -3,7 +3,7 @@
 このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
 完全性確認には`MANIFEST.sha256`を使用してください。
 
-Indexed files: **325**
+Indexed files: **328**
 
 ## Root
 
@@ -22,11 +22,12 @@ Indexed files: **325**
 - `VALIDATION_STATUS.md`
 - `VERSION_SNAPSHOT.md`
 - `kit-metadata.json`
+- `mkdocs.yml`
+- `requirements-docs.txt`
 
 ## `.claude/`
 
 - `.claude/CLAUDE.md`
-- `.claude/scheduled_tasks.lock`
 - `.claude/settings.json`
 - `.claude/skills/graphify/.graphify_version`
 - `.claude/skills/graphify/SKILL.md`
@@ -77,6 +78,7 @@ Indexed files: **325**
 - `.github/PULL_REQUEST_TEMPLATE.md`
 - `.github/copilot-instructions.md`
 - `.github/workflows/ci.yml`
+- `.github/workflows/docs.yml`
 
 ## `apps/`
 
@@ -339,6 +341,7 @@ Indexed files: **325**
 ## `scripts/`
 
 - `scripts/bootstrap_toolchain.sh`
+- `scripts/build_docs_site.py`
 - `scripts/check_all_apps.sh`
 - `scripts/check_api_surface.py`
 - `scripts/check_candid_compat.py`

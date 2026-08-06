@@ -1,0 +1,8 @@
+# Documentation site toolchain. Pinned so a Pages build stays reproducible and
+# a theme release cannot silently change the rendered output.
+#
+#   python3 -m venv .venv-docs
+#   .venv-docs/bin/pip install -r requirements-docs.txt
+#   make docs
+mkdocs==1.6.1
+mkdocs-material==9.7.7

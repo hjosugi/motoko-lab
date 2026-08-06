@@ -27,6 +27,12 @@ cd motoko-lab
  icp deploy  
    
 moc、Mops、icp-cliが未導入の場合はbootstrap_toolchain.shが公式のnpmパッケージを導入します。Node.js 22以上を前提にしています。Nixなどglobal npm prefixがread-onlyの環境では、`${XDG_DATA_HOME:-$HOME/.local/share}/motoko-lab/npm`へ自動的にフォールバックし、同梱scriptがそのtoolchainを検出します。  
+**ドキュメントサイト**  
+収録文書はGitHub Pagesでも読めます: https://hjosugi.github.io/motoko-lab/  
+ローカルで確認する場合は次のとおりです。サイトの内容はこのリポジトリのMarkdownをそのまま配置したもので、二重管理はしていません。  
+`python3 -m venv .venv-docs && .venv-docs/bin/pip install -r requirements-docs.txt`  
+`make docs` (出力は`site/`) / `make docs-serve` (ローカルプレビュー)  
+  
 **収録物**  
 全体案内はCONTENTS.md、全ファイル一覧はFILE_INDEX.mdを参照してください。  
 | | |  

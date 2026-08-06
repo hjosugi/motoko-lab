@@ -7,7 +7,7 @@ from collections import defaultdict
 from pathlib import Path
 
 # Kept in step with scripts/validate_kit.py and scripts/package_kit.py.
-IGNORED_DIRS = {".git", "node_modules", ".mops", ".mops-cache", ".pocket-ic", "__pycache__"}
+IGNORED_DIRS = {".git", "node_modules", ".mops", ".mops-cache", ".pocket-ic", "__pycache__", "site", "site-src", ".venv-docs"}
 IGNORED_SEQUENCES = ((".icp", "cache"),)
 
 

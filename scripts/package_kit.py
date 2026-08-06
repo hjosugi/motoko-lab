@@ -13,7 +13,7 @@ import zipfile
 from pathlib import Path
 
 FIXED_ZIP_TIME = (2026, 7, 20, 0, 0, 0)
-EXCLUDED_DIRS = {".git", "node_modules", ".mops", ".mops-cache", ".pocket-ic", "__pycache__"}
+EXCLUDED_DIRS = {".git", "node_modules", ".mops", ".mops-cache", ".pocket-ic", "__pycache__", "site", "site-src", ".venv-docs"}
 # Path sequences that are generated even though no single component is. `.icp` is
 # icp-cli's working directory and `.icp/cache` holds local replica state.
 EXCLUDED_SEQUENCES = ((".icp", "cache"),)
