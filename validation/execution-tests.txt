@@ -57,7 +57,7 @@ issue dry-run output lines: 45
 + python3 /home/user/motoko-lab/scripts/validate_kit.py /home/user/motoko-lab --json-report /home/user/motoko-lab/validation/structural-validation.json
 Motoko Mastery Kit structural validation
 Status: PASS
-Files: 327 | Lines: 25338 | Size: 1.0 MiB
+Files: 327 | Lines: 25369 | Size: 1.0 MiB
 Apps: 6 | Issues: 45 | Numbered docs: 26
 
 Warnings:

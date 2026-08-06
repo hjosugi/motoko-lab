@@ -76,14 +76,39 @@
 - 実アプリでの実証: `apps/02_merkle_anchor`の`.did`にmethodを1つ手で足すとdrift検査が落ちること、
   および`--baseline v2026.07.20`ではapp 06の全canisterが`new` (当時未存在) と報告されることを確認
 
+## 2026-08-06に追加で実行済み (issue #46, documentation site)
+
+- `icp network start -d` / `icp deploy` をローカルネットワーク上で実行 (icp-cli 1.2.0、
+  network launcher 15.0.0)。`icp.yaml`の6キャニスター配備、`autoWire`による
+  `PUBLIC_CANISTER_ID:worker_N`からのクラスタ自動構成、`llm_shim`への`v1_chat`往復を確認
+- upgrade rehearsal: 同一versionで`icp deploy`を再実行し、stable state (`calls`、`workers`、
+  `wireBytes`)、`llmOverride`、各workerのシャード割当が保存され、benchmark出力がbyte単位で
+  同一であることを確認
+- この過程で文書化された手順自体の欠陥を2件検出・修正 (deploy前のidentity作成が必須、
+  ローカル初期残高1.4Tが`MIN_CYCLE_RESERVE` 3Tに届かない)。詳細は
+  `apps/06_distributed_llm/docs/MEASUREMENTS.md`
+- documentation site: 128ページを`mkdocs build --strict`で警告0でbuild
+  (mkdocs 1.6.1 / mkdocs-material 9.7.7)。`main`へのpushでPagesへdeployするjobが成功し、
+  <https://hjosugi.github.io/motoko-lab/> が公開されています
+- リンク書き換え器の`--self-test` 17件。書き換えを無効化した回帰版では9件が落ちることまで
+  確認。`--strict`はリンクが解決するかは見ますが書き換えるべきだったかは見ないため、
+  この経路は他の2つのgateでは検出できません
+- `site-src/`と`site/`が`.gitignore`、`FILE_INDEX.md`、`MANIFEST.sha256`、structural
+  validator、packaging inventoryのすべてから除外されることを、サイトをbuildした状態で
+  `run_offline_checks.sh`と`package_kit.py`を通して確認
+- この過程で、`FILE_INDEX.md`と`MANIFEST.sha256`に
+  `apps/06_distributed_llm/tools/package-lock.json`が載っていたのを解消しました。この
+  ファイルはapp側の`.gitignore`で除外されており配布物には入りません。npm実行済みの
+  作業ツリーでinventoryを生成したため混入していたものです
+
 ## 未実施のproduction gate
 
-- `icp network start -d`
-- `icp deploy`
 - PocketIC integration test (apps/01-05。app 06は実行済み)
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
-- canister upgrade rehearsal
-- mainnet deployment
+- 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、
+  releaseをまたぐ移行は`icp deploy`のcompatibility gateが拒否する側の挙動しか確認して
+  いません
+- mainnet deployment、および`v1_chat`の実モデル呼び出し
 - third-party security audit
 
 全6アプリはcompile/test/build済みで、app 06はレプリカ上のinter-canister behaviorまで
@@ -116,5 +141,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | Motoko compile/test/Wasm/Candid | passed for all 6 applications |
 | Nix toolchain bootstrap | passed with read-only global npm prefix |
 | PocketIC replica run | passed for app 06 (pocket-ic 14.0.0); pending for apps 01-05 |
-| upgrade rehearsal | pending integration gate |
+| local replica (`icp deploy`) | passed for app 06 (icp-cli 1.2.0 / launcher 15.0.0) |
+| upgrade rehearsal | passed same-version for app 06; across a breaking Candid change, untried |
+| documentation site | 128 pages built strict, 0 warnings; published from `main` |
 | production readiness | reference implementation; integration, load test, audit required |

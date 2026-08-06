@@ -157,8 +157,12 @@ link text 内の code span、title 付き、image、code span と fenced block�
 
 ### 公開設定
 
-初回だけリポジトリ設定で **Settings → Pages → Source を "GitHub Actions"** にする必要が
-あります。workflow から自リポジトリの Pages を有効化することはできません。
+**Settings → Pages → Source が "GitHub Actions"** であることが前提です。workflow から
+自リポジトリの Pages を有効化することはできないため、ここだけは 1 度だけ手作業になります。
+このリポジトリでは設定済みで、`main` への push で `deploy` job が成功しています。
+
+fork して使う場合は、最初の `main` への push で `deploy` job が失敗します。Pages を
+有効化してから re-run してください。
 
 ## Environments
 
