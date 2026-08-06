@@ -4,6 +4,7 @@
 
 - Motoko compiler: https://github.com/caffeinelabs/motoko — Apache-2.0
 - Motoko core: https://github.com/caffeinelabs/motoko-core — repository license参照
+- `mo:sha2`: https://github.com/research-ag/sha2 — Apache-2.0。`apps/01_creator_proof_registry`がon-chain SHA-256 commitment verificationのために`mops install`時にdependencyとして取得します（source再配布はしていません）。
 - ICP Developer Docs: https://docs.internetcomputer.org/
 - Mops: https://docs.mops.one/ and https://mops.one/
 - Candid: https://github.com/dfinity/candid

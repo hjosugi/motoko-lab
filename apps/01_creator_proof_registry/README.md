@@ -42,6 +42,7 @@ Candid UI URLは`icp deploy`のoutputに表示されます。
 | `getRecord` | anyone | record取得 |
 | `getByArtifactHash` | anyone | artifact digest検索 |
 | `listRecords` | anyone | bounded pagination |
+| `commitmentSpec` | anyone | commitment layoutとsalt boundsを取得 |
 | `stats` | anyone | count取得 |
 
 ## Commitment
@@ -56,7 +57,13 @@ node ../../protocol/tools/provenance-cli.mjs commitment \
   --salt <32-or-more-hex>
 ```
 
-canisterはSHA-256を内部計算しません。revealされたsaltとmanifest hashから、verifierがcommitmentを再計算します。on-chain crypto verificationはIssue 003です。
+canisterは`reveal`時にcommitmentを`mo:sha2`で再計算し、caller principal・manifest hash・saltのいずれかが一致しなければrejectします。off-chain verifierとcanisterは同じpreimage layoutを使うので、CLIが出したcommitmentはそのまま`commit`に渡せます。
+
+```
+SHA-256( "icp-creator-proof:v1" || 0x00 || principalText || 0x00 || manifestHash || 0x00 || salt )
+```
+
+preimage中のprincipalは常にcallerのものです。requestから来た値ではないので、他人名義でcommitすることはできません。layoutとsalt boundsは`commitmentSpec`で取得できます。詳細・conformance vector・instruction costは`docs/COMMITMENT_V1.md`を参照してください。
 
 ## Data limits
 
@@ -70,7 +77,6 @@ canisterはSHA-256を内部計算しません。revealされたsaltとmanifest h
 ## Production gaps
 
 - RFC 8785 complete canonicalization
-- on-chain SHA-256 or audited crypto package
 - certified query
 - key rotation/delegation
 - C2PA/W3C VC bridge

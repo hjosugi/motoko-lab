@@ -15,6 +15,15 @@ type Error = variant {
   conflict : text;
   expired;
 };
+type CommitmentAlgorithm = variant { sha256V1 };
+type CommitmentSpec = record {
+  algorithm : CommitmentAlgorithm;
+  domain : text;
+  layout : text;
+  digestSize : nat;
+  minSaltSize : nat;
+  maxSaltSize : nat;
+};
 type CommitmentStatus = variant { open; revealed : nat; cancelled : nat };
 type Commitment = record {
   id : nat;
@@ -61,6 +70,7 @@ type RevealInput = record {
   storageUri : text;
   parents : vec nat;
   ai : AIDisclosure;
+  algorithm : opt CommitmentAlgorithm;
 };
 type CommitmentResult = variant { ok : Commitment; err : Error };
 type RecordResult = variant { ok : ProofRecord; err : Error };
@@ -79,5 +89,6 @@ service : {
   getRecord : (nat) -> (opt ProofRecord) query;
   getByArtifactHash : (blob) -> (opt ProofRecord) query;
   listRecords : (nat, nat) -> (vec ProofRecord) query;
+  commitmentSpec : () -> (CommitmentSpec) query;
   stats : () -> (Stats) query;
 };

@@ -14,7 +14,7 @@
 - appごとの必須構成、version pin、recipe pin確認
 - Issue draft 40件のfront matter、連番、labels、milestones確認
 - Motoko sourceのdelimiter、local import、`persistent actor`、主要core APIの静的確認
-- 6アプリ・63 public methodsのMotoko/Candid method名、query/update mode、引数個数の機械照合
+- 6アプリ・64 public methodsのMotoko/Candid method名、query/update mode、引数個数の機械照合
 - 全8 canister interfaceのCandid drift検査 (pinned compilerの出力とcommitted `.did`の構造的一致) と、
   直近release tagに対するsubtyping互換検査 (`scripts/check_candid_compat.py`)
 - 全6アプリの`mops install`、`mops check`、Motoko unit test
@@ -100,10 +100,36 @@
   `apps/06_distributed_llm/tools/package-lock.json`が載っていたのを解消しました。この
   ファイルはapp側の`.gitignore`で除外されており配布物には入りません。npm実行済みの
   作業ツリーでinventoryを生成したため混入していたものです
+## 2026-08-06に追加で実行済み (apps/01_creator_proof_registry, issue #3)
+
+- `reveal`のon-chain commitment検証。`mo:sha2` 0.2.5で
+  `SHA-256(domain || 0x00 || principalText || 0x00 || manifestHash || 0x00 || salt)`
+  を再計算し、caller principal・manifest hash・saltのいずれかが違えばrejectします。
+  従来はcommitmentとreveal値を並べて保存するだけで一度も突き合わせておらず、
+  別物をrevealしても記録されていました (commitmentがbindingではなかった)
+- `test/Commitment.test.mo`: FIPS 180-4のSHA-256例4件、preimageのbyte単位一致、
+  公開test vector 2件、salt境界 (16 / 64 byte)、3つのbound fieldそれぞれの単独改変、
+  saltの1bit反転
+- icp-cli 1.2.0 / network launcher 15.0.0上での`icp network start -d`と`icp deploy`。
+  実キャニスターに対して正しいtripleは`ok`、wrong salt / wrong manifest hash /
+  「他人のprincipalをpreimageに含むcommitmentをownerがreveal」の3件はいずれも
+  `#invalidInput`で拒否されることを確認。**他人のidentityから呼ぶ形では検証できません**
+  (ownership checkが先に`#unauthorized`を返し、hashまで到達しないため)
+- `mops bench --replica pocket-ic` (pocket-ic 14.0.0): 検証コストは受理するsalt範囲全体で
+  97,406〜111,631 instructions、heap 38.18〜39.96 KiB、GC 0 B。キャニスター外からの
+  cycle測定では分解できません (updateコールはどの分岐でも約9.2M cycles)
+- Candid: `RevealInput.algorithm`をoptional fieldとして追加し、`commitmentSpec`を新設。
+  いずれも`scripts/check_candid_compat.py`のdrift / subtyping検査を通過。
+  mismatchは新tagではなく既存の`#invalidInput`で返します (結果variantへのtag追加は
+  special `opt` ruleにより古いclientが黙って`null`と解釈するため破壊的変更)
+
+詳細は`apps/01_creator_proof_registry/docs/COMMITMENT_V1.md`。
 
 ## 未実施のproduction gate
 
 - PocketIC integration test (apps/01-05。app 06は実行済み)
+- PocketIC integration test (apps/01-05。app 06は実行済み。app 01の上記ケースは
+  ローカルdeployに対する手動実行で、自動化はissue #2)
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、
   releaseをまたぐ移行は`icp deploy`のcompatibility gateが拒否する側の挙動しか確認して
@@ -144,4 +170,6 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | local replica (`icp deploy`) | passed for app 06 (icp-cli 1.2.0 / launcher 15.0.0) |
 | upgrade rehearsal | passed same-version for app 06; across a breaking Candid change, untried |
 | documentation site | 128 pages built strict, 0 warnings; published from `main` |
+| PocketIC replica run | passed for app 06 (pocket-ic 14.0.0); app 01 benchmarked on pocket-ic 14.0.0 and exercised against a local `icp deploy`; pending for apps 02-05 |
+| upgrade rehearsal | pending integration gate |
 | production readiness | reference implementation; integration, load test, audit required |

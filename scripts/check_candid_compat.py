@@ -202,31 +202,45 @@ def canisters_of(app: Path) -> list[Canister]:
     return out
 
 
-def core_package(app: Path, root: Path) -> Path | None:
-    """Vendored `mo:core`, which `moc --idl` needs on the package path.
+def vendored_packages(app: Path, root: Path) -> dict[str, Path]:
+    """Every vendored Mops package, which `moc --idl` needs on the package path.
 
     The app's own `.mops/` is what `mops install` and `vendor_core_offline.sh`
-    populate. The kit-wide `.mops-cache/` is the same package, downloaded once by
-    the vendor script, and it lets this check run against an app whose `.mops/`
-    was cleared — which `package_kit.py` does on every release build.
+    populate. The kit-wide `.mops-cache/` holds the same packages, downloaded
+    once by the vendor script, and it lets this check run against an app whose
+    `.mops/` was cleared — which `package_kit.py` does on every release build.
+
+    Every package is passed, not only `mo:core`: an app that imports anything
+    else — `apps/01_creator_proof_registry` imports `mo:sha2` for on-chain
+    commitment verification — fails to compile with a partial package path, and
+    a compile failure here reads as "no interface to compare", which would let
+    real drift through unnoticed.
+
+    `.mops/` wins over `.mops-cache/` for the same package name, because that is
+    the tree the app actually builds against.
     """
+    found: dict[str, Path] = {}
     for base in (app / ".mops", root / ".mops-cache"):
         if not base.is_dir():
             continue
-        for candidate in sorted(base.glob("core@*/src"), reverse=True):
-            return candidate
-    return None
+        for candidate in sorted(base.glob("*@*/src")):
+            name = candidate.parent.name.split("@", 1)[0]
+            found.setdefault(name, candidate)
+    return found
 
 
 # -------------------------------------------------------------- checks --
 
 
 def generate_did(moc: Path, canister: Canister, app: Path, root: Path, out_dir: Path) -> tuple[Path | None, str]:
-    core = core_package(app, root)
-    if core is None:
+    packages = vendored_packages(app, root)
+    if "core" not in packages:
         return None, f"no vendored mo:core for {app.name}; run scripts/vendor_core_offline.sh"
     target = out_dir / f"{canister.app}.{canister.name}.did"
-    command = [str(moc), "--idl", "--package", "core", str(core), "-o", str(target), str(canister.main)]
+    command = [str(moc), "--idl"]
+    for name, src in sorted(packages.items()):
+        command += ["--package", name, str(src)]
+    command += ["-o", str(target), str(canister.main)]
     result = subprocess.run(command, cwd=app, capture_output=True, text=True)
     if result.returncode != 0:
         return None, (result.stdout + result.stderr).strip()

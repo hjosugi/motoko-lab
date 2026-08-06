@@ -8,9 +8,23 @@ license = "Apache-2.0"
 
 [dependencies]
 core = "2.6.0"
+# On-chain SHA-256 for commit-reveal verification. Apache-2.0, maintained by
+# research-ag (https://github.com/research-ag/sha2), and `core` is its only
+# dependency. See docs/COMMITMENT_V1.md for the selection rationale.
+sha2 = "0.2.5"
+
+# `mops bench` only. Kept out of `[dependencies]` so the offline vendoring path
+# in scripts/vendor_core_offline.sh, and therefore `scripts/check_all_apps.sh`,
+# does not need it.
+[dev-dependencies]
+bench = "2.0.1"
 
 [toolchain]
 moc = "1.11.1"
+# `mops bench` runs on a replica and will not pick a version for you. Same
+# release apps/06_distributed_llm/tools/pocket-ic-setup.mjs pins, so the two
+# harnesses in this kit measure on the same replica.
+pocket-ic = "14.0.0"
 
 [canisters.backend]
 main = "backend/src/main.mo"

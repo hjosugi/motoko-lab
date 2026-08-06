@@ -3,7 +3,7 @@
 このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
 完全性確認には`MANIFEST.sha256`を使用してください。
 
-Indexed files: **327**
+Indexed files: **332**
 
 ## Root
 
@@ -87,13 +87,17 @@ Indexed files: **327**
 - `apps/01_creator_proof_registry/README.md`
 - `apps/01_creator_proof_registry/backend/candid/backend.did`
 - `apps/01_creator_proof_registry/backend/canister.yaml`
+- `apps/01_creator_proof_registry/backend/src/Commitment.mo`
 - `apps/01_creator_proof_registry/backend/src/Validation.mo`
 - `apps/01_creator_proof_registry/backend/src/main.mo`
+- `apps/01_creator_proof_registry/bench/commitment.bench.mo`
+- `apps/01_creator_proof_registry/docs/COMMITMENT_V1.md`
 - `apps/01_creator_proof_registry/docs/THREAT_MODEL.md`
 - `apps/01_creator_proof_registry/docs/UPGRADE_PLAN.md`
 - `apps/01_creator_proof_registry/icp.yaml`
 - `apps/01_creator_proof_registry/mops.lock`
 - `apps/01_creator_proof_registry/mops.toml`
+- `apps/01_creator_proof_registry/test/Commitment.test.mo`
 - `apps/01_creator_proof_registry/test/Validation.test.mo`
 - `apps/02_merkle_anchor/.gitignore`
 - `apps/02_merkle_anchor/Makefile`
@@ -189,6 +193,7 @@ Indexed files: **327**
 - `apps/06_distributed_llm/test/fixtures/LyingWorker.mo`
 - `apps/06_distributed_llm/tools/latency-model.mjs`
 - `apps/06_distributed_llm/tools/latency-model.test.mjs`
+- `apps/06_distributed_llm/tools/package-lock.json`
 - `apps/06_distributed_llm/tools/package.json`
 - `apps/06_distributed_llm/tools/pocket-ic-e2e.mjs`
 - `apps/06_distributed_llm/tools/pocket-ic-setup.mjs`

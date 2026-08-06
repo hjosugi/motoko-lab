@@ -7,7 +7,7 @@ This is an offline guardrail and does not replace compiler-generated Candid or u
 
 | App | Methods | Status |
 |---|---:|---|
-| `01_creator_proof_registry` | 9 | PASS |
+| `01_creator_proof_registry` | 10 | PASS |
 | `02_merkle_anchor` | 6 | PASS |
 | `03_license_marketplace` | 10 | PASS |
 | `04_bounty_board` | 9 | PASS |
@@ -20,6 +20,7 @@ This is an offline guardrail and does not replace compiler-generated Candid or u
 
 - `cancelCommitment`: update, 1 argument(s)
 - `commit`: update, 1 argument(s)
+- `commitmentSpec`: query, 0 argument(s)
 - `getByArtifactHash`: query, 1 argument(s)
 - `getCommitment`: query, 1 argument(s)
 - `getRecord`: query, 1 argument(s)

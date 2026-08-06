@@ -1,4 +1,5 @@
 import Blob "mo:core/Blob";
+import Commitment "Commitment";
 import Int "mo:core/Int";
 import Iter "mo:core/Iter";
 import Map "mo:core/Map";
@@ -87,6 +88,11 @@ persistent actor CreatorProofRegistry {
     storageUri : Text;
     parents : [Nat];
     ai : AIDisclosure;
+    // Which commitment layout the caller used. `null` means the only layout
+    // that has ever existed, so clients written before this field keep working.
+    // Naming the wrong one simply fails verification: the algorithm picks the
+    // preimage, and the preimage is what `commit` hashed.
+    algorithm : ?Commitment.Algorithm;
   };
 
   public type Stats = {
@@ -277,6 +283,27 @@ persistent actor CreatorProofRegistry {
       };
       case null {};
     };
+    // The security gate. Everything above only established that an open,
+    // unexpired commitment belongs to the caller; nothing yet tied it to what
+    // is being revealed. Recomputing the digest is what makes the commitment
+    // binding, and it has to happen before any state changes.
+    let algorithm = switch (input.algorithm) {
+      case (?value) value;
+      case null Commitment.currentAlgorithm;
+    };
+    let principalText = Commitment.canonicalPrincipalText(caller);
+    if (not Commitment.validPrincipalText(principalText)) {
+      return #err(#invalidInput("caller principal text length is invalid"))
+    };
+    let parts : Commitment.Parts = {
+      principalText = principalText;
+      manifestHash = input.manifestHash;
+      salt = input.salt;
+    };
+    if (not Commitment.matches(algorithm, commitment.commitmentHash, parts)) {
+      return #err(#invalidInput("commitment hash does not match the revealed principal, manifestHash, and salt"))
+    };
+
     switch (Map.get(artifactHashIndex, Blob.compare, input.artifactHash)) {
       case (?_) return #err(#duplicate("artifactHash already has a record"));
       case null {};
@@ -382,6 +409,13 @@ persistent actor CreatorProofRegistry {
       func(entry : (Nat, ProofRecord)) : ProofRecord { entry.1 }
     );
     Iter.toArray(values)
+  };
+
+  /// Lets a verifier read the commitment rules off the canister instead of
+  /// hardcoding them, so a client can tell a v1 registry from a later one
+  /// without guessing from a failed reveal.
+  public query func commitmentSpec() : async Commitment.Spec {
+    Commitment.spec()
   };
 
   public query func stats() : async Stats {
