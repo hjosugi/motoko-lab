@@ -2,6 +2,9 @@
 
 ## Start
 
+0. `repros/` — reductions of compiler bugs found while using the kit, each with
+   the versions it was confirmed on and what still needs deciding before an
+   upstream report
 1. `BOOTSTRAP.md`
 2. `ARCHITECTURE_MAP.md`
 3. `ISSUE_TRIAGE_RUBRIC.md`

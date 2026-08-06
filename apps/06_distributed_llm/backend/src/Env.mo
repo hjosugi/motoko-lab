@@ -20,7 +20,12 @@
 /// such a value as a rope rather than one contiguous blob, and the prim hands
 /// the system API the unflattened representation.
 ///
-/// Reproduced on moc 1.11.1 against pocket-ic 14.0.0:
+/// Reproduced identically on moc 1.11.1 and on moc 1.13.0 (the current release,
+/// 2026-08-03) against pocket-ic 14.0.0. A standalone reproduction, including
+/// the case that narrows the fault to this primitive rather than to ropes in
+/// general, is in `compiler/repros/envvar-rope/`.
+///
+/// Behaviour matrix:
 ///
 /// | name expression                          | result |
 /// |------------------------------------------|--------|

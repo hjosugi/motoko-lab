@@ -3,7 +3,7 @@
 このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
 完全性確認には`MANIFEST.sha256`を使用してください。
 
-Indexed files: **322**
+Indexed files: **325**
 
 ## Root
 
@@ -26,6 +26,7 @@ Indexed files: **322**
 ## `.claude/`
 
 - `.claude/CLAUDE.md`
+- `.claude/scheduled_tasks.lock`
 - `.claude/settings.json`
 - `.claude/skills/graphify/.graphify_version`
 - `.claude/skills/graphify/SKILL.md`
@@ -210,6 +211,8 @@ Indexed files: **322**
 - `compiler/OCAML_DUNE_NIX_WASM_CURRICULUM.md`
 - `compiler/README.md`
 - `compiler/RELEASE_CHECKLIST.md`
+- `compiler/repros/envvar-rope/EnvVarRope.mo`
+- `compiler/repros/envvar-rope/README.md`
 
 ## `docs/`
 

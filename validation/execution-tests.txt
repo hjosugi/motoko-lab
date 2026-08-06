@@ -56,10 +56,11 @@ issue dry-run output lines: 45
 + python3 /home/user/motoko-lab/scripts/validate_kit.py /home/user/motoko-lab --json-report /home/user/motoko-lab/validation/structural-validation.json
 Motoko Mastery Kit structural validation
 Status: PASS
-Files: 322 | Lines: 24691 | Size: 1.0 MiB
+Files: 325 | Lines: 24836 | Size: 1.0 MiB
 Apps: 6 | Issues: 45 | Numbered docs: 26
 
 Warnings:
+- .claude/scheduled_tasks.lock does not end with LF
 - apps/06_distributed_llm/llm_shim/src/main.mo has no Map-backed state; verify persistence design
 - apps/06_distributed_llm/worker/src/main.mo has no Map-backed state; verify persistence design
 - jsonschema is unavailable; protocol example validation skipped
