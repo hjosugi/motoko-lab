@@ -1,4 +1,4 @@
-.PHONY: docs docs-serve validate api-surface check-apps protocol-test issues-dry-run labels-dry-run offline-checks package
+.PHONY: replica-tests docs docs-serve validate api-surface check-apps protocol-test issues-dry-run labels-dry-run offline-checks package
 
 validate:
 	python3 scripts/validate_kit.py
@@ -23,6 +23,13 @@ offline-checks:
 
 package:
 	python3 scripts/package_kit.py
+
+# Installs the replica and Candid tooling on first run, then exercises every
+# application on a real replica. This is the gate `mops test` cannot be: the
+# interpreter has no caller, no upgrade, and no clock.
+replica-tests:
+	node tools/pocket-ic/setup.mjs
+	node tools/pocket-ic/run.mjs
 
 # Documentation site. `site-src/` is staged from the repository rather than
 # being a second copy of it; see scripts/build_docs_site.py.

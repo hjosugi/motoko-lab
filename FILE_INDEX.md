@@ -3,7 +3,7 @@
 このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
 完全性確認には`MANIFEST.sha256`を使用してください。
 
-Indexed files: **356**
+Indexed files: **367**
 
 ## Root
 
@@ -79,6 +79,7 @@ Indexed files: **356**
 - `.github/copilot-instructions.md`
 - `.github/workflows/ci.yml`
 - `.github/workflows/docs.yml`
+- `.github/workflows/replica.yml`
 
 ## `apps/`
 
@@ -99,6 +100,7 @@ Indexed files: **356**
 - `apps/01_creator_proof_registry/mops.toml`
 - `apps/01_creator_proof_registry/test/Commitment.test.mo`
 - `apps/01_creator_proof_registry/test/Validation.test.mo`
+- `apps/01_creator_proof_registry/test/replica.test.mjs`
 - `apps/02_merkle_anchor/.gitignore`
 - `apps/02_merkle_anchor/Makefile`
 - `apps/02_merkle_anchor/README.md`
@@ -112,6 +114,7 @@ Indexed files: **356**
 - `apps/02_merkle_anchor/mops.lock`
 - `apps/02_merkle_anchor/mops.toml`
 - `apps/02_merkle_anchor/test/Validation.test.mo`
+- `apps/02_merkle_anchor/test/replica.test.mjs`
 - `apps/03_license_marketplace/.gitignore`
 - `apps/03_license_marketplace/Makefile`
 - `apps/03_license_marketplace/README.md`
@@ -125,6 +128,7 @@ Indexed files: **356**
 - `apps/03_license_marketplace/mops.lock`
 - `apps/03_license_marketplace/mops.toml`
 - `apps/03_license_marketplace/test/Validation.test.mo`
+- `apps/03_license_marketplace/test/replica.test.mjs`
 - `apps/04_bounty_board/.gitignore`
 - `apps/04_bounty_board/Makefile`
 - `apps/04_bounty_board/README.md`
@@ -138,6 +142,7 @@ Indexed files: **356**
 - `apps/04_bounty_board/mops.lock`
 - `apps/04_bounty_board/mops.toml`
 - `apps/04_bounty_board/test/Validation.test.mo`
+- `apps/04_bounty_board/test/replica.test.mjs`
 - `apps/05_usage_metered_saas/.gitignore`
 - `apps/05_usage_metered_saas/Makefile`
 - `apps/05_usage_metered_saas/README.md`
@@ -151,6 +156,7 @@ Indexed files: **356**
 - `apps/05_usage_metered_saas/mops.lock`
 - `apps/05_usage_metered_saas/mops.toml`
 - `apps/05_usage_metered_saas/test/Validation.test.mo`
+- `apps/05_usage_metered_saas/test/replica.test.mjs`
 - `apps/06_distributed_llm/.gitignore`
 - `apps/06_distributed_llm/Makefile`
 - `apps/06_distributed_llm/README.md`
@@ -385,6 +391,14 @@ Indexed files: **356**
 - `scripts/validate_kit.py`
 - `scripts/vendor_core_offline.sh`
 - `scripts/verify_versions.sh`
+
+## `tools/`
+
+- `tools/pocket-ic/harness.mjs`
+- `tools/pocket-ic/package-lock.json`
+- `tools/pocket-ic/package.json`
+- `tools/pocket-ic/run.mjs`
+- `tools/pocket-ic/setup.mjs`
 
 ## `validation/`
 

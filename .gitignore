@@ -10,6 +10,11 @@ node_modules/
 !*.env.example
 .mops-cache/
 
+# Replica test harness: the downloaded pocket-ic server and didc, and the
+# lockfile npm writes next to the pinned versions in setup.mjs.
+.pocket-ic/
+tools/pocket-ic/package-lock.json
+
 # Documentation site: site-src/ is staged from the repo, site/ is the build output.
 site/
 site-src/

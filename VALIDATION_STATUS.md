@@ -102,6 +102,7 @@
   `apps/06_distributed_llm/tools/package-lock.json`が載っていたのを解消しました。この
   ファイルはapp側の`.gitignore`で除外されており配布物には入りません。npm実行済みの
   作業ツリーでinventoryを生成したため混入していたものです
+
 ## 2026-08-06に追加で実行済み (apps/01_creator_proof_registry, issue #3)
 
 - `reveal`のon-chain commitment検証。`mo:sha2` 0.2.5で
@@ -178,11 +179,35 @@
 
 詳細は`protocol/COMMITMENT_V1.md`。
 
-## 未実施のproduction gate
+## 2026-08-07に追加で実行済み (issue #2, PocketIC integration)
 
-- PocketIC integration test (apps/01-05。app 06は実行済み)
-- PocketIC integration test (apps/01-05。app 06は実行済み。app 01の上記ケースは
-  ローカルdeployに対する手動実行で、自動化はissue #2)
+- apps/01-05 の全アプリを pocket-ic 14.0.0 上で実行。**213 assertion、失敗0**
+  (01: 51 / 02: 31 / 03: 44 / 04: 39 / 05: 48)。共有 harness は `tools/pocket-ic/`、
+  各スイートは `apps/NN_*/test/replica.test.mjs`
+- app 01 の commitment検証 (#3) をレプリカ上で確認。commitmentは
+  `protocol/tools/commitment.mjs` — canister側ではなくverifier側の実装 — で構築するので、
+  各`reveal`はstate machineの検査であると同時にcross-implementation検査でもあります。
+  誤ったsalt / 誤ったmanifest hash / 他人のprincipalをpreimageに含むcommitmentの3件が
+  拒否されること、`commitmentSpec()`が凍結仕様と一致すること、upgrade後も検証が
+  効くことを確認
+- harness の `--package` はapp の `.mops` にある全依存を渡すよう修正。`core`固定では
+  `mo:sha2`を使うapp 01がコンパイルできませんでした
+- 各アプリで匿名・所有者・第三者の分岐を実 principal で確認。拒否が正しい variant で
+  返ることまで検査しています (「失敗した」だけの検査は、無関係な理由で壊れていても通るため)
+- 全5アプリで upgrade を実行し、カウンター・重複抑止インデックス・認可 state が
+  保存されることを確認。**id が upgrade をまたいで継続する**ことも確認しています
+  (再利用は退役した id を新しい記録が取ることを意味し、来歴レジストリでは許されません)
+- app 04 の締切と app 05 のクォータ窓は `pic.setTime` で時計を進めて確認。
+  インタープリタには時計がないため、この経路は従来一度も走っていませんでした
+- app 05 の管理ゲートは `Principal.isController` で、コントローラー集合はレプリカが
+  持ちます。`moc -r` では原理的に検証できません
+- この過程で判明: `persistent actor` (enhanced orthogonal persistence) の upgrade には
+  `wasm_memory_persistence` が必須で、`@dfinity/pic@0.22.0` の `upgradeCanister()` には
+  それを渡す口がありません。harness は管理キャニスターの `install_code` を直接呼びます。
+  `keep` を指定します — `replace` はヒープを捨てるため、「state が残る」系の検査が全部
+  誤って通ります
+
+## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、
   releaseをまたぐ移行は`icp deploy`のcompatibility gateが拒否する側の挙動しか確認して
@@ -221,9 +246,9 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | Motoko/Candid API surface | offline mechanically cross-checked |
 | Motoko compile/test/Wasm/Candid | passed for all 6 applications |
 | Nix toolchain bootstrap | passed with read-only global npm prefix |
-| PocketIC replica run | passed for app 06 (pocket-ic 14.0.0); pending for apps 01-05 |
+| PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 213 + 55 assertions |
 | local replica (`icp deploy`) | passed for app 06 (icp-cli 1.2.0 / launcher 15.0.0) |
-| upgrade rehearsal | passed same-version for app 06; across a breaking Candid change, untried |
+| upgrade rehearsal | passed for all 6 applications; across a breaking Candid change, untried |
 | documentation site | 128 pages built strict, 0 warnings; published from `main` |
 | PocketIC replica run | passed for app 06 (pocket-ic 14.0.0); app 01 benchmarked on pocket-ic 14.0.0 and exercised against a local `icp deploy`; pending for apps 02-05 |
 | upgrade rehearsal | pending integration gate |

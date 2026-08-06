@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Added replica integration tests for `apps/01`-`05` (#2): a shared harness in `tools/pocket-ic/` and one suite per application, 213 assertions on `pocket-ic` 14.0.0. `mops test` runs pure modules in the interpreter, which has no caller, no upgrade, and no clock — so most of what each application's README and `docs/UPGRADE_PLAN.md` claim was unproven until now.
+- Each suite asserts the **variant** a rejection came back with, not merely that one did. A test that only checks "it failed" passes when the endpoint is broken for an unrelated reason.
+- Every application is upgraded mid-suite and its counters, duplicate-suppression indexes, and authorization state are checked to survive — as is that ids keep counting up, since reuse would let a new record take a retired id.
+- `apps/04` and `apps/05` move the replica clock to reach the bounty deadline and the quota rollover, paths the interpreter cannot express at all. `apps/05`'s admin gate is `Principal.isController`, which only a replica can answer.
+- Found while building it: upgrading a `persistent actor` needs the `wasm_memory_persistence` install option, and `@dfinity/pic@0.22.0`'s `upgradeCanister()` has no field for it, so the harness calls `install_code` on the management canister directly. It passes `keep`; `replace` discards the heap, which would make every "state survives" assertion pass for the wrong reason.
+- Added `.github/workflows/replica.yml` and `make replica-tests`.
+
 ## v2026.08.07
 
 - The documentation site now rewrites links that leave it. A Markdown link to something that is not a staged page — a `.mo` source, a script, a directory — has nowhere to resolve inside the site, so it is redirected to the same path on GitHub. Without this, documentation could not link to the code it documents: the link would resolve in the repository, fail in the site, and take `mkdocs build --strict` down with it. Links to the root `README.md` are redirected to the staged `index.md` rather than off-site.

@@ -21,14 +21,44 @@ domain modelをpure moduleとして実装し、command sequenceを生成しま�
 
 ### Canister integration tests
 
-PocketIC等で次を実行します。
+PocketIC上で実行します。全6アプリで実行済みで、apps/01-05 は
+`apps/NN_*/test/replica.test.mjs`、app 06 は `apps/06_distributed_llm/tools/pocket-ic-e2e.mjs`
+です。
 
-- distinct principals
-- anonymous caller
-- upgrade with retained state
-- inter-canister reject/timeout
-- cycle/memory boundary
-- Candid client generated binding
+```bash
+make replica-tests          # 初回はレプリカと didc を取得します
+node tools/pocket-ic/run.mjs 03   # 1アプリだけ
+```
+
+**インタープリタでは到達できないものだけを置いています。** `mops test` は純粋な
+モジュールを `moc -r` で回すもので、そこには caller も upgrade も時計もありません。
+つまり各アプリが README や `docs/UPGRADE_PLAN.md` で主張していることの大半は、
+ここで走らせるまで未証明です。
+
+| 検査できるもの | なぜレプリカでしか無理か |
+|---|---|
+| 匿名/所有者/第三者の分岐 | `moc -r` に `caller` がない |
+| `Principal.isController` | コントローラー集合はレプリカが持つ (app 05 の管理ゲート) |
+| upgrade 後の state 保持 | インタープリタに upgrade がない |
+| 期限・課金ウィンドウ | `pic.setTime` で時計を動かせる (app 04 / 05) |
+| 重複抑止インデックスの永続 | upgrade をまたいで初めて意味を持つ |
+
+**upgrade には `wasm_memory_persistence` が要ります。** 全アプリが `persistent actor`
+で、enhanced orthogonal persistence を使います。この指定なしに upgrade すると
+レプリカが拒否します。
+
+```
+Missing upgrade option: Enhanced orthogonal persistence requires the
+`wasm_memory_persistence` upgrade option.
+```
+
+`@dfinity/pic@0.22.0` の `upgradeCanister()` にはこれを渡す口がないので、
+`tools/pocket-ic/harness.mjs` は管理キャニスターの `install_code` を直接呼びます。
+`keep` を指定します — `replace` はヒープを捨てるので、「state が残る」系の検査が
+**全部誤って通ります**（空のキャニスターには矛盾する古い state がないため）。
+
+各スイートは fresh なレプリカで走ります。共有すると、先に立てたキャニスターが後の
+観測を変え得るからです。検査数は毎回出力します。緑でも前回より減っていれば退行です。
 
 ### Protocol conformance tests
 
@@ -49,12 +79,13 @@ PocketIC等で次を実行します。
 6. generated Candid diff — `scripts/check_candid_compat.py`
 7. released-interface compatibility — 同スクリプト
 8. stable compatibility check
-9. PocketIC integration
+9. PocketIC integration — `.github/workflows/replica.yml`
 10. dependency/license scan
 11. reproducible Wasm hash
 
-このリポジトリで実際に走っているのは 2-7 です (`.github/workflows/ci.yml`)。8-11 は
-backlog の gate で、Issue で追跡しています。
+このリポジトリで実際に走っているのは 2-7 (`.github/workflows/ci.yml`) と 9
+(`.github/workflows/replica.yml`) です。8・10・11 は backlog の gate で、Issue で
+追跡しています。
 
 ## Candid compatibility
 
