@@ -2,10 +2,10 @@
   "root": "/home/user/motoko-lab",
   "status": "pass",
   "stats": {
-    "file_count": 328,
+    "file_count": 327,
     "directory_count": 82,
-    "total_bytes": 1073695,
-    "total_lines": 25291,
+    "total_bytes": 1082821,
+    "total_lines": 25389,
     "application_count": 6,
     "numbered_doc_count": 26,
     "issue_count": 45,
@@ -17,7 +17,7 @@
     "app_required_files": 72,
     "candid_structure": 18,
     "issue_front_matter": 45,
-    "json_parse": 21,
+    "json_parse": 20,
     "metadata_consistency": 1,
     "motoko_candid_api_surface": 63,
     "motoko_delimiters": 43,
@@ -26,7 +26,7 @@
     "relative_links": 40,
     "script_shebang": 17,
     "toml_parse": 6,
-    "utf8_lf": 316,
+    "utf8_lf": 315,
     "yaml_parse": 25
   },
   "warnings": [

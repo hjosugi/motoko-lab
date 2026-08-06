@@ -27,6 +27,7 @@ package:
 # Documentation site. `site-src/` is staged from the repository rather than
 # being a second copy of it; see scripts/build_docs_site.py.
 docs:
+	python3 scripts/build_docs_site.py --self-test
 	python3 scripts/build_docs_site.py --check
 	mkdocs build --strict
 

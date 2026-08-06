@@ -2,8 +2,10 @@
 #
 # `docs_dir` is `site-src/`, which `scripts/build_docs_site.py` stages from the
 # repository. The kit's Markdown lives next to what it describes rather than in
-# one directory, and staging preserves those relative paths so every link keeps
-# working without rewriting anything. Build with `make docs`, not with `mkdocs`
+# one directory, and staging preserves those relative paths so links between two
+# pages keep working untouched. A link to something that is not a page — a `.mo`
+# source, a script, a directory — is redirected to GitHub, which is what makes
+# `--strict` below safe to leave on. Build with `make docs`, not with `mkdocs`
 # directly — `site-src/` is generated and gitignored.
 #
 # The nav below is written by hand on purpose. It is the reading order, which is
