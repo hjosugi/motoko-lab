@@ -34,9 +34,13 @@ ok: scripts/validate_kit.py
 compiled: 7 Python files
 
 [3/8] Node syntax
++ node --check /mnt/data/repos/github.com/hjosugi/motoko-lab/protocol/tools/commitment.mjs
+
 + node --check /mnt/data/repos/github.com/hjosugi/motoko-lab/protocol/tools/crosscheck.mjs
 
 + node --check /mnt/data/repos/github.com/hjosugi/motoko-lab/protocol/tools/jcs.mjs
+
++ node --check /mnt/data/repos/github.com/hjosugi/motoko-lab/protocol/tools/principal.mjs
 
 + node --check /mnt/data/repos/github.com/hjosugi/motoko-lab/protocol/tools/provenance-cli.mjs
 
@@ -44,7 +48,7 @@ compiled: 7 Python files
 
 [4/8] Provenance protocol tests
 + node /mnt/data/repos/github.com/hjosugi/motoko-lab/protocol/tools/provenance-cli.test.mjs
-ok: 93 assertions — 6 official RFC 8785 vectors, 21 accepted and 26 rejected edge vectors, 2 provenance vectors
+ok: 192 assertions — 6 official RFC 8785 vectors, 21 accepted and 26 rejected edge vectors, 17 accepted and 22 rejected commitment vectors, 2 provenance vectors
 
 [5/8] Motoko/Candid API surface
 + python3 /mnt/data/repos/github.com/hjosugi/motoko-lab/scripts/check_api_surface.py /mnt/data/repos/github.com/hjosugi/motoko-lab --json-report /mnt/data/repos/github.com/hjosugi/motoko-lab/validation/api-surface.json --markdown-report /mnt/data/repos/github.com/hjosugi/motoko-lab/validation/API_SURFACE.md
@@ -61,7 +65,7 @@ issue dry-run output lines: 45
 + python3 /mnt/data/repos/github.com/hjosugi/motoko-lab/scripts/validate_kit.py /mnt/data/repos/github.com/hjosugi/motoko-lab --json-report /mnt/data/repos/github.com/hjosugi/motoko-lab/validation/structural-validation.json
 Motoko Mastery Kit structural validation
 Status: PASS
-Files: 348 | Lines: 27503 | Size: 1.1 MiB
+Files: 356 | Lines: 28804 | Size: 1.2 MiB
 Apps: 6 | Issues: 45 | Numbered docs: 26
 
 Warnings:
@@ -74,8 +78,14 @@ Run check_all_apps.sh for pinned native compilation; PocketIC remains a separate
 JSON report: /mnt/data/repos/github.com/hjosugi/motoko-lab/validation/structural-validation.json
 
 [8/8] Workspace hygiene
+ignored, not packaged: apps/01_creator_proof_registry/.mops
+ignored, not packaged: apps/02_merkle_anchor/.mops
+ignored, not packaged: apps/03_license_marketplace/.mops
+ignored, not packaged: apps/04_bounty_board/.mops
+ignored, not packaged: apps/05_usage_metered_saas/.mops
 ignored, not packaged: apps/06_distributed_llm/tools/.pocket-ic
 ignored, not packaged: apps/06_distributed_llm/tools/node_modules
+ignored, not packaged: apps/06_distributed_llm/.mops
 ignored, not packaged: .mops-cache
 No generated dependency or cache directory can reach the package.
 

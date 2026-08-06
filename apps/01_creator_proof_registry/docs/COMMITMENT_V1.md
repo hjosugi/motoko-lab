@@ -16,7 +16,7 @@ The canister now recomputes the digest and rejects a reveal that does not match.
 SHA-256( domain || 0x00 || principalText || 0x00 || manifestHash || 0x00 || salt )
 
 domain        = "icp-creator-proof:v1"   20 bytes, ASCII
-principalText = Principal.toText(caller) 5..100 bytes, lowercase base32 with dashes
+principalText = Principal.toText(caller) 8..63 bytes, lowercase base32 with dashes
 manifestHash  = SHA-256(RFC 8785 canonical manifest JSON)  exactly 32 bytes
 salt          = caller-chosen                      16..64 bytes
 ```
@@ -30,10 +30,12 @@ the domain is a fixed ASCII literal, `principalText` is base32 with dashes, and
 `manifestHash` is exactly 32 bytes read positionally. A `0x00` byte inside the
 salt is harmless because the salt is last.
 
-`Principal.toText` is already the canonical form — lowercase, no surrounding
-whitespace — so the canister does no normalization. The Node CLI reaches the
-same string by trimming and lowercasing whatever text it was handed, which is a
-step the canister does not need because it never receives the principal as text.
+`Principal.toText` is already the canonical form — lowercase, correctly grouped,
+checksum intact — so the canister does no normalization and no parsing. The
+verifier side does the real validation, because that is where a principal
+arrives as untrusted text; see `protocol/COMMITMENT_V1.md`. The length check
+here is a defensive assertion against a future caller shape, not a parser.
+
 It is the *caller's* principal that goes into the preimage, never a value from
 the request, so a caller cannot commit under someone else's name.
 
@@ -41,8 +43,9 @@ the request, so a caller cannot commit under someone else's name.
 does not canonicalize; that belongs where the JSON is, which is the creator and
 the verifier. `protocol/CANONICALIZATION.md` has the reasoning.
 
-A byte-level specification with the full positive and negative vector set is
-issue #5; this document covers what the implementation of #3 fixed.
+The byte-level specification, the principal validation rules, the error
+behaviour and the 39 conformance vectors are in `protocol/COMMITMENT_V1.md`
+(issue #5). This document covers the canister side.
 
 ## Version agility
 
@@ -181,6 +184,5 @@ this fix.
 
 ## Still open
 
-- #5 — byte-level specification and the full conformance vector set.
 - #2 — these canister-level cases were run by hand against a local deploy; they
   belong in the PocketIC suite.

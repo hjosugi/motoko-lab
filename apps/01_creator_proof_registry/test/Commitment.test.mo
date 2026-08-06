@@ -1,16 +1,18 @@
 // Conformance tests for the v1 commitment.
 //
-// Three separate claims, because they can fail independently:
+// Four separate claims, because they can fail independently:
 //
 //   1. `mo:sha2` computes SHA-256, checked against the FIPS 180-4 examples.
 //   2. `Commitment.preimage` lays the fields out in the documented order,
 //      checked byte for byte rather than only through the digest.
-//   3. The digest agrees with `protocol/tools/provenance-cli.mjs`, checked
-//      against the vectors in `protocol/test-vectors/test-vectors.json` plus
-//      both salt-size boundaries.
+//   3. Each of the three bound fields, changed on its own, breaks the match.
+//   4. The digest agrees with the frozen conformance vectors in
+//      `protocol/test-vectors/commitment/vectors.json`, which two
+//      implementations sharing no code with this one — one Rust, one
+//      TypeScript — also reproduce.
 //
-// Every expected value here was produced by Node's `crypto` and cross-checked
-// against the CLI's own `commitmentHex`; see docs/COMMITMENT_V1.md.
+// Every expected value here came from `protocol/tools/commitment.mjs`; see
+// docs/COMMITMENT_V1.md and protocol/COMMITMENT_V1.md.
 
 import Array "mo:core/Array";
 import Blob "mo:core/Blob";
@@ -38,15 +40,18 @@ assert sha256("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoi
 // and `toText` has to reproduce it exactly or the digests cannot match.
 let managementCanister = Principal.fromText("aaaaa-aa");
 assert Commitment.canonicalPrincipalText(managementCanister) == "aaaaa-aa";
+// The bounds are the full range of the principal textual form: 8 characters for
+// the empty blob, 63 for the 29-byte maximum.
 assert Commitment.validPrincipalText("aaaaa-aa");
 assert Commitment.validPrincipalText("rrkah-fqaaa-aaaaa-aaaaq-cai");
+assert Commitment.validPrincipalText("ixbwc-ozr3a-z3chv-th5xh-w364p-77r5q-edmjb-guz35-7z33v-cmuyx-hqe");
 assert not Commitment.validPrincipalText("aaaa");
 assert not Commitment.validPrincipalText("");
+assert "aaaaa-aa".size() == Commitment.minPrincipalTextSize;
+assert "ixbwc-ozr3a-z3chv-th5xh-w364p-77r5q-edmjb-guz35-7z33v-cmuyx-hqe".size() == Commitment.maxPrincipalTextSize;
 
-let hundred = Text.join(Array.repeat<Text>("a", 100).values(), "");
-assert hundred.size() == 100;
-assert Commitment.validPrincipalText(hundred);
-assert not Commitment.validPrincipalText(hundred # "a");
+let overlong = Text.join(Array.repeat<Text>("a", Commitment.maxPrincipalTextSize + 1).values(), "");
+assert not Commitment.validPrincipalText(overlong);
 
 let humanOnly : Commitment.Parts = {
   principalText = "aaaaa-aa";
@@ -119,13 +124,127 @@ assert not Commitment.matches(
   { humanOnly with salt = "\01\11\22\33\44\55\66\77\88\99\AA\BB\CC\DD\EE\FF" }
 );
 
+// 6. The frozen v1 conformance vectors, from
+// protocol/test-vectors/commitment/vectors.json. Those vectors are also run
+// against two implementations that share no code with this one — one Rust, one
+// TypeScript — by protocol/tools/crosscheck.mjs. Agreeing with them is what
+// makes the canister and an off-chain verifier interchangeable.
+//
+// The vectors that exist to pin *parsing* behaviour (uppercase hexadecimal,
+// surrounding whitespace) are not repeated here: this side receives bytes and a
+// principal it produced itself, and never parses either.
+
+// principal-empty-blob: the management canister, the shortest principal text there is
+assert Commitment.digest(#sha256V1, {
+  principalText = "aaaaa-aa";
+  manifestHash = "\27\3B\E6\98\FF\9D\6D\BD\10\E2\AC\56\3A\BA\E6\0B\14\CD\43\91\52\C1\53\95\3D\22\26\2A\6B\CD\DD\6B";
+  salt = "\00\11\22\33\44\55\66\77\88\99\AA\BB\CC\DD\EE\FF";
+}) == "\95\B0\A5\D9\0F\DD\EB\ED\D7\94\8D\E0\8B\9F\D3\26\B6\B5\4C\BF\B5\E3\DE\69\A4\F4\29\D5\6F\63\FE\56";
+
+// principal-anonymous: the anonymous principal, a one-byte blob
+assert Commitment.digest(#sha256V1, {
+  principalText = "2vxsx-fae";
+  manifestHash = "\27\3B\E6\98\FF\9D\6D\BD\10\E2\AC\56\3A\BA\E6\0B\14\CD\43\91\52\C1\53\95\3D\22\26\2A\6B\CD\DD\6B";
+  salt = "\00\11\22\33\44\55\66\77\88\99\AA\BB\CC\DD\EE\FF";
+}) == "\62\21\27\37\41\70\DD\99\B7\E0\F1\3E\97\86\EA\61\3D\57\5D\2A\94\A7\96\26\32\BB\13\A2\3C\1F\38\15";
+
+// principal-canister: an opaque canister principal
+assert Commitment.digest(#sha256V1, {
+  principalText = "ryjl3-tyaaa-aaaaa-aaaba-cai";
+  manifestHash = "\27\3B\E6\98\FF\9D\6D\BD\10\E2\AC\56\3A\BA\E6\0B\14\CD\43\91\52\C1\53\95\3D\22\26\2A\6B\CD\DD\6B";
+  salt = "\00\11\22\33\44\55\66\77\88\99\AA\BB\CC\DD\EE\FF";
+}) == "\34\36\35\98\DC\A2\8E\71\A0\99\DD\76\C9\91\39\26\19\1B\84\0E\6A\1D\EA\BB\59\AD\69\7A\70\1D\6D\C7";
+
+// principal-canister-mainnet-llm: another canister principal, ten bytes
+assert Commitment.digest(#sha256V1, {
+  principalText = "w36hm-eqaaa-aaaal-qr76a-cai";
+  manifestHash = "\31\17\9F\0B\46\50\BC\FF\35\DE\13\E4\57\6A\43\0C\28\6B\09\9A\6B\7B\3C\4E\87\41\52\8E\D6\B7\08\3F";
+  salt = "\00\11\22\33\44\55\66\77\88\99\AA\BB\CC\DD\EE\FF";
+}) == "\90\BF\8D\F8\4D\B9\FD\28\E0\80\6E\2C\95\68\AA\AD\20\24\71\95\6F\E2\20\33\09\CE\50\D5\31\34\5C\A6";
+
+// principal-self-authenticating: a 29-byte blob, the longest principal text there is
+assert Commitment.digest(#sha256V1, {
+  principalText = "ixbwc-ozr3a-z3chv-th5xh-w364p-77r5q-edmjb-guz35-7z33v-cmuyx-hqe";
+  manifestHash = "\27\3B\E6\98\FF\9D\6D\BD\10\E2\AC\56\3A\BA\E6\0B\14\CD\43\91\52\C1\53\95\3D\22\26\2A\6B\CD\DD\6B";
+  salt = "\00\11\22\33\44\55\66\77\88\99\AA\BB\CC\DD\EE\FF";
+}) == "\AE\4A\CD\6F\D4\D9\0B\0D\B4\30\E8\39\BC\C2\F7\14\C5\CE\BE\1A\BC\89\C8\DC\31\3C\F6\BD\7D\81\D1\8E";
+
+// salt-minimum: a salt at the 16-byte lower bound
+assert Commitment.digest(#sha256V1, {
+  principalText = "ixbwc-ozr3a-z3chv-th5xh-w364p-77r5q-edmjb-guz35-7z33v-cmuyx-hqe";
+  manifestHash = "\27\3B\E6\98\FF\9D\6D\BD\10\E2\AC\56\3A\BA\E6\0B\14\CD\43\91\52\C1\53\95\3D\22\26\2A\6B\CD\DD\6B";
+  salt = "\0F\0F\0F\0F\0F\0F\0F\0F\0F\0F\0F\0F\0F\0F\0F\0F";
+}) == "\40\32\30\18\33\A6\20\21\D2\C6\21\95\97\A5\D2\21\E9\1A\39\97\D3\3C\E1\9B\50\4E\7C\C1\92\35\E7\B6";
+
+// salt-maximum: a salt at the 64-byte upper bound
+assert Commitment.digest(#sha256V1, {
+  principalText = "ixbwc-ozr3a-z3chv-th5xh-w364p-77r5q-edmjb-guz35-7z33v-cmuyx-hqe";
+  manifestHash = "\27\3B\E6\98\FF\9D\6D\BD\10\E2\AC\56\3A\BA\E6\0B\14\CD\43\91\52\C1\53\95\3D\22\26\2A\6B\CD\DD\6B";
+  salt = "\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5\A5";
+}) == "\F6\6E\B3\30\68\30\7C\26\FC\2A\53\1E\99\08\9C\DB\F9\EA\55\A8\F9\0F\B5\A3\43\07\D7\D8\40\49\EE\9B";
+
+// salt-all-zero: a salt that is entirely separator bytes; it is the last field, so it cannot be mistaken for one
+assert Commitment.digest(#sha256V1, {
+  principalText = "aaaaa-aa";
+  manifestHash = "\27\3B\E6\98\FF\9D\6D\BD\10\E2\AC\56\3A\BA\E6\0B\14\CD\43\91\52\C1\53\95\3D\22\26\2A\6B\CD\DD\6B";
+  salt = "\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00";
+}) == "\74\5F\5F\B7\A2\19\A1\87\56\CF\A0\88\C5\FE\3C\27\41\34\FD\D9\26\34\BD\16\BE\2C\72\B8\1E\2F\7A\E9";
+
+// salt-leading-zero: a salt beginning with a separator byte
+assert Commitment.digest(#sha256V1, {
+  principalText = "aaaaa-aa";
+  manifestHash = "\27\3B\E6\98\FF\9D\6D\BD\10\E2\AC\56\3A\BA\E6\0B\14\CD\43\91\52\C1\53\95\3D\22\26\2A\6B\CD\DD\6B";
+  salt = "\00\11\11\11\11\11\11\11\11\11\11\11\11\11\11\11";
+}) == "\46\3B\F6\77\7D\6D\87\24\E0\06\86\40\CF\6C\52\1C\6B\FB\99\CF\0E\AD\6C\7D\E5\2E\1E\C1\12\DB\D6\45";
+
+// salt-all-ff: a salt with no zero bytes at all
+assert Commitment.digest(#sha256V1, {
+  principalText = "aaaaa-aa";
+  manifestHash = "\27\3B\E6\98\FF\9D\6D\BD\10\E2\AC\56\3A\BA\E6\0B\14\CD\43\91\52\C1\53\95\3D\22\26\2A\6B\CD\DD\6B";
+  salt = "\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF";
+}) == "\D2\49\4E\11\80\59\69\CC\1D\F9\C5\69\27\7A\D4\0A\99\D3\4F\D1\54\B8\A1\F9\B6\44\54\26\EA\EF\C0\AB";
+
+// digest-all-zero: a manifest digest of 32 separator bytes, read positionally and never scanned
+assert Commitment.digest(#sha256V1, {
+  principalText = "aaaaa-aa";
+  manifestHash = "\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00";
+  salt = "\00\11\22\33\44\55\66\77\88\99\AA\BB\CC\DD\EE\FF";
+}) == "\E4\B1\D0\A9\96\58\B5\BD\39\F1\77\D3\16\62\93\81\D3\28\89\45\D8\BF\F6\2F\C2\3E\A1\5C\E7\35\EB\D8";
+
+// digest-all-ff: a manifest digest with no zero bytes
+assert Commitment.digest(#sha256V1, {
+  principalText = "aaaaa-aa";
+  manifestHash = "\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF\FF";
+  salt = "\00\11\22\33\44\55\66\77\88\99\AA\BB\CC\DD\EE\FF";
+}) == "\4C\88\DF\8F\AA\47\29\CC\01\E3\35\C2\7D\AC\89\84\8F\4F\13\F2\19\92\DC\1A\59\F8\11\D5\02\6E\75\CE";
+
+// published-human-only: the human-only example manifest from protocol/examples
+assert Commitment.digest(#sha256V1, {
+  principalText = "aaaaa-aa";
+  manifestHash = "\31\17\9F\0B\46\50\BC\FF\35\DE\13\E4\57\6A\43\0C\28\6B\09\9A\6B\7B\3C\4E\87\41\52\8E\D6\B7\08\3F";
+  salt = "\00\11\22\33\44\55\66\77\88\99\AA\BB\CC\DD\EE\FF";
+}) == "\DA\A3\33\41\A4\20\EA\F9\EF\8B\08\87\D1\B4\59\19\7D\0A\FB\70\AB\30\5E\1C\58\F4\5B\0B\58\51\51\4A";
+
+// published-ai-assisted: the AI-assisted example manifest from protocol/examples
+assert Commitment.digest(#sha256V1, {
+  principalText = "aaaaa-aa";
+  manifestHash = "\27\3B\E6\98\FF\9D\6D\BD\10\E2\AC\56\3A\BA\E6\0B\14\CD\43\91\52\C1\53\95\3D\22\26\2A\6B\CD\DD\6B";
+  salt = "\FF\EE\DD\CC\BB\AA\99\88\77\66\55\44\33\22\11\00";
+}) == "\66\A2\BE\F9\64\72\B8\69\96\55\A1\6D\43\DD\8D\91\08\78\F1\6D\08\18\F8\91\01\0C\DA\E6\02\07\A5\56";
+
 // 5. The advertised spec is the one the code actually implements, so a client
 // that reads `commitmentSpec` and rebuilds the preimage from it agrees.
+// It also has to match `spec()` in protocol/tools/commitment.mjs field for
+// field, because that is the record the frozen vectors were generated against.
 let spec = Commitment.spec();
+assert spec.version == "v1";
 assert spec.algorithm == #sha256V1;
 assert spec.domain == Commitment.domainV1;
+assert spec.layout == "domain-zero-principalText-zero-manifestDigest-zero-salt";
 assert spec.digestSize == 32;
 assert spec.minSaltSize == minSalt.salt.size();
 assert spec.maxSaltSize == maxSalt.salt.size();
+assert spec.minPrincipalTextSize == 8;
+assert spec.maxPrincipalTextSize == 63;
 assert Text.encodeUtf8(spec.domain).size() == 20;
 assert Blob.equal(Commitment.digest(spec.algorithm, humanOnly), humanOnlyCommitment);

@@ -17,12 +17,15 @@ type Error = variant {
 };
 type CommitmentAlgorithm = variant { sha256V1 };
 type CommitmentSpec = record {
+  version : text;
   algorithm : CommitmentAlgorithm;
   domain : text;
   layout : text;
   digestSize : nat;
   minSaltSize : nat;
   maxSaltSize : nat;
+  minPrincipalTextSize : nat;
+  maxPrincipalTextSize : nat;
 };
 type CommitmentStatus = variant { open; revealed : nat; cancelled : nat };
 type Commitment = record {

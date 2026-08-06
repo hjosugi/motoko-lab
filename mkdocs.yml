@@ -124,6 +124,7 @@ nav:
   - アプリケーション:
       - 01 Creator Proof Registry:
           - 概要: apps/01_creator_proof_registry/README.md
+          - コミットメント検証: apps/01_creator_proof_registry/docs/COMMITMENT_V1.md
           - 脅威モデル: apps/01_creator_proof_registry/docs/THREAT_MODEL.md
           - アップグレード計画: apps/01_creator_proof_registry/docs/UPGRADE_PLAN.md
       - 02 Merkle Anchor:
@@ -153,6 +154,8 @@ nav:
       - 論拠: docs/10_CREATOR_PROVENANCE_THESIS.md
       - プロトコル v0.1: docs/11_CREATOR_PROVENANCE_PROTOCOL.md
       - パッケージ: protocol/README.md
+      - コミットメント v1 (凍結): protocol/COMMITMENT_V1.md
+      - 正規化 (RFC 8785): protocol/CANONICALIZATION.md
       - 相互運用計画: protocol/INTEROPERABILITY.md
       - プロダクトPRD: docs/22_AI_PROVENANCE_PRODUCT_PRD.md
 

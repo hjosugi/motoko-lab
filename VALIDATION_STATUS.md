@@ -9,6 +9,7 @@
 - 全`mops.toml`のPython `tomllib` parse
 - 全JSON、YAML、JSON Schema、manifest test vectorのparse/validation
 - RFC 8785 canonicalizationのofficial vector 6件とedge vector 47件 (accept 21 / reject 26)
+- commitment layout v1のconformance vector 39件 (accept 17 / reject 22) とpreimageの逆パース
 - provenance CLIの`node --check`とunit test
 - shell scriptの`bash -n`
 - Python scriptのsyntax compile
@@ -148,6 +149,35 @@
 
 詳細は`protocol/CANONICALIZATION.md`。
 
+## 2026-08-07に追加で実行済み (protocol, issue #5)
+
+- commitment layout v1の凍結。byte-level ABNF、principal textual formの検証規則、
+  error behaviour、version negotiationを`protocol/COMMITMENT_V1.md`に確定
+- conformance vector 39件 (accept 17 / reject 22)。accept vectorはpreimageの全bytes・
+  長さ・commitmentを、reject vectorは入力と正確なerror messageを固定しています
+- **連結の曖昧性がないことを検査項目に変換**: `parsePreimage`が全accept vectorで
+  3 fieldをbytesから復元できること、およびdistinctなtripleがdistinctなcommitmentに
+  なることをassertします。`salt-all-zero`・`salt-leading-zero`・`digest-all-zero`は
+  そのために存在します
+- principal検証を「長さ5..100」から実際のtextual formへ。base32 alphabet、CRC32
+  checksum、再encodeによるcanonical form確認。従来は`hello`や`not-a-principal`が
+  そのままcommitmentになっていました (canister側は`Principal.toText(caller)`から
+  同じfieldを導出するので、決して一致しない)
+- uppercase principalは黙ってlowercaseにせずrejectするよう変更。hex入力は
+  case-insensitiveのまま (bytesを表すため) で、両形式が同じcommitmentになることを
+  accept vectorでassert
+- 境界値を実際の値へ: principal blobは0..29 byteなので、text長は5..100ではなく8..63。
+  protocol側とMotoko側の両方を修正
+- **独立実装2件が全vectorを再現** (`protocol/tools/crosscheck.mjs`):
+  `crosscheck/commitment.rs` (principal検証は`candid::Principal`)と
+  `crosscheck/commitment.ts` (同`@dfinity/principal`)。39件すべてでverdictとbytesが一致。
+  どちらも`protocol/tools/principal.mjs`のbase32/CRC32コードを使っていません
+- Motoko実装もparsing専用でないaccept vector 14件を再現 (`mops test`)
+- `commitmentSpec()`に`version`・`minPrincipalTextSize`・`maxPrincipalTextSize`を追加。
+  Candid drift / subtyping検査を通過、stable dataは不変
+
+詳細は`protocol/COMMITMENT_V1.md`。
+
 ## 未実施のproduction gate
 
 - PocketIC integration test (apps/01-05。app 06は実行済み)
@@ -187,6 +217,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | JavaScript/Python/shell | locally executed and validated |
 | JSON Schema/test vectors | locally validated |
 | RFC 8785 canonicalization | official vectors passed; byte-identical to serde_jcs 0.2.0 and canonicalize 3.0.0 |
+| Commitment layout v1 | frozen; 39 conformance vectors reproduced by independent Rust and TypeScript implementations |
 | Motoko/Candid API surface | offline mechanically cross-checked |
 | Motoko compile/test/Wasm/Candid | passed for all 6 applications |
 | Nix toolchain bootstrap | passed with read-only global npm prefix |

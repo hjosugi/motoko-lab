@@ -3,9 +3,7 @@ import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import process from "node:process";
 import { CANONICALIZATION_ID, canonicalizeValue, parse as parseJson } from "./jcs.mjs";
-
-const DOMAIN = Buffer.from("icp-creator-proof:v1", "utf8");
-const ZERO = Buffer.from([0]);
+import { commitmentHex, verify } from "./commitment.mjs";
 
 function fail(message) {
   console.error(`error: ${message}`);
@@ -33,33 +31,9 @@ export function sha256Hex(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
-function parseHex(name, value, expectedBytes = null) {
-  if (typeof value !== "string" || value.length === 0 || value.length % 2 !== 0 || !/^[0-9a-fA-F]+$/.test(value)) {
-    throw new Error(`${name} must be even-length hexadecimal`);
-  }
-  const bytes = Buffer.from(value, "hex");
-  if (expectedBytes !== null && bytes.length !== expectedBytes) {
-    throw new Error(`${name} must be ${expectedBytes} bytes`);
-  }
-  return bytes;
-}
-
-export function commitmentHex({ principal, manifestHash, salt }) {
-  const canonicalPrincipal = principal.trim().toLowerCase();
-  if (canonicalPrincipal.length < 5 || canonicalPrincipal.length > 100) {
-    throw new Error("principal text length is invalid");
-  }
-  const manifestBytes = parseHex("manifest hash", manifestHash, 32);
-  const saltBytes = parseHex("salt", salt);
-  if (saltBytes.length < 16 || saltBytes.length > 64) {
-    throw new Error("salt must contain 16 to 64 bytes");
-  }
-  const preimage = Buffer.concat([
-    DOMAIN, ZERO, Buffer.from(canonicalPrincipal, "utf8"), ZERO,
-    manifestBytes, ZERO, saltBytes,
-  ]);
-  return sha256Hex(preimage);
-}
+// The layout, its validation and its error messages live in commitment.mjs,
+// which is what the conformance vectors are written against.
+export { commitmentHex };
 
 function options(args) {
   const result = {};
@@ -109,15 +83,14 @@ async function main(argv) {
   }
   if (command === "verify-commitment") {
     const opts = options(args);
-    const calculated = commitmentHex({
+    const result = verify({
       principal: opts.principal ?? "",
       manifestHash: opts["manifest-hash"] ?? "",
       salt: opts.salt ?? "",
+      commitment: opts.commitment ?? "",
     });
-    const expected = (opts.commitment ?? "").toLowerCase();
-    const valid = /^[0-9a-f]{64}$/.test(expected) && expected === calculated;
-    console.log(JSON.stringify({ valid, expected, calculated }, null, 2));
-    if (!valid) process.exitCode = 2;
+    console.log(JSON.stringify(result, null, 2));
+    if (!result.valid) process.exitCode = 2;
     return;
   }
   if (command === "bundle") {
@@ -136,7 +109,9 @@ async function main(argv) {
       version: "0.1",
       generatedAt: new Date().toISOString(),
       canonicalization: CANONICALIZATION_ID,
-      principal: (opts.principal ?? "").trim().toLowerCase(),
+      // `commitmentHex` above already rejected anything that is not a
+      // principal in canonical form, so this is the same text it hashed.
+      principal: (opts.principal ?? "").trim(),
       artifactHash,
       manifestHash,
       saltHex: (opts.salt ?? "").toLowerCase(),

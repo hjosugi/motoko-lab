@@ -42,13 +42,19 @@ module {
   };
 
   /// What a caller gets when it asks the canister which layouts it accepts.
+  /// Mirrors `spec()` in `protocol/tools/commitment.mjs`, so a verifier can
+  /// rebuild the preimage from this record alone rather than from a document
+  /// it hopes matches the deployed canister.
   public type Spec = {
+    version : Text;
     algorithm : Algorithm;
     domain : Text;
     layout : Text;
     digestSize : Nat;
     minSaltSize : Nat;
     maxSaltSize : Nat;
+    minPrincipalTextSize : Nat;
+    maxPrincipalTextSize : Nat;
   };
 
   /// The three values the commitment binds together.
@@ -60,6 +66,8 @@ module {
 
   public let currentAlgorithm : Algorithm = #sha256V1;
 
+  public let version : Text = "v1";
+
   /// ASCII, and deliberately versioned: a v2 layout gets a new domain string so
   /// a v1 preimage can never be reinterpreted under v2 rules.
   public let domainV1 : Text = "icp-creator-proof:v1";
@@ -68,21 +76,29 @@ module {
 
   public let digestSize : Nat = 32;
 
-  /// Matches the bounds `provenance-cli.mjs` enforces on the principal text.
-  /// `Principal.toText` never returns anything outside them; the check exists
-  /// so the canister rejects exactly what the Node verifier rejects rather
-  /// than trusting that invariant to hold for every future caller shape.
-  public let minPrincipalTextSize : Nat = 5;
-  public let maxPrincipalTextSize : Nat = 100;
+  /// The full range of the principal textual form: a principal blob is 0 to 29
+  /// bytes, and CRC32 prefixing plus unpadded base32 in five-character groups
+  /// turns that into 8 characters (`aaaaa-aa`, the empty blob) through 63.
+  ///
+  /// `Principal.toText` never returns anything outside this range, so on-chain
+  /// the check is a defensive assertion rather than a parser. The verifier side
+  /// does the real validation — checksum, alphabet, canonical grouping — in
+  /// `protocol/tools/principal.mjs`, because that is where principals arrive as
+  /// untrusted text. Here the principal is produced, never parsed.
+  public let minPrincipalTextSize : Nat = 8;
+  public let maxPrincipalTextSize : Nat = 63;
 
   public func spec() : Spec {
     {
+      version = version;
       algorithm = currentAlgorithm;
       domain = domainV1;
       layout = layoutV1;
       digestSize = digestSize;
       minSaltSize = 16;
       maxSaltSize = 64;
+      minPrincipalTextSize = minPrincipalTextSize;
+      maxPrincipalTextSize = maxPrincipalTextSize;
     }
   };
 

@@ -1,0 +1,365 @@
+{
+  "description": "Conformance vectors for the frozen v1 commitment layout. `accept` pins the preimage bytes and the commitment; `reject` pins which inputs are refused and with what message. The specification is protocol/COMMITMENT_V1.md.",
+  "spec": {
+    "version": "v1",
+    "algorithm": "sha256V1",
+    "domain": "icp-creator-proof:v1",
+    "layout": "domain-zero-principalText-zero-manifestDigest-zero-salt",
+    "digestSize": 32,
+    "minSaltSize": 16,
+    "maxSaltSize": 64
+  },
+  "accept": [
+    {
+      "name": "principal-empty-blob",
+      "description": "the management canister, the shortest principal text there is",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "preimageHex": "6963702d63726561746f722d70726f6f663a76310061616161612d616100273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b0000112233445566778899aabbccddeeff",
+      "preimageBytes": 79,
+      "commitmentHex": "95b0a5d90fddebedd7948de08b9fd326b6b54cbfb5e3de69a4f429d56f63fe56"
+    },
+    {
+      "name": "principal-anonymous",
+      "description": "the anonymous principal, a one-byte blob",
+      "principal": "2vxsx-fae",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "preimageHex": "6963702d63726561746f722d70726f6f663a76310032767873782d66616500273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b0000112233445566778899aabbccddeeff",
+      "preimageBytes": 80,
+      "commitmentHex": "622127374170dd99b7e0f13e9786ea613d575d2a94a7962632bb13a23c1f3815"
+    },
+    {
+      "name": "principal-canister",
+      "description": "an opaque canister principal",
+      "principal": "ryjl3-tyaaa-aaaaa-aaaba-cai",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "preimageHex": "6963702d63726561746f722d70726f6f663a76310072796a6c332d74796161612d61616161612d61616162612d63616900273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b0000112233445566778899aabbccddeeff",
+      "preimageBytes": 98,
+      "commitmentHex": "34363598dca28e71a099dd76c9913926191b840e6a1deabb59ad697a701d6dc7"
+    },
+    {
+      "name": "principal-canister-mainnet-llm",
+      "description": "another canister principal, ten bytes",
+      "principal": "w36hm-eqaaa-aaaal-qr76a-cai",
+      "manifestHashHex": "31179f0b4650bcff35de13e4576a430c286b099a6b7b3c4e8741528ed6b7083f",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "preimageHex": "6963702d63726561746f722d70726f6f663a763100773336686d2d65716161612d616161616c2d71723736612d6361690031179f0b4650bcff35de13e4576a430c286b099a6b7b3c4e8741528ed6b7083f0000112233445566778899aabbccddeeff",
+      "preimageBytes": 98,
+      "commitmentHex": "90bf8df84db9fd28e0806e2c9568aaad202471956fe2203309ce50d531345ca6"
+    },
+    {
+      "name": "principal-self-authenticating",
+      "description": "a 29-byte blob, the longest principal text there is",
+      "principal": "ixbwc-ozr3a-z3chv-th5xh-w364p-77r5q-edmjb-guz35-7z33v-cmuyx-hqe",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "preimageHex": "6963702d63726561746f722d70726f6f663a76310069786277632d6f7a7233612d7a336368762d74683578682d77333634702d37377235712d65646d6a622d67757a33352d377a3333762d636d7579782d68716500273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b0000112233445566778899aabbccddeeff",
+      "preimageBytes": 134,
+      "commitmentHex": "ae4acd6fd4d90b0db430e839bcc2f714c5cebe1abc89c8dc313cf6bd7d81d18e"
+    },
+    {
+      "name": "salt-minimum",
+      "description": "a salt at the 16-byte lower bound",
+      "principal": "ixbwc-ozr3a-z3chv-th5xh-w364p-77r5q-edmjb-guz35-7z33v-cmuyx-hqe",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "preimageHex": "6963702d63726561746f722d70726f6f663a76310069786277632d6f7a7233612d7a336368762d74683578682d77333634702d37377235712d65646d6a622d67757a33352d377a3333762d636d7579782d68716500273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b000f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "preimageBytes": 134,
+      "commitmentHex": "4032301833a62021d2c6219597a5d221e91a3997d33ce19b504e7cc19235e7b6"
+    },
+    {
+      "name": "salt-maximum",
+      "description": "a salt at the 64-byte upper bound",
+      "principal": "ixbwc-ozr3a-z3chv-th5xh-w364p-77r5q-edmjb-guz35-7z33v-cmuyx-hqe",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "preimageHex": "6963702d63726561746f722d70726f6f663a76310069786277632d6f7a7233612d7a336368762d74683578682d77333634702d37377235712d65646d6a622d67757a33352d377a3333762d636d7579782d68716500273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b00a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "preimageBytes": 182,
+      "commitmentHex": "f66eb33068307c26fc2a531e99089cdbf9ea55a8f90fb5a34307d7d84049ee9b"
+    },
+    {
+      "name": "salt-all-zero",
+      "description": "a salt that is entirely separator bytes; it is the last field, so it cannot be mistaken for one",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00000000000000000000000000000000",
+      "preimageHex": "6963702d63726561746f722d70726f6f663a76310061616161612d616100273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b0000000000000000000000000000000000",
+      "preimageBytes": 79,
+      "commitmentHex": "745f5fb7a219a18756cfa088c5fe3c274134fdd92634bd16be2c72b81e2f7ae9"
+    },
+    {
+      "name": "salt-leading-zero",
+      "description": "a salt beginning with a separator byte",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00111111111111111111111111111111",
+      "preimageHex": "6963702d63726561746f722d70726f6f663a76310061616161612d616100273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b0000111111111111111111111111111111",
+      "preimageBytes": 79,
+      "commitmentHex": "463bf6777d6d8724e0068640cf6c521c6bfb99cf0ead6c7de52e1ec112dbd645"
+    },
+    {
+      "name": "salt-all-ff",
+      "description": "a salt with no zero bytes at all",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "preimageHex": "6963702d63726561746f722d70726f6f663a76310061616161612d616100273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "preimageBytes": 95,
+      "commitmentHex": "d2494e11805969cc1df9c569277ad40a99d34fd154b8a1f9b6445426eaefc0ab"
+    },
+    {
+      "name": "salt-uppercase-hex",
+      "description": "hexadecimal input is case-insensitive; the bytes are what matter",
+      "equivalentTo": "principal-empty-blob",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899AABBCCDDEEFF",
+      "preimageHex": "6963702d63726561746f722d70726f6f663a76310061616161612d616100273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b0000112233445566778899aabbccddeeff",
+      "preimageBytes": 79,
+      "commitmentHex": "95b0a5d90fddebedd7948de08b9fd326b6b54cbfb5e3de69a4f429d56f63fe56"
+    },
+    {
+      "name": "digest-all-zero",
+      "description": "a manifest digest of 32 separator bytes, read positionally and never scanned",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "0000000000000000000000000000000000000000000000000000000000000000",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "preimageHex": "6963702d63726561746f722d70726f6f663a76310061616161612d61610000000000000000000000000000000000000000000000000000000000000000000000112233445566778899aabbccddeeff",
+      "preimageBytes": 79,
+      "commitmentHex": "e4b1d0a99658b5bd39f177d316629381d3288945d8bff62fc23ea15ce735ebd8"
+    },
+    {
+      "name": "digest-all-ff",
+      "description": "a manifest digest with no zero bytes",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "preimageHex": "6963702d63726561746f722d70726f6f663a76310061616161612d616100ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000112233445566778899aabbccddeeff",
+      "preimageBytes": 79,
+      "commitmentHex": "4c88df8faa4729cc01e335c27dac89848f4f13f21992dc1a59f811d5026e75ce"
+    },
+    {
+      "name": "digest-uppercase-hex",
+      "description": "the same digest in uppercase hexadecimal",
+      "equivalentTo": "principal-empty-blob",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "273BE698FF9D6DBD10E2AC563ABAE60B14CD439152C153953D22262A6BCDDD6B",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "preimageHex": "6963702d63726561746f722d70726f6f663a76310061616161612d616100273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b0000112233445566778899aabbccddeeff",
+      "preimageBytes": 79,
+      "commitmentHex": "95b0a5d90fddebedd7948de08b9fd326b6b54cbfb5e3de69a4f429d56f63fe56"
+    },
+    {
+      "name": "published-human-only",
+      "description": "the human-only example manifest from protocol/examples",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "31179f0b4650bcff35de13e4576a430c286b099a6b7b3c4e8741528ed6b7083f",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "preimageHex": "6963702d63726561746f722d70726f6f663a76310061616161612d61610031179f0b4650bcff35de13e4576a430c286b099a6b7b3c4e8741528ed6b7083f0000112233445566778899aabbccddeeff",
+      "preimageBytes": 79,
+      "commitmentHex": "daa33341a420eaf9ef8b0887d1b459197d0afb70ab305e1c58f45b0b5851514a"
+    },
+    {
+      "name": "published-ai-assisted",
+      "description": "the AI-assisted example manifest from protocol/examples",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "ffeeddccbbaa99887766554433221100",
+      "preimageHex": "6963702d63726561746f722d70726f6f663a76310061616161612d616100273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b00ffeeddccbbaa99887766554433221100",
+      "preimageBytes": 79,
+      "commitmentHex": "66a2bef96472b8699655a16d43dd8d910878f16d0818f891010cdae60207a556"
+    },
+    {
+      "name": "principal-whitespace-trimmed",
+      "description": "surrounding whitespace is argument hygiene, not a different principal",
+      "equivalentTo": "principal-empty-blob",
+      "principal": "  aaaaa-aa\n",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "preimageHex": "6963702d63726561746f722d70726f6f663a76310061616161612d616100273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b0000112233445566778899aabbccddeeff",
+      "preimageBytes": 79,
+      "commitmentHex": "95b0a5d90fddebedd7948de08b9fd326b6b54cbfb5e3de69a4f429d56f63fe56"
+    }
+  ],
+  "reject": [
+    {
+      "name": "principal-empty",
+      "description": "no principal at all",
+      "principal": "",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "error": "principal: principal is empty"
+    },
+    {
+      "name": "principal-not-a-principal",
+      "description": "an arbitrary string that is not a principal",
+      "principal": "not-a-principal",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "error": "principal: principal checksum is 6ba607c5, expected 68a7bb8f"
+    },
+    {
+      "name": "principal-too-short",
+      "description": "shorter than the shortest possible principal text",
+      "principal": "hello",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "error": "principal: principal text is 5 characters, outside 8..63"
+    },
+    {
+      "name": "principal-uppercase",
+      "description": "uppercase is not the canonical form, and is refused rather than silently lowercased",
+      "principal": "AAAAA-AA",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "error": "principal: principal must be lowercase; the canonical form has no uppercase characters"
+    },
+    {
+      "name": "principal-mixed-case",
+      "description": "the same, mixed",
+      "principal": "Aaaaa-Aa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "error": "principal: principal must be lowercase; the canonical form has no uppercase characters"
+    },
+    {
+      "name": "principal-bad-checksum",
+      "description": "a well-formed principal whose CRC32 does not match its blob",
+      "principal": "aaaaa-ba",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "error": "principal: principal checksum is 00000004, expected 00000000"
+    },
+    {
+      "name": "principal-non-canonical-padding",
+      "description": "decodes to the right blob, but is not the spelling the specification defines",
+      "principal": "aaaaa-ab",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "error": "principal: principal is not in canonical form; \"aaaaa-aa\" is"
+    },
+    {
+      "name": "principal-double-dash",
+      "description": "an empty group",
+      "principal": "aaaaa--aa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "error": "principal: principal must be base32 groups separated by single '-'"
+    },
+    {
+      "name": "principal-trailing-dash",
+      "description": "a trailing separator",
+      "principal": "aaaaa-aa-",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "error": "principal: principal must be base32 groups separated by single '-'"
+    },
+    {
+      "name": "principal-ungrouped",
+      "description": "correct characters, wrong grouping",
+      "principal": "aaaaaaaa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "error": "principal: principal checksum is 00000000, expected d202ef8d"
+    },
+    {
+      "name": "principal-invalid-base32",
+      "description": "'1' is not in the base32 alphabet",
+      "principal": "aaaa1-aa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "error": "principal: principal must be base32 groups separated by single '-'"
+    },
+    {
+      "name": "principal-too-long",
+      "description": "longer than a 29-byte blob can produce",
+      "principal": "ixbwc-ozr3a-z3chv-th5xh-w364p-77r5q-edmjb-guz35-7z33v-cmuyx-hqe-aaaaa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "error": "principal: principal text is 69 characters, outside 8..63"
+    },
+    {
+      "name": "digest-empty",
+      "description": "no manifest digest",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "error": "manifest hash must be a non-empty hexadecimal string"
+    },
+    {
+      "name": "digest-31-bytes",
+      "description": "one byte short of a SHA-256 digest",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "00000000000000000000000000000000000000000000000000000000000000",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "error": "manifest hash must be exactly 32 bytes, got 31"
+    },
+    {
+      "name": "digest-33-bytes",
+      "description": "one byte long",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "000000000000000000000000000000000000000000000000000000000000000000",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "error": "manifest hash must be exactly 32 bytes, got 33"
+    },
+    {
+      "name": "digest-odd-hex",
+      "description": "an odd number of hexadecimal characters",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "error": "manifest hash must have an even number of hexadecimal characters"
+    },
+    {
+      "name": "digest-non-hex",
+      "description": "a non-hexadecimal character",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcdddzz",
+      "saltHex": "00112233445566778899aabbccddeeff",
+      "error": "manifest hash must contain only hexadecimal characters"
+    },
+    {
+      "name": "salt-empty",
+      "description": "no salt",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "",
+      "error": "salt must be a non-empty hexadecimal string"
+    },
+    {
+      "name": "salt-15-bytes",
+      "description": "one byte under the lower bound",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "error": "salt must be 16..64 bytes, got 15"
+    },
+    {
+      "name": "salt-65-bytes",
+      "description": "one byte over the upper bound",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5",
+      "error": "salt must be 16..64 bytes, got 65"
+    },
+    {
+      "name": "salt-odd-hex",
+      "description": "an odd number of hexadecimal characters",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeef",
+      "error": "salt must have an even number of hexadecimal characters"
+    },
+    {
+      "name": "salt-non-hex",
+      "description": "a non-hexadecimal character",
+      "principal": "aaaaa-aa",
+      "manifestHashHex": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+      "saltHex": "00112233445566778899aabbccddeezz",
+      "error": "salt must contain only hexadecimal characters"
+    }
+  ]
+}

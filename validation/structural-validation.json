@@ -2,10 +2,10 @@
   "root": "/mnt/data/repos/github.com/hjosugi/motoko-lab",
   "status": "pass",
   "stats": {
-    "file_count": 348,
-    "directory_count": 86,
-    "total_bytes": 1184486,
-    "total_lines": 27503,
+    "file_count": 356,
+    "directory_count": 88,
+    "total_bytes": 1258693,
+    "total_lines": 28804,
     "application_count": 6,
     "numbered_doc_count": 26,
     "issue_count": 45,
@@ -17,7 +17,7 @@
     "app_required_files": 72,
     "candid_structure": 18,
     "issue_front_matter": 45,
-    "json_parse": 34,
+    "json_parse": 35,
     "metadata_consistency": 1,
     "motoko_candid_api_surface": 64,
     "motoko_delimiters": 46,
@@ -26,7 +26,7 @@
     "relative_links": 40,
     "script_shebang": 17,
     "toml_parse": 6,
-    "utf8_lf": 336,
+    "utf8_lf": 340,
     "yaml_parse": 25
   },
   "warnings": [

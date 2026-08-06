@@ -155,8 +155,7 @@ Both are cross-checked above. Neither rejects duplicate member names, so a
 verifier built on them should reject duplicates before parsing if it wants the
 guarantee this CLI gives.
 
-## Still open
+## See also
 
-- #5 — the byte-level specification of the commitment layout and its full
-  conformance vector set. The canonicalization vectors here are its
-  manifest-side half.
+`protocol/COMMITMENT_V1.md` is the other half: the manifest digest defined here
+is what the frozen commitment layout binds.

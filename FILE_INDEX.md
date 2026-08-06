@@ -3,7 +3,7 @@
 このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
 完全性確認には`MANIFEST.sha256`を使用してください。
 
-Indexed files: **348**
+Indexed files: **356**
 
 ## Root
 
@@ -330,6 +330,7 @@ Indexed files: **348**
 ## `protocol/`
 
 - `protocol/CANONICALIZATION.md`
+- `protocol/COMMITMENT_V1.md`
 - `protocol/INTEROPERABILITY.md`
 - `protocol/README.md`
 - `protocol/artifacts/ai-assisted-note.txt`
@@ -339,6 +340,7 @@ Indexed files: **348**
 - `protocol/package.json`
 - `protocol/schemas/provenance-manifest.schema.json`
 - `protocol/schemas/verification-report.schema.json`
+- `protocol/test-vectors/commitment/vectors.json`
 - `protocol/test-vectors/jcs/edge-cases.json`
 - `protocol/test-vectors/jcs/input/arrays.json`
 - `protocol/test-vectors/jcs/input/french.json`
@@ -353,8 +355,14 @@ Indexed files: **348**
 - `protocol/test-vectors/jcs/output/values.json`
 - `protocol/test-vectors/jcs/output/weird.json`
 - `protocol/test-vectors/test-vectors.json`
+- `protocol/tools/commitment.mjs`
 - `protocol/tools/crosscheck.mjs`
+- `protocol/tools/crosscheck/commitment-runner.ts`
+- `protocol/tools/crosscheck/commitment.rs`
+- `protocol/tools/crosscheck/commitment.ts`
+- `protocol/tools/crosscheck/jcs.rs`
 - `protocol/tools/jcs.mjs`
+- `protocol/tools/principal.mjs`
 - `protocol/tools/provenance-cli.mjs`
 - `protocol/tools/provenance-cli.test.mjs`
 
