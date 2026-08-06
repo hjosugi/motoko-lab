@@ -109,6 +109,57 @@ exit code は「互換」と言い、運用上は data loss です。`check_cand
 `--self-test` が各 case を期待どおりに判定できなければ CI が落ちます。**一度も何も
 拒否したことのない gate は、拒否できない gate と区別がつかない**ためです。
 
+## Documentation site
+
+収録文書 128 ページを MkDocs (Material theme) で公開しています。build は
+`.github/workflows/docs.yml`、公開は `main` への push のみで、pull request は build
+までしか走りません。
+
+<https://hjosugi.github.io/motoko-lab/>
+
+```bash
+python3 -m pip install -r requirements-docs.txt
+make docs          # self-test → stage → strict build
+make docs-serve    # http://127.0.0.1:8000
+```
+
+### 3 つの gate
+
+このキットの文書は**それが説明する対象の隣**にあり、MkDocs の `docs_dir` は 1 つです。
+`scripts/build_docs_site.py` が path を保ったまま `site-src/` へステージするので、
+ページ間のリンクは書き換えなしで解決します。gate はその周りに 3 つあります。
+
+| gate | 落とすもの |
+|---|---|
+| `--self-test` | リンク書き換え器の挙動が変わった |
+| `--check` | ステージされたのに `mkdocs.yml` の nav にないページ / nav にあるのにステージされないページ |
+| `mkdocs build --strict` | サイト内で解決しないリンク |
+
+**2 番目**は、書いたのに誰からも辿れない文書を防ぐためです。Issue draft 45 件だけは
+`ISSUE_BACKLOG.md` の表を索引とするので nav から除外しています。
+
+**1 番目**が必要な理由は他の 2 つと違います。ページにならないもの (`.mo`、script、
+ディレクトリ) へのリンクは GitHub 上の同じ path へ書き換えられます。これがないと、
+コードを参照する文書が書けません — 参照した瞬間に `--strict` が落ちるからです。そして
+**書き換えが黙って行われなくなっても `--strict` は気づきません**。リンクが解決するか
+どうかは見ますが、書き換えるべきだったかは見ないからです。build は緑のまま、中身だけが
+dead link になります。
+
+```bash
+python3 scripts/build_docs_site.py --self-test   # 17 cases
+```
+
+17 件は相対リンク維持、file/directory の出し分け、`README.md` → `index.md` の付け替え、
+link text 内の code span、title 付き、image、code span と fenced block、外部/絶対/解決
+不能を固定しています。書き換えを無効化した回帰版では 17 件中 9 件が落ちます。
+`check_candid_compat.py --self-test` と同じ理由で、**一度も何も落としたことのない gate は、
+落とせない gate と区別がつきません**。
+
+### 公開設定
+
+初回だけリポジトリ設定で **Settings → Pages → Source を "GitHub Actions"** にする必要が
+あります。workflow から自リポジトリの Pages を有効化することはできません。
+
 ## Environments
 
 - local: disposable identities and canisters

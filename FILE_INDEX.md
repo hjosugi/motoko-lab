@@ -3,7 +3,7 @@
 このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
 完全性確認には`MANIFEST.sha256`を使用してください。
 
-Indexed files: **328**
+Indexed files: **327**
 
 ## Root
 
@@ -189,7 +189,6 @@ Indexed files: **328**
 - `apps/06_distributed_llm/test/fixtures/LyingWorker.mo`
 - `apps/06_distributed_llm/tools/latency-model.mjs`
 - `apps/06_distributed_llm/tools/latency-model.test.mjs`
-- `apps/06_distributed_llm/tools/package-lock.json`
 - `apps/06_distributed_llm/tools/package.json`
 - `apps/06_distributed_llm/tools/pocket-ic-e2e.mjs`
 - `apps/06_distributed_llm/tools/pocket-ic-setup.mjs`

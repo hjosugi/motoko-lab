@@ -27,6 +27,11 @@ jobs:
           cache-dependency-path: requirements-docs.txt
       - name: Install the docs toolchain
         run: pip install -r requirements-docs.txt
+      # Before staging, because a rewriter that has quietly stopped rewriting
+      # still stages cleanly and still builds: `--strict` asks whether a link
+      # resolves, never whether it was supposed to be changed.
+      - name: Check the link rewriter
+        run: python3 scripts/build_docs_site.py --self-test
       # `--check` fails when a page is staged but missing from the nav in
       # mkdocs.yml, and `--strict` fails on a broken internal link. Between them
       # a document cannot become unreachable without the build going red.

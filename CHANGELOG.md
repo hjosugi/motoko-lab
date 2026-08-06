@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- The documentation site now rewrites links that leave it. A Markdown link to something that is not a staged page — a `.mo` source, a script, a directory — has nowhere to resolve inside the site, so it is redirected to the same path on GitHub. Without this, documentation could not link to the code it documents: the link would resolve in the repository, fail in the site, and take `mkdocs build --strict` down with it. Links to the root `README.md` are redirected to the staged `index.md` rather than off-site.
+- Added `--self-test` to `scripts/build_docs_site.py`, seventeen pinned cases for the rewriter, run in CI before anything is staged. It covers a gap the other two gates cannot: `--strict` asks whether a link resolves, never whether it was supposed to be rewritten, so a rewriter that quietly stops rewriting still builds green and produces a site full of dead links. Disabling the rewriter fails nine of the seventeen.
+- Documented the three documentation gates in `docs/06_TESTING_CI_DEPLOYMENT.md`, alongside the Candid ones.
+- Dropped `apps/06_distributed_llm/tools/package-lock.json` from `FILE_INDEX.md` and `MANIFEST.sha256`. The app's own `.gitignore` excludes it, so it is in neither the repository nor the distributed kit; it was recorded because the inventory had been regenerated in a working tree where npm had run. Regenerating on a clean checkout is what removed it.
+
 ## v2026.08.06
 
 - Added `scripts/check_candid_compat.py` (#17): regenerates every app's `.did` with the pinned compiler and rejects drift, then checks the committed interface is a Candid subtype of the one in the last release tag. The tagged tree is the baseline, so there is no copy to keep in step with what was actually released.
