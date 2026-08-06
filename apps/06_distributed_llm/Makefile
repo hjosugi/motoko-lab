@@ -24,11 +24,25 @@ build:
 test:
 	mops test
 
+# Order matters here, and both extra steps are load-bearing.
+#
+# The identity must exist and be selected *before the first deploy*. `icp deploy`
+# makes the current identity the canisters' controller, and every gated endpoint
+# rejects the anonymous principal - so deploying as `anonymous` produces a
+# cluster nobody can wire up, and switching identity afterwards makes the next
+# deploy fail with IC0512 because the new identity is not a controller.
+#
+# The top-up is needed because `icp deploy` provisions about 1.4T cycles locally,
+# below the 3T floor the orchestrator refuses to run under. On mainnet the
+# canister is funded separately and this step does not apply.
 deploy-local:
+	icp identity list | grep -q '\boperator\b' || icp identity new --storage plaintext operator
+	icp identity default operator
 	icp network start -d
 	icp deploy
+	icp canister top-up backend --amount 10t
 	icp canister call backend autoWire '()'
-	icp canister call backend benchmark '("speculative decoding uses", 24, 4, 2)' 
+	icp canister call backend benchmark '("speculative decoding uses", 24, 4, 2)'
 
 # --------------------------------------------------------------- offline --
 # Same compiler, same sources, no registry. `vendor` puts `mo:core` into

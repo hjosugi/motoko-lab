@@ -165,19 +165,87 @@ which term is large.
 | `home-p2p` (10 Mbit/s, `--scale 1000`) | transfer | fewer bytes: dense 22.16s -> 8-bit 3.60s -> 2-bit 1.59s |
 | `datacenter` | compute | distributing buys nothing |
 
+## Local replica (`icp network start` + `icp deploy`)
+
+Run 2026-08-06 with icp-cli 1.2.0 and network launcher 15.0.0, which bundles
+pocket-ic 15.0.0. This is the path `pocket-ic-e2e.mjs` cannot cover: real
+canister creation, controller checks, `PUBLIC_CANISTER_ID` injection, an HTTP
+gateway, and cycle balances that come from somewhere.
+
+Verified:
+
+- `icp.yaml` deploys all six canisters, including the four workers declared
+  inline against one shared source file.
+- `autoWire` assembles the four-shard cluster from injected environment
+  variables, with no principals pasted by hand.
+- `llmTarget` resolves to the deployed `llm_shim` principal, and
+  `askLlmCanister` round-trips `v1_chat` through it.
+- `benchmark` returns the same counters as the interpreter and pocket-ic.
+- Upgrade rehearsal: `icp deploy` a second time, then re-run. Stable state
+  (`calls`, `workers`, `wireBytes`), the `llmOverride`, and each worker's shard
+  assignment all survive, and the benchmark output is byte-identical across the
+  upgrade.
+
+Two defects in the documented flow, both now fixed in the Makefile and README:
+
+- **Identity ordering.** `icp deploy` makes the currently selected identity the
+  controller. The default is `anonymous`, which every gated endpoint rejects, so
+  deploying as anonymous yields a cluster nobody can configure. Switching
+  identity afterwards does not recover it — the next `icp deploy` fails with
+  `IC0512 Only controllers ... can call ic00 method update_settings`. The
+  identity has to exist and be selected before the first deploy.
+- **Cycle floor.** `icp deploy` provisions ~1.4T cycles locally
+  (`1_498_586_747_137` on an untouched worker). `MIN_CYCLE_RESERVE` is 3T, so the
+  first `benchmark` returns
+  `#lowCycles { balance = 1_416_838_088_150; reserve = 3_000_000_000_000 }`
+  and nothing runs. Correct behaviour, wrong default for the local flow; the
+  documented steps now include a top-up.
+
+### Candid compatibility across releases
+
+Upgrading a cluster deployed from #41 to v2026.08.06 is a **breaking** Candid
+change and `icp deploy` refuses it:
+
+```
+Method askLlmCanister: func (text, text) -> (Result_4)
+  is not a subtype of func (text, text) -> (Result_1/1)
+Method configure: func (nat, nat) -> (Result)
+  is not a subtype of func (nat, nat) -> (Result/1)
+```
+
+Adding a case to an error variant widens it, and in *return* position a wider
+variant is not a subtype: a client that matches the old cases exhaustively breaks
+on the new tag. The gate is working as intended — worth knowing before assuming
+an error-type addition is additive.
+
+### Cycles on a replica
+
+First real figures; the interpreter has no cycle accounting and reports 0.
+`cyclesSpent` is a balance delta, so it covers the calls a message made but not
+that message's own execution charge, which is deducted after it returns.
+
+```
+baseline / arDraft / maskedDraft        0            (no fan-out)
+shardedArgmax                     914_323_992
+shardedDense                      926_466_070
+shardedQuantized/8bit/floor       926_504_390
+shardedQuantized/4bit/nearest   1_898_702_132       (21 rounds, not 10)
+shardedDraft                    2_187_247_652
+```
+
+The meter tracks the fan-out, which is what it is for. These are pocket-ic
+prices, not mainnet prices.
+
 ## Not run
 
-- `icp network start -d` / `icp deploy`. The network launcher is fetched through
-  `api.github.com`, which the recording environment blocks. The replica path was
-  covered with `pocket-ic` instead, so `icp.yaml` and `autoWire` remain
-  unexercised.
 - Mainnet deployment, and any call to a real model behind `v1_chat`.
-- Upgrade rehearsal.
-- Instruction counts. The cycle figures above are balance deltas on `pocket-ic`,
-  which are not mainnet prices; what they establish is that the meter tracks the
+- Instruction counts. The cycle figures above are balance deltas on a local
+  replica, not mainnet prices; what they establish is that the meter tracks the
   fan-out, not what a mainnet call would cost.
 - A quota window actually rolling over. `Quota` takes `now` as an argument and
   `test/Quota.test.mo` covers the rollover directly; the replica harness only
-  covers a single window, because advancing `pocket-ic` an hour would add a
+  covers a single window, because advancing the replica an hour would add a
   minute to every run for no additional coverage.
 - Colluding workers. Every measurement above has exactly one byzantine node.
+- Upgrade *across a breaking Candid change*. The gate refuses it, which is the
+  documented behaviour; migrating a live cluster over one is untried.

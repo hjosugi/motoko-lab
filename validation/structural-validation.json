@@ -1,11 +1,11 @@
 {
-  "root": "/mnt/data/github.com/hjosugi/motoko-lab",
+  "root": "/home/user/motoko-lab",
   "status": "pass",
   "stats": {
     "file_count": 322,
     "directory_count": 80,
-    "total_bytes": 1042185,
-    "total_lines": 24535,
+    "total_bytes": 1050331,
+    "total_lines": 24691,
     "application_count": 6,
     "numbered_doc_count": 26,
     "issue_count": 45,

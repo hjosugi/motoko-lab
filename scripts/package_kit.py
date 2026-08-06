@@ -14,13 +14,26 @@ from pathlib import Path
 
 FIXED_ZIP_TIME = (2026, 7, 20, 0, 0, 0)
 EXCLUDED_DIRS = {".git", "node_modules", ".mops", ".mops-cache", ".pocket-ic", "__pycache__"}
+# Path sequences that are generated even though no single component is. `.icp` is
+# icp-cli's working directory and `.icp/cache` holds local replica state.
+EXCLUDED_SEQUENCES = ((".icp", "cache"),)
+
+
+def _excluded(parts: tuple[str, ...]) -> bool:
+    if any(part in EXCLUDED_DIRS for part in parts):
+        return True
+    return any(
+        parts[index:index + len(sequence)] == sequence
+        for sequence in EXCLUDED_SEQUENCES
+        for index in range(len(parts))
+    )
 
 
 def files_in(root: Path) -> list[Path]:
     return [
         path
         for path in sorted(root.rglob("*"))
-        if path.is_file() and not any(part in EXCLUDED_DIRS for part in path.parts)
+        if path.is_file() and not _excluded(path.relative_to(root).parts)
     ]
 
 
