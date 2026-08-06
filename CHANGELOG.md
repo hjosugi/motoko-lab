@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v2026.08.07
 
 - The documentation site now rewrites links that leave it. A Markdown link to something that is not a staged page — a `.mo` source, a script, a directory — has nowhere to resolve inside the site, so it is redirected to the same path on GitHub. Without this, documentation could not link to the code it documents: the link would resolve in the repository, fail in the site, and take `mkdocs build --strict` down with it. Links to the root `README.md` are redirected to the staged `index.md` rather than off-site.
 - Added `--self-test` to `scripts/build_docs_site.py`, seventeen pinned cases for the rewriter, run in CI before anything is staged. It covers a gap the other two gates cannot: `--strict` asks whether a link resolves, never whether it was supposed to be rewritten, so a rewriter that quietly stops rewriting still builds green and produces a site full of dead links. Disabling the rewriter fails nine of the seventeen.
