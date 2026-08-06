@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@dfinity/pic": "^0.22.0"
+  }
+}

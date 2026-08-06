@@ -1,0 +1,43 @@
+name: Replica
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: replica-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  replica:
+    name: Replica integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install ICP and Motoko tooling
+        run: ./scripts/bootstrap_toolchain.sh
+      # The suites compile each canister with the pinned `moc`, which needs
+      # `mo:core` on the package path. Same registry fallback the rest of the
+      # repository uses, so a blocked Mops registry does not take this out.
+      - name: Install application dependencies
+        run: |
+          source ./scripts/toolchain_env.sh
+          motoko_add_toolchain_to_path
+          for app in apps/*/; do
+            [ -f "$app/mops.toml" ] || continue
+            ( cd "$app" && ( mops install || "$GITHUB_WORKSPACE/scripts/vendor_core_offline.sh" "$PWD" ) )
+          done
+      - name: Download the replica
+        run: node tools/pocket-ic/setup.mjs
+      - name: Run the replica suites
+        run: |
+          source ./scripts/toolchain_env.sh
+          motoko_add_toolchain_to_path
+          node tools/pocket-ic/run.mjs
