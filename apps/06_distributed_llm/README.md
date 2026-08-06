@@ -273,27 +273,74 @@ owner                      benchmark ok / quotaOf().exempt = true
 
 ## ローカルレプリカで動かす
 
-`icp` を使う通常の手順です。
-
 ```bash
 make deploy-local
-# icp network start -d
-# icp deploy
-# icp canister call backend autoWire '()'
-# icp canister call backend benchmark '("speculative decoding uses", 24, 4, 2)'
 ```
+
+2026-08-06 に icp-cli 1.2.0 + network launcher 15.0.0 で実際に通した手順です。順序に
+意味があり、素朴に並べると 2 か所で詰まります。
+
+```bash
+icp identity new --storage plaintext operator   # 最初の deploy より前に作る
+icp identity default operator
+icp network start -d
+icp deploy
+icp canister top-up backend --amount 10t        # ローカルの初期残高では足りない
+icp canister call backend autoWire '()'
+icp canister call backend benchmark '("speculative decoding uses", 24, 4, 2)'
+```
+
+**identity を先に作る理由。** `icp deploy` は「そのとき選択されている identity」を
+コントローラーにします。既定は `anonymous` で、このアプリのゲート済みエンドポイントは
+`anonymous` を拒否します (`#anonymousNotAllowed`)。つまり anonymous のまま deploy すると
+**誰も設定できないクラスタ**ができます。しかも後から identity を切り替えると、今度は
+`icp deploy` 自体が `IC0512 Only controllers of canister ... can call ic00 method
+update_settings` で落ちます。新しい identity はコントローラーではないからです。
+やり直すにはキャニスターを作り直すしかありません。
+
+**top-up が要る理由。** `icp deploy` がローカルで与える残高は約 1.4T cycles です
+(実測: worker で 1_498_586_747_137)。オーケストレーターは `MIN_CYCLE_RESERVE` = 3T を
+下回ると仕事を受けないので、そのままだと最初の `benchmark` が
+
+```
+(variant { err = variant { lowCycles = record {
+  balance = 1_416_838_088_150 : nat; reserve = 3_000_000_000_000 : nat } } })
+```
+
+を返して終わります。凍結閾値を割る前に止まるという設計どおりの挙動で、バグではあり
+ません。メインネットではキャニスターの資金調達が別途あるので、この手順は不要です。
 
 `autoWire` は `icp deploy` が注入する `PUBLIC_CANISTER_ID:worker_N` を順に読んで
 クラスタを組み立てます。プリンシパルを手で貼る必要はありません。環境変数が使えない
 場合は `setWorkers` に直接渡します。
 
-pocket-ic を使う経路もあります。こちらは本アプリの検証で実際に通した経路です。
+### `api.github.com` が塞がれている環境で
+
+`icp network start` は network launcher を GitHub API 経由で探すため、egress
+allowlist のある環境では最初に落ちます。launcher の実体はリリース資産として直接
+取得でき、`ICP_CLI_NETWORK_LAUNCHER_PATH` で明示的に指せます。
+
+```bash
+TAG=v15.0.0-2026-07-31-04-23
+curl -sSL -o launcher.tar.gz \
+  "https://github.com/dfinity/icp-cli-network-launcher/releases/download/$TAG/icp-cli-network-launcher-x86_64-linux-$TAG.tar.gz"
+tar -xzf launcher.tar.gz
+export ICP_CLI_NETWORK_LAUNCHER_PATH="$PWD/icp-cli-network-launcher-x86_64-linux-$TAG/icp-cli-network-launcher"
+```
+
+配布物には launcher と、それが対応する `pocket-ic` が同梱されています。バージョンは
+1 対 1 に対応するので、別々に拾って組み合わせることはできません。
+
+### pocket-ic を直接使う経路
 
 ```bash
 node tools/pocket-ic-setup.mjs   # pocket-ic と didc を取得する
 node tools/pocket-ic-e2e.mjs     # 8 キャニスターを配備し、benchmark とアクセス制御・
                                  # クォータ・サイクル・ビザンチン検出の 55 項目を検証
 ```
+
+こちらは合意もゲートウェイも通らないぶん速く、CI 向きです。ただし `icp deploy` の
+環境変数注入がないので `autoWire` は通りません。両方を残しているのはそのためです。
 
 ## 注意している設計上の制約
 

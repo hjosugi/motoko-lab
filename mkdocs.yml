@@ -1,0 +1,210 @@
+# Documentation site for the Motoko Mastery Kit.
+#
+# `docs_dir` is `site-src/`, which `scripts/build_docs_site.py` stages from the
+# repository. The kit's Markdown lives next to what it describes rather than in
+# one directory, and staging preserves those relative paths so every link keeps
+# working without rewriting anything. Build with `make docs`, not with `mkdocs`
+# directly — `site-src/` is generated and gitignored.
+#
+# The nav below is written by hand on purpose. It is the reading order, which is
+# a judgement no directory listing can make: `docs/` is numbered for a reason and
+# the apps go from the flagship to the most recent. `build_docs_site.py --check`
+# fails when a staged page is missing from it, so a new document cannot silently
+# become unreachable.
+
+site_name: Motoko Mastery Kit
+site_description: Motokoを初級から本番運用、言語処理系への貢献まで一気通貫で学ぶ実践キット
+site_url: https://hjosugi.github.io/motoko-lab/
+repo_url: https://github.com/hjosugi/motoko-lab
+repo_name: hjosugi/motoko-lab
+edit_uri: ""
+
+docs_dir: site-src
+site_dir: site
+
+copyright: Apache License 2.0
+
+theme:
+  name: material
+  language: ja
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: ダークモードに切り替え
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: ライトモードに切り替え
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search:
+      lang:
+        - ja
+        - en
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+validation:
+  # A staged page that is not in the nav is normal here: the 45 issue drafts are
+  # indexed by the table in ISSUE_BACKLOG.md, which is a better index than a
+  # 45-entry sidebar. Everything else is covered by `build_docs_site.py --check`.
+  nav:
+    omitted_files: info
+  links:
+    absolute_links: warn
+    unrecognized_links: warn
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/hjosugi/motoko-lab
+
+nav:
+  - ホーム: index.md
+  - 収録物の案内: CONTENTS.md
+
+  - はじめに:
+      - Start Here: docs/00_START_HERE.md
+      - 16週間ロードマップ: docs/01_16_WEEK_ROADMAP.md
+      - コマンド早見表: docs/16_COMMAND_CHEATSHEET.md
+      - 90日実行計画: docs/17_90_DAY_EXECUTION_PLAN.md
+
+  - 言語とランタイム:
+      - Motoko言語の詳細: docs/02_MOTOKO_LANGUAGE_DEEP_DIVE.md
+      - ICPランタイムとアクターモデル: docs/03_ICP_RUNTIME_AND_ACTOR_MODEL.md
+
+  - 本番設計と運用:
+      - 本番アーキテクチャ: docs/04_PRODUCTION_ARCHITECTURE.md
+      - セキュリティ脅威モデル: docs/05_SECURITY_THREAT_MODEL.md
+      - テスト・CI・デプロイ: docs/06_TESTING_CI_DEPLOYMENT.md
+      - 運用ランブック: docs/07_OPERATIONS_RUNBOOK.md
+      - アップグレードと移行戦略: docs/24_UPGRADE_MIGRATION_STRATEGY.md
+      - コストとキャパシティ: docs/25_COST_AND_CAPACITY_MODEL.md
+      - データモデルとAPI: docs/23_DATA_MODEL_AND_API.md
+
+  - アプリケーション:
+      - 01 Creator Proof Registry:
+          - 概要: apps/01_creator_proof_registry/README.md
+          - 脅威モデル: apps/01_creator_proof_registry/docs/THREAT_MODEL.md
+          - アップグレード計画: apps/01_creator_proof_registry/docs/UPGRADE_PLAN.md
+      - 02 Merkle Anchor:
+          - 概要: apps/02_merkle_anchor/README.md
+          - 脅威モデル: apps/02_merkle_anchor/docs/THREAT_MODEL.md
+          - アップグレード計画: apps/02_merkle_anchor/docs/UPGRADE_PLAN.md
+      - 03 License Marketplace:
+          - 概要: apps/03_license_marketplace/README.md
+          - 脅威モデル: apps/03_license_marketplace/docs/THREAT_MODEL.md
+          - アップグレード計画: apps/03_license_marketplace/docs/UPGRADE_PLAN.md
+      - 04 Bounty Board:
+          - 概要: apps/04_bounty_board/README.md
+          - 脅威モデル: apps/04_bounty_board/docs/THREAT_MODEL.md
+          - アップグレード計画: apps/04_bounty_board/docs/UPGRADE_PLAN.md
+      - 05 Usage-Metered SaaS:
+          - 概要: apps/05_usage_metered_saas/README.md
+          - 脅威モデル: apps/05_usage_metered_saas/docs/THREAT_MODEL.md
+          - アップグレード計画: apps/05_usage_metered_saas/docs/UPGRADE_PLAN.md
+      - 06 Distributed LLM:
+          - 概要: apps/06_distributed_llm/README.md
+          - 設計: apps/06_distributed_llm/docs/DESIGN.md
+          - 測定記録: apps/06_distributed_llm/docs/MEASUREMENTS.md
+          - 脅威モデル: apps/06_distributed_llm/docs/THREAT_MODEL.md
+          - アップグレード計画: apps/06_distributed_llm/docs/UPGRADE_PLAN.md
+
+  - Creator Provenance Protocol:
+      - 論拠: docs/10_CREATOR_PROVENANCE_THESIS.md
+      - プロトコル v0.1: docs/11_CREATOR_PROVENANCE_PROTOCOL.md
+      - パッケージ: protocol/README.md
+      - 相互運用計画: protocol/INTEROPERABILITY.md
+      - プロダクトPRD: docs/22_AI_PROVENANCE_PRODUCT_PRD.md
+
+  - ラボ:
+      - 一覧: labs/README.md
+      - 01 型とパターン: labs/01_types_and_patterns.md
+      - 02 モジュールとジェネリクス: labs/02_modules_and_generics.md
+      - 03 persistent actor: labs/03_persistent_actor.md
+      - 04 認可: labs/04_authorization.md
+      - 05 非同期ステートマシン: labs/05_async_state_machine.md
+      - 06 アップグレード移行: labs/06_upgrade_migration.md
+      - 07 Certified Data: labs/07_certified_data.md
+      - 08 ICRCアダプタ: labs/08_icrc_adapter.md
+      - 09 プロパティテスト: labs/09_property_testing.md
+      - 10 コンパイラトレース: labs/10_compiler_trace.md
+
+  - コンパイラ貢献:
+      - メンテナトラック: compiler/README.md
+      - ブートストラップ: compiler/BOOTSTRAP.md
+      - アーキテクチャマップ: compiler/ARCHITECTURE_MAP.md
+      - Issueトリアージ基準: compiler/ISSUE_TRIAGE_RUBRIC.md
+      - 最初の10 PR: compiler/FIRST_10_PRS.md
+      - リリースチェックリスト: compiler/RELEASE_CHECKLIST.md
+      - OCaml/Dune/Nix/Wasm カリキュラム: compiler/OCAML_DUNE_NIX_WASM_CURRICULUM.md
+      - 再現例 — envVar rope trap: compiler/repros/envvar-rope/README.md
+      - コンパイラアーキテクチャ: docs/13_COMPILER_ARCHITECTURE.md
+      - メンテナへの道: docs/12_MAINTAINER_PATH.md
+      - 貢献プレイブック: docs/14_CONTRIBUTION_PLAYBOOK.md
+
+  - 事業と評価:
+      - ビジネスとGTM: docs/18_BUSINESS_GTM.md
+      - マネタイズ事例: docs/09_MONETIZATION_CASES.md
+      - 本番サービスの根拠: docs/08_PRODUCTION_SERVICES_EVIDENCE.md
+      - 大規模Motokoサービスの設計図: docs/21_LARGEST_MOTOKO_SERVICE_BLUEPRINT.md
+      - 制約と法的注意: docs/19_LIMITATIONS_AND_LEGAL.md
+      - 出典台帳: docs/20_SOURCE_EVIDENCE.md
+      - 資料インデックス: docs/15_RESOURCE_INDEX.md
+
+  - キャリア:
+      - 12か月メンテナ計画: career/12_MONTH_MAINTAINER_PLAN.md
+      - ポートフォリオ評価表: career/PORTFOLIO_SCORECARD.md
+      - 貢献ログ: career/CONTRIBUTION_LOG_TEMPLATE.md
+      - 週次レビュー: career/WEEKLY_REVIEW_TEMPLATE.md
+      - 読書リスト: career/READING_LIST_OCAML_WASM_PL.md
+
+  - Issueバックログ:
+      - 一覧: github/ISSUE_BACKLOG.md
+      - ラベル: github/labels.md
+      - マイルストーン: github/milestones.md
+
+  - 検証とリリース:
+      - 検証状態: VALIDATION_STATUS.md
+      - API surface: validation/API_SURFACE.md
+      - ビルドレポート: BUILD_REPORT.md
+      - バージョンスナップショット: VERSION_SNAPSHOT.md
+      - 変更履歴: CHANGELOG.md
+      - サードパーティ表記: THIRD_PARTY_NOTICES.md

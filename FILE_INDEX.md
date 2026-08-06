@@ -3,7 +3,7 @@
 このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
 完全性確認には`MANIFEST.sha256`を使用してください。
 
-Indexed files: **322**
+Indexed files: **328**
 
 ## Root
 
@@ -22,6 +22,8 @@ Indexed files: **322**
 - `VALIDATION_STATUS.md`
 - `VERSION_SNAPSHOT.md`
 - `kit-metadata.json`
+- `mkdocs.yml`
+- `requirements-docs.txt`
 
 ## `.claude/`
 
@@ -76,6 +78,7 @@ Indexed files: **322**
 - `.github/PULL_REQUEST_TEMPLATE.md`
 - `.github/copilot-instructions.md`
 - `.github/workflows/ci.yml`
+- `.github/workflows/docs.yml`
 
 ## `apps/`
 
@@ -210,6 +213,8 @@ Indexed files: **322**
 - `compiler/OCAML_DUNE_NIX_WASM_CURRICULUM.md`
 - `compiler/README.md`
 - `compiler/RELEASE_CHECKLIST.md`
+- `compiler/repros/envvar-rope/EnvVarRope.mo`
+- `compiler/repros/envvar-rope/README.md`
 
 ## `docs/`
 
@@ -336,6 +341,7 @@ Indexed files: **322**
 ## `scripts/`
 
 - `scripts/bootstrap_toolchain.sh`
+- `scripts/build_docs_site.py`
 - `scripts/check_all_apps.sh`
 - `scripts/check_api_surface.py`
 - `scripts/check_candid_compat.py`

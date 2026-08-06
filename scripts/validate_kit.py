@@ -101,12 +101,30 @@ def rel(root: Path, path: Path) -> str:
 
 # Generated or downloaded trees that are not kit content: package caches and the
 # replica/Candid binaries `apps/06_distributed_llm/tools` fetches on demand.
-IGNORED_DIRS = {".git", "node_modules", ".mops", ".mops-cache", ".pocket-ic", "__pycache__"}
+# Directory names that are always generated, plus path *sequences* that are.
+# `.icp` is icp-cli's working directory: `icp network start` puts a whole replica
+# state tree under `.icp/cache`, which is gitignored and can be hundreds of
+# megabytes. Only the `cache` subtree is generated, so this matches the sequence
+# rather than the bare name.
+IGNORED_DIRS = {".git", "node_modules", ".mops", ".mops-cache", ".pocket-ic", "__pycache__", "site", "site-src", ".venv-docs"}
+IGNORED_SEQUENCES = ((".icp", "cache"),)
+
+
+def is_generated(path: Path, root: Path) -> bool:
+    """True when `path` lives in a generated tree and is not kit content."""
+    parts = path.relative_to(root).parts if path.is_relative_to(root) else path.parts
+    if any(part in IGNORED_DIRS for part in parts):
+        return True
+    return any(
+        parts[index:index + len(sequence)] == sequence
+        for sequence in IGNORED_SEQUENCES
+        for index in range(len(parts))
+    )
 
 
 def iter_files(root: Path) -> Iterable[Path]:
     for path in sorted(root.rglob("*")):
-        if path.is_file() and not any(part in IGNORED_DIRS for part in path.parts):
+        if path.is_file() and not is_generated(path, root):
             yield path
 
 
@@ -500,7 +518,7 @@ def run_validation(root: Path) -> Report:
         sum(
             1
             for path in report.root.rglob("*")
-            if path.is_dir() and not any(part in IGNORED_DIRS for part in path.parts)
+            if path.is_dir() and not is_generated(path, report.root)
         )
         + 1
     )

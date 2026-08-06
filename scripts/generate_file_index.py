@@ -6,6 +6,22 @@ from __future__ import annotations
 from collections import defaultdict
 from pathlib import Path
 
+# Kept in step with scripts/validate_kit.py and scripts/package_kit.py.
+IGNORED_DIRS = {".git", "node_modules", ".mops", ".mops-cache", ".pocket-ic", "__pycache__", "site", "site-src", ".venv-docs"}
+IGNORED_SEQUENCES = ((".icp", "cache"),)
+
+
+def is_generated(path: Path, root: Path) -> bool:
+    """True when `path` lives in a generated tree and is not kit content."""
+    parts = path.relative_to(root).parts if path.is_relative_to(root) else path.parts
+    if any(part in IGNORED_DIRS for part in parts):
+        return True
+    return any(
+        parts[index:index + len(sequence)] == sequence
+        for sequence in IGNORED_SEQUENCES
+        for index in range(len(parts))
+    )
+
 
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
@@ -14,10 +30,7 @@ def main() -> int:
         path.relative_to(root).as_posix()
         for path in sorted(root.rglob("*"))
         if path.is_file()
-        and not any(
-            part in {".git", "node_modules", ".mops", ".mops-cache", ".pocket-ic", "__pycache__"}
-            for part in path.parts
-        )
+        and not is_generated(path, root)
     ]
     if "FILE_INDEX.md" not in paths:
         paths.append("FILE_INDEX.md")
