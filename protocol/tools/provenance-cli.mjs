@@ -2,6 +2,7 @@
 import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import process from "node:process";
+import { CANONICALIZATION_ID, canonicalizeValue, parse as parseJson } from "./jcs.mjs";
 
 const DOMAIN = Buffer.from("icp-creator-proof:v1", "utf8");
 const ZERO = Buffer.from([0]);
@@ -11,18 +12,21 @@ function fail(message) {
   process.exitCode = 1;
 }
 
-export function stableValue(value) {
-  if (Array.isArray(value)) return value.map(stableValue);
-  if (value !== null && typeof value === "object") {
-    return Object.fromEntries(
-      Object.keys(value).sort().map((key) => [key, stableValue(value[key])]),
-    );
-  }
-  return value;
+export { CANONICALIZATION_ID };
+
+/**
+ * RFC 8785 canonical JSON text for an already-parsed value.
+ *
+ * Prefer `canonicalizeText` where the JSON text is still available: the checks
+ * that need the text — duplicate member names above all — cannot be made once
+ * `JSON.parse` has collapsed them.
+ */
+export function canonicalize(value) {
+  return canonicalizeValue(value);
 }
 
-export function canonicalize(value) {
-  return JSON.stringify(stableValue(value));
+export function canonicalizeText(text) {
+  return canonicalizeValue(parseJson(text));
 }
 
 export function sha256Hex(bytes) {
@@ -70,8 +74,11 @@ function options(args) {
   return result;
 }
 
+// Deliberately not `JSON.parse`. Every manifest read here is on its way to a
+// digest, and the strict scanner is the only place a duplicate member name or a
+// lone surrogate can still be seen.
 async function readJson(path) {
-  return JSON.parse(await readFile(path, "utf8"));
+  return parseJson(await readFile(path, "utf8"));
 }
 
 async function main(argv) {
@@ -128,14 +135,14 @@ async function main(argv) {
     const bundle = {
       version: "0.1",
       generatedAt: new Date().toISOString(),
-      canonicalization: "educational-recursive-key-sort-json",
+      canonicalization: CANONICALIZATION_ID,
       principal: (opts.principal ?? "").trim().toLowerCase(),
       artifactHash,
       manifestHash,
       saltHex: (opts.salt ?? "").toLowerCase(),
       commitment,
       manifest,
-      warnings: ["Canonicalization is not full RFC 8785.", "Registration evidence is not legal authorship proof."],
+      warnings: ["Registration evidence is not legal authorship proof."],
     };
     await writeFile(outputPath, `${JSON.stringify(bundle, null, 2)}\n`, "utf8");
     console.log(outputPath);

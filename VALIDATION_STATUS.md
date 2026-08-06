@@ -8,6 +8,7 @@
 - Markdown相対linkの存在確認
 - 全`mops.toml`のPython `tomllib` parse
 - 全JSON、YAML、JSON Schema、manifest test vectorのparse/validation
+- RFC 8785 canonicalizationのofficial vector 6件とedge vector 47件 (accept 21 / reject 26)
 - provenance CLIの`node --check`とunit test
 - shell scriptの`bash -n`
 - Python scriptのsyntax compile
@@ -125,6 +126,28 @@
 
 詳細は`apps/01_creator_proof_registry/docs/COMMITMENT_V1.md`。
 
+## 2026-08-07に追加で実行済み (protocol, issue #4)
+
+- RFC 8785 (JCS)準拠のcanonicalization (`protocol/tools/jcs.mjs`)。従来のrecursive key sortが
+  取りこぼしていたのはserializationではなく、`JSON.parse`が捨てた後では見えないもの
+  (duplicate member name、lone surrogate、double範囲外のnumber literal) でした
+- `cyberphone/json-canonicalization`のofficial vector 6件をvendorし、reference outputと
+  byte単位で照合。さらにaccept 21件 / reject 26件のedge vectorを追加。
+  reject vectorはerror message文字列まで固定しているので、failure behaviourも契約の一部です
+- 全vectorでidempotency (canonical formを再度canonicalizeしても同一) を検証。
+  この検査が実装のバグを1件検出しました: 当初のinteger制限が`1e20`のcanonical form
+  `100000000000000000000`、つまり自分自身の出力を拒否しており、不動点がありませんでした
+- cross-implementation照合 (`protocol/tools/crosscheck.mjs`、cargo/npm/network必須のためCI外):
+  `serde_jcs` 0.2.0 / `serde_json` 1.0.151 / `canonicalize` npm 3.0.0に対して
+  **29件の入力が3実装すべてでbyte単位一致**。reject 26件のうち21件は`serde_jcs`も拒否
+- RFC 8785より厳しい2点は意図的で、いずれも「拒否」方向のためacceptされる入力のbytesは
+  他の準拠実装と一致します: duplicate member nameの拒否と、正確にround-tripしない
+  integer literalの拒否。`crosscheck.mjs`はこの差分リストが記録と食い違えば失敗します
+- canisterのcanonicalization責務は**なし**と確定。32-byte digestを不透明な値として
+  受け取るだけで、JSONを解析しません
+
+詳細は`protocol/CANONICALIZATION.md`。
+
 ## 未実施のproduction gate
 
 - PocketIC integration test (apps/01-05。app 06は実行済み)
@@ -163,6 +186,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | 文書、設計、source evidence | reviewed dated snapshot |
 | JavaScript/Python/shell | locally executed and validated |
 | JSON Schema/test vectors | locally validated |
+| RFC 8785 canonicalization | official vectors passed; byte-identical to serde_jcs 0.2.0 and canonicalize 3.0.0 |
 | Motoko/Candid API surface | offline mechanically cross-checked |
 | Motoko compile/test/Wasm/Candid | passed for all 6 applications |
 | Nix toolchain bootstrap | passed with read-only global npm prefix |

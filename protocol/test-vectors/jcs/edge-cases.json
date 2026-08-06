@@ -1,0 +1,320 @@
+{
+  "description": "RFC 8785 edge vectors for the Creator Provenance Protocol. `accept` pins the canonical bytes; `reject` pins which inputs are refused and why. Every `accept` output was confirmed byte-identical against serde_jcs 0.2.0 and the canonicalize npm package 3.0.0. `alsoRejectedBySerdeJcs` records where this implementation is deliberately stricter than RFC 8785 requires; see protocol/CANONICALIZATION.md.",
+  "canonicalization": "RFC8785",
+  "crossChecked": {
+    "serde_jcs": "0.2.0",
+    "canonicalize": "3.0.0"
+  },
+  "accept": [
+    {
+      "name": "number-minus-zero",
+      "description": "the sign of zero is dropped",
+      "input": "{\"a\":-0,\"b\":0,\"c\":-0.0}",
+      "output": "{\"a\":0,\"b\":0,\"c\":0}"
+    },
+    {
+      "name": "number-integral-forms",
+      "description": "trailing zeros and exponents collapse to the shortest ES6 form",
+      "input": "[1.0,1.00,100,1e2,1E2,1e+2,10e1]",
+      "output": "[1,1,100,100,100,100,100]"
+    },
+    {
+      "name": "number-exponent-threshold",
+      "description": "ES6 switches to exponent notation at 1e21 and at 1e-7",
+      "input": "[1e20,1e21,1e-6,1e-7,0.000001,0.0000001]",
+      "output": "[100000000000000000000,1e+21,0.000001,1e-7,0.000001,1e-7]"
+    },
+    {
+      "name": "number-extremes",
+      "description": "the smallest denormal and the largest finite double",
+      "input": "[5e-324,1.7976931348623157e308,-1.7976931348623157e308]",
+      "output": "[5e-324,1.7976931348623157e+308,-1.7976931348623157e+308]"
+    },
+    {
+      "name": "number-max-safe-integer",
+      "description": "the largest consecutive integer, and 2^53 itself, which is exact",
+      "input": "[9007199254740991,9007199254740992,-9007199254740991]",
+      "output": "[9007199254740991,9007199254740992,-9007199254740991]"
+    },
+    {
+      "name": "number-large-integral-roundtrip",
+      "description": "a plain integer literal above 2^53 is fine when it round-trips exactly",
+      "input": "[100000000000000000000,1e20]",
+      "output": "[100000000000000000000,100000000000000000000]"
+    },
+    {
+      "name": "number-rounding-is-expected",
+      "description": "an inexact literal is serialized as the double it parsed to",
+      "input": "[333333333.33333329,0.1,0.2,0.30000000000000004]",
+      "output": "[333333333.3333333,0.1,0.2,0.30000000000000004]"
+    },
+    {
+      "name": "string-short-escapes",
+      "description": "the C0 controls with short forms, and the two characters that must be escaped",
+      "input": "{\"a\":\"\\b\\f\\n\\r\\t\",\"b\":\"\\\"\",\"c\":\"\\\\\"}",
+      "output": "{\"a\":\"\\b\\f\\n\\r\\t\",\"b\":\"\\\"\",\"c\":\"\\\\\"}"
+    },
+    {
+      "name": "string-long-escapes",
+      "description": "C0 controls without a short form use lowercase \\u00xx",
+      "input": "{\"a\":\"\\u0000\\u0001\\u001f\",\"b\":\"\\u000b\"}",
+      "output": "{\"a\":\"\\u0000\\u0001\\u001f\",\"b\":\"\\u000b\"}"
+    },
+    {
+      "name": "string-not-escaped",
+      "description": "solidus, DEL, U+0080 and the line separators stay literal",
+      "input": "{\"a\":\"a\\/b\",\"b\":\"\\u007f\",\"c\":\"\\u0080\",\"d\":\"\\u2028\\u2029\"}",
+      "output": "{\"a\":\"a/b\",\"b\":\"\",\"c\":\"\",\"d\":\"  \"}"
+    },
+    {
+      "name": "string-astral",
+      "description": "a surrogate pair is one character in the output",
+      "input": "{\"a\":\"\\ud83d\\ude02\",\"b\":\"\\ud800\\udc00\",\"c\":\"\\udbff\\udfff\"}",
+      "output": "{\"a\":\"😂\",\"b\":\"𐀀\",\"c\":\"􏿿\"}"
+    },
+    {
+      "name": "key-order-code-units",
+      "description": "sorting is by UTF-16 code unit, so an astral key sorts before U+FB33",
+      "input": "{\"\\ufb33\":1,\"\\ud83d\\ude02\":2,\"\\uffff\":3,\"\\u20ac\":4}",
+      "output": "{\"€\":4,\"😂\":2,\"דּ\":1,\"￿\":3}"
+    },
+    {
+      "name": "key-order-ascii",
+      "description": "empty key first, digits before letters, uppercase before lowercase",
+      "input": "{\"a\":1,\"A\":2,\"1\":3,\"\":4,\"_\":5,\"~\":6}",
+      "output": "{\"\":4,\"1\":3,\"A\":2,\"_\":5,\"a\":1,\"~\":6}"
+    },
+    {
+      "name": "key-order-prefix",
+      "description": "a shorter key sorts before a longer one that extends it",
+      "input": "{\"ab\":1,\"a\":2,\"abc\":3,\"b\":4}",
+      "output": "{\"a\":2,\"ab\":1,\"abc\":3,\"b\":4}"
+    },
+    {
+      "name": "nesting-empty",
+      "description": "empty containers survive at every depth",
+      "input": "{\"a\":{},\"b\":[],\"c\":[{},[]],\"d\":{\"e\":{\"f\":{}}}}",
+      "output": "{\"a\":{},\"b\":[],\"c\":[{},[]],\"d\":{\"e\":{\"f\":{}}}}"
+    },
+    {
+      "name": "literals",
+      "description": "the three JSON literals",
+      "input": "{\"a\":null,\"b\":true,\"c\":false}",
+      "output": "{\"a\":null,\"b\":true,\"c\":false}"
+    },
+    {
+      "name": "array-order-preserved",
+      "description": "arrays are not sorted",
+      "input": "{\"a\":[3,1,2],\"b\":[\"z\",\"a\"]}",
+      "output": "{\"a\":[3,1,2],\"b\":[\"z\",\"a\"]}"
+    },
+    {
+      "name": "whitespace-insignificant",
+      "description": "every RFC 8259 whitespace form between tokens",
+      "input": "{\n\t\"a\" : [ 1 ,\r 2 ]\n}",
+      "output": "{\"a\":[1,2]}"
+    },
+    {
+      "name": "top-level-scalar",
+      "description": "a bare string is a valid JSON document",
+      "input": "\"hello\"",
+      "output": "\"hello\""
+    },
+    {
+      "name": "top-level-array",
+      "description": "so is a bare array",
+      "input": "[1,\"two\",null]",
+      "output": "[1,\"two\",null]"
+    },
+    {
+      "name": "duplicate-key-in-nested-objects",
+      "description": "the same name in sibling objects is not a duplicate",
+      "input": "{\"a\":{\"k\":1},\"b\":{\"k\":2}}",
+      "output": "{\"a\":{\"k\":1},\"b\":{\"k\":2}}"
+    }
+  ],
+  "reject": [
+    {
+      "name": "duplicate-key",
+      "description": "two members with the same name",
+      "input": "{\"a\":1,\"a\":2}",
+      "error": "duplicate member name \"a\" at offset 7",
+      "alsoRejectedBySerdeJcs": false
+    },
+    {
+      "name": "duplicate-key-escaped",
+      "description": "the same name written two different ways",
+      "input": "{\"a\":1,\"\\u0061\":2}",
+      "error": "duplicate member name \"a\" at offset 7",
+      "alsoRejectedBySerdeJcs": false
+    },
+    {
+      "name": "duplicate-key-nested",
+      "description": "a duplicate inside a nested object",
+      "input": "{\"outer\":{\"a\":1,\"b\":2,\"a\":3}}",
+      "error": "duplicate member name \"a\" at offset 22",
+      "alsoRejectedBySerdeJcs": false
+    },
+    {
+      "name": "number-overflow",
+      "description": "a literal outside the IEEE-754 double range",
+      "input": "{\"a\":1E400}",
+      "error": "number 1E400 is outside the IEEE-754 double range at offset 5",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "number-overflow-negative",
+      "description": "the same, negative",
+      "input": "{\"a\":-1E400}",
+      "error": "number -1E400 is outside the IEEE-754 double range at offset 5",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "integer-precision-loss",
+      "description": "an integer literal with more digits than a double holds",
+      "input": "{\"a\":12345678901234567890}",
+      "error": "integer literal 12345678901234567890 needs more precision than IEEE-754 double provides; it would be hashed as 12345678901234567000 at offset 5",
+      "alsoRejectedBySerdeJcs": false
+    },
+    {
+      "name": "integer-precision-loss-boundary",
+      "description": "the smallest integer a double cannot represent exactly",
+      "input": "{\"a\":9007199254740993}",
+      "error": "integer literal 9007199254740993 needs more precision than IEEE-754 double provides; it would be hashed as 9007199254740992 at offset 5",
+      "alsoRejectedBySerdeJcs": false
+    },
+    {
+      "name": "lone-high-surrogate",
+      "description": "an unpaired high surrogate",
+      "input": "{\"a\":\"\\ud800\"}",
+      "error": "unpaired high surrogate U+D800 at offset 13",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "lone-low-surrogate",
+      "description": "an unpaired low surrogate",
+      "input": "{\"a\":\"\\udc00\"}",
+      "error": "unpaired low surrogate U+DC00 at offset 13",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "reversed-surrogate-pair",
+      "description": "a low surrogate before a high one",
+      "input": "{\"a\":\"\\udc00\\ud800\"}",
+      "error": "unpaired low surrogate U+DC00 at offset 19",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "lone-surrogate-in-key",
+      "description": "an unpaired surrogate in a member name",
+      "input": "{\"\\udfff\":1}",
+      "error": "unpaired low surrogate U+DFFF at offset 9",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "unescaped-control",
+      "description": "a literal newline inside a string",
+      "input": "{\"a\":\"x\ny\"}",
+      "error": "unescaped control character U+000a at offset 7",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "leading-zero",
+      "description": "a number with a leading zero",
+      "input": "{\"a\":01}",
+      "error": "expected \"}\" at offset 6",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "leading-plus",
+      "description": "an explicitly signed number",
+      "input": "{\"a\":+1}",
+      "error": "unexpected character \"+\" at offset 5",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "bare-fraction",
+      "description": "a number with no integer part",
+      "input": "{\"a\":.5}",
+      "error": "unexpected character \".\" at offset 5",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "trailing-dot",
+      "description": "a number with no fraction digits",
+      "input": "{\"a\":1.}",
+      "error": "expected a digit after '.' at offset 7",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "nan-literal",
+      "description": "NaN is not JSON",
+      "input": "{\"a\":NaN}",
+      "error": "unexpected character \"N\" at offset 5",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "infinity-literal",
+      "description": "neither is Infinity",
+      "input": "{\"a\":Infinity}",
+      "error": "unexpected character \"I\" at offset 5",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "trailing-comma",
+      "description": "a trailing comma in an object",
+      "input": "{\"a\":1,}",
+      "error": "expected a member name at offset 7",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "trailing-comma-array",
+      "description": "a trailing comma in an array",
+      "input": "[1,2,]",
+      "error": "unexpected character \"]\" at offset 5",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "single-quotes",
+      "description": "single-quoted strings are not JSON",
+      "input": "{'a':1}",
+      "error": "expected a member name at offset 1",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "unquoted-key",
+      "description": "an unquoted member name",
+      "input": "{a:1}",
+      "error": "expected a member name at offset 1",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "vertical-tab-whitespace",
+      "description": "U+000B is not JSON whitespace",
+      "input": "{\"a\":\u000b1}",
+      "error": "unexpected character \"\\u000b\" at offset 5",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "trailing-content",
+      "description": "a second value after the document",
+      "input": "{\"a\":1} {\"b\":2}",
+      "error": "trailing content after the top-level value at offset 8",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "empty-input",
+      "description": "no document at all",
+      "input": "",
+      "error": "unexpected end of input at offset 0",
+      "alsoRejectedBySerdeJcs": true
+    },
+    {
+      "name": "comment",
+      "description": "JSON has no comments",
+      "input": "{\"a\":1 /* two */}",
+      "error": "expected \"}\" at offset 7",
+      "alsoRejectedBySerdeJcs": true
+    }
+  ]
+}

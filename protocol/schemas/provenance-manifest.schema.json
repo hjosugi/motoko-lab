@@ -17,6 +17,10 @@
     "version": {
       "const": "0.1"
     },
+    "canonicalization": {
+      "description": "Which canonicalization produced the bytes the manifest digest covers. Absent means RFC8785, which is the only scheme this protocol has ever specified; a future scheme must name itself here rather than change what an absent field means.",
+      "const": "RFC8785"
+    },
     "artifact": {
       "type": "object",
       "additionalProperties": false,

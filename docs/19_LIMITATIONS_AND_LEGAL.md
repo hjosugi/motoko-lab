@@ -4,7 +4,7 @@
 
 - reference appsはsecurity audit前
 - 全5 reference appsはpinned toolchainでcompile/test/Wasm build済みだが、PocketICとupgrade rehearsalは未実行
-- SHA-256とRFC 8785完全検証はoff-chain/future issue
+- commitmentのSHA-256検証はapps/01でon-chain実行済み、RFC 8785 canonicalizationはoff-chain (canisterはdigestのみを受け取る設計)
 - payment appsはmanual confirmation model
 - certified queryは未実装
 - no production frontend

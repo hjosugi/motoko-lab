@@ -59,11 +59,11 @@ commitment reveal後に、artifact hash、manifest hash、salt、owner、parents
 6. manifest hash、salt、metadataをreveal
 7. verifierがcommitmentを再計算
 
-`apps/01`のcanisterはSHA-256を内部計算しません。external verifierが検証します。on-chain crypto verificationはIssue 003で追加します。
+`apps/01`のcanisterは`reveal`時にcommitmentを`mo:sha2`で再計算し、caller principal・manifest hash・saltのいずれかが一致しなければrejectします (Issue 003)。preimage中のprincipalは常にcallerのものなので、他人名義でcommitすることはできません。詳細は`apps/01_creator_proof_registry/docs/COMMITMENT_V1.md`。
 
 ## 5. Canonicalization
 
-JSONのkey sortだけでは不十分です。productionではRFC 8785準拠implementationを使用します。
+JSONのkey sortだけでは不十分なので、**RFC 8785 (JSON Canonicalization Scheme)**に準拠します (Issue 004)。
 
 - Unicode handling
 - number serialization
@@ -71,7 +71,7 @@ JSONのkey sortだけでは不十分です。productionではRFC 8785準拠imple
 - duplicate keys rejection
 - UTF-8 encoding
 
-本キットのCLIはlearning用のdeterministic subsetであり、RFC 8785完全実装ではありません。
+`protocol/tools/jcs.mjs`が実装し、公式vector 6件とedge vector 47件で検証、`serde_jcs` (Rust)と`canonicalize` (npm)に対してbyte単位の一致を確認しています。canisterはcanonicalizationを行わず、32-byte digestを不透明な値として受け取るだけです。仕様と、RFC 8785より厳しくしている2点 (duplicate member nameの拒否、正確にround-tripしないinteger literalの拒否) の根拠は`protocol/CANONICALIZATION.md`。
 
 ## 6. AI disclosure
 

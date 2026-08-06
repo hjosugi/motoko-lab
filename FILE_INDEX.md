@@ -3,7 +3,7 @@
 このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
 完全性確認には`MANIFEST.sha256`を使用してください。
 
-Indexed files: **332**
+Indexed files: **348**
 
 ## Root
 
@@ -329,6 +329,7 @@ Indexed files: **332**
 
 ## `protocol/`
 
+- `protocol/CANONICALIZATION.md`
 - `protocol/INTEROPERABILITY.md`
 - `protocol/README.md`
 - `protocol/artifacts/ai-assisted-note.txt`
@@ -338,7 +339,22 @@ Indexed files: **332**
 - `protocol/package.json`
 - `protocol/schemas/provenance-manifest.schema.json`
 - `protocol/schemas/verification-report.schema.json`
+- `protocol/test-vectors/jcs/edge-cases.json`
+- `protocol/test-vectors/jcs/input/arrays.json`
+- `protocol/test-vectors/jcs/input/french.json`
+- `protocol/test-vectors/jcs/input/structures.json`
+- `protocol/test-vectors/jcs/input/unicode.json`
+- `protocol/test-vectors/jcs/input/values.json`
+- `protocol/test-vectors/jcs/input/weird.json`
+- `protocol/test-vectors/jcs/output/arrays.json`
+- `protocol/test-vectors/jcs/output/french.json`
+- `protocol/test-vectors/jcs/output/structures.json`
+- `protocol/test-vectors/jcs/output/unicode.json`
+- `protocol/test-vectors/jcs/output/values.json`
+- `protocol/test-vectors/jcs/output/weird.json`
 - `protocol/test-vectors/test-vectors.json`
+- `protocol/tools/crosscheck.mjs`
+- `protocol/tools/jcs.mjs`
 - `protocol/tools/provenance-cli.mjs`
 - `protocol/tools/provenance-cli.test.mjs`
 

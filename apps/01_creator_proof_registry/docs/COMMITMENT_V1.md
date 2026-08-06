@@ -17,7 +17,7 @@ SHA-256( domain || 0x00 || principalText || 0x00 || manifestHash || 0x00 || salt
 
 domain        = "icp-creator-proof:v1"   20 bytes, ASCII
 principalText = Principal.toText(caller) 5..100 bytes, lowercase base32 with dashes
-manifestHash  = SHA-256(canonical manifest JSON)   exactly 32 bytes
+manifestHash  = SHA-256(RFC 8785 canonical manifest JSON)  exactly 32 bytes
 salt          = caller-chosen                      16..64 bytes
 ```
 
@@ -36,6 +36,10 @@ same string by trimming and lowercasing whatever text it was handed, which is a
 step the canister does not need because it never receives the principal as text.
 It is the *caller's* principal that goes into the preimage, never a value from
 the request, so a caller cannot commit under someone else's name.
+
+`manifestHash` arrives as 32 opaque bytes. The canister does not parse JSON and
+does not canonicalize; that belongs where the JSON is, which is the creator and
+the verifier. `protocol/CANONICALIZATION.md` has the reasoning.
 
 A byte-level specification with the full positive and negative vector set is
 issue #5; this document covers what the implementation of #3 fixed.
@@ -177,9 +181,6 @@ this fix.
 
 ## Still open
 
-- #4 — the manifest hash this commitment binds is only as good as the
-  canonicalization that produced it, and the CLI's is a recursive key sort, not
-  RFC 8785.
 - #5 — byte-level specification and the full conformance vector set.
 - #2 — these canister-level cases were run by hand against a local deploy; they
   belong in the PocketIC suite.

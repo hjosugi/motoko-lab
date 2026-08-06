@@ -76,7 +76,6 @@ preimage中のprincipalは常にcallerのものです。requestから来た値�
 
 ## Production gaps
 
-- RFC 8785 complete canonicalization
 - certified query
 - key rotation/delegation
 - C2PA/W3C VC bridge

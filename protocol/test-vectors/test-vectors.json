@@ -1,6 +1,6 @@
 {
   "version": "0.1",
-  "canonicalization": "educational-recursive-key-sort-json",
+  "canonicalization": "RFC8785",
   "commitmentLayout": "domain-zero-principalText-zero-manifestDigest-zero-salt",
   "vectors": [
     {

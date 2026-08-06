@@ -38,8 +38,9 @@ PY
 echo
 
 echo "[3/8] Node syntax"
-run node --check "$ROOT/protocol/tools/provenance-cli.mjs"
-run node --check "$ROOT/protocol/tools/provenance-cli.test.mjs"
+for module in "$ROOT"/protocol/tools/*.mjs; do
+  run node --check "$module"
+done
 
 echo "[4/8] Provenance protocol tests"
 run node "$ROOT/protocol/tools/provenance-cli.test.mjs"
