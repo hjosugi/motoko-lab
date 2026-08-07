@@ -7,7 +7,7 @@ This is an offline guardrail and does not replace compiler-generated Candid or u
 
 | App | Methods | Status |
 |---|---:|---|
-| `01_creator_proof_registry` | 11 | PASS |
+| `01_creator_proof_registry` | 25 | PASS |
 | `02_merkle_anchor` | 6 | PASS |
 | `03_license_marketplace` | 10 | PASS |
 | `04_bounty_board` | 9 | PASS |
@@ -18,16 +18,30 @@ This is an offline guardrail and does not replace compiler-generated Candid or u
 
 ### 01_creator_proof_registry
 
+- `attribution`: query, 1 argument(s)
+- `beginRecovery`: update, 2 argument(s)
 - `cancelCommitment`: update, 1 argument(s)
+- `cancelRecovery`: update, 1 argument(s)
 - `commit`: update, 1 argument(s)
 - `commitmentSpec`: query, 0 argument(s)
+- `confirmRecovery`: update, 1 argument(s)
+- `createCollection`: update, 1 argument(s)
+- `createDelegation`: update, 3 argument(s)
+- `declareRecovery`: update, 2 argument(s)
 - `getByArtifactHash`: query, 1 argument(s)
+- `getCollection`: query, 1 argument(s)
 - `getCommitment`: query, 1 argument(s)
+- `getCreator`: query, 1 argument(s)
+- `getDelegation`: query, 1 argument(s)
 - `getRecord`: query, 1 argument(s)
 - `getRecordCertified`: query, 1 argument(s)
+- `getRecovery`: query, 1 argument(s)
 - `listRecords`: query, 2 argument(s)
+- `registerCreator`: update, 0 argument(s)
 - `reveal`: update, 1 argument(s)
+- `revokeDelegation`: update, 2 argument(s)
 - `revokeRecord`: update, 2 argument(s)
+- `rotateKey`: update, 2 argument(s)
 - `stats`: query, 0 argument(s)
 
 ### 02_merkle_anchor

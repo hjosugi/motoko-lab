@@ -59,6 +59,9 @@ function revealInput(commitmentId, seed, overrides = {}) {
     // `null` selects v1, the only layout there is. Present so the suite encodes
     // the field a client written after #3 would send.
     algorithm: [],
+    // No collection: the caller holds no creator identity. The identity suite
+    // below is where scoped registration is exercised.
+    collection: [],
     ...overrides,
   };
 }
@@ -293,12 +296,177 @@ export async function suite({ appDir, pic, createIdentity, checks: c }) {
   c.ok(!equalBytes(revokedAttested, recordDigest({ ...certifiedRevoked.record, status: { active: null } })),
     'presenting the revoked record as active no longer matches the attested digest');
 
+  // --------------------------------------------- creator identity (#7) ----
+  // Rotation, scoped delegation and recovery all turn on a clock and a caller,
+  // so none of it is reachable from the interpreter. `Identity.test.mo` covers
+  // the rules; this covers that `reveal` consults them.
+  const carol = createIdentity('carol');
+  const dave = createIdentity('dave');
+  const erin = createIdentity('erin');
+  const frank = createIdentity('frank');
+  const asCarol = () => actor.setIdentity(carol);
+  const asDave = () => actor.setIdentity(dave);
+  const asErin = () => actor.setIdentity(erin);
+
+  const NANOS = 1_000_000_000n;
+  const DAY = 86_400n * NANOS;
+  const now = async () => BigInt(await pic.getTime()) * 1_000_000n;
+
+  asCarol();
+  const creator = c.expectOk(await actor.registerCreator(), 'carol claims a creator identity');
+  c.ok(creator.root.toText() === carol.getPrincipal().toText(), 'the caller becomes the root key');
+  c.ok(creator.keys.length === 1 && creator.keys[0].retiredAt.length === 0,
+    'the identity starts with one live key');
+  c.expectErr(await actor.registerCreator(), 'duplicate', 'a principal cannot claim two identities');
+
+  const collection = c.expectOk(await actor.createCollection('spring campaign'), 'carol creates a collection');
+  const other = c.expectOk(await actor.createCollection('archive'), 'and a second one');
+
+  // A delegate scoped to one collection, expiring inside the year cap.
+  const deadline = (await now()) + 30n * DAY;
+  const scoped = c.expectOk(
+    await actor.createDelegation(dave.getPrincipal(), { collection: collection.id }, deadline),
+    'carol delegates to dave, scoped to one collection');
+
+  c.expectErr(
+    await actor.createDelegation(erin.getPrincipal(), { all: null }, (await now()) + 400n * DAY),
+    'invalidInput', 'a delegation cannot outlive the maximum lifetime');
+  c.expectErr(
+    await actor.createDelegation(erin.getPrincipal(), { all: null }, (await now()) - DAY),
+    'invalidInput', 'a delegation cannot expire in the past');
+  asDave();
+  c.expectErr(
+    await actor.createDelegation(erin.getPrincipal(), { all: null }, deadline),
+    'unauthorized', 'a delegate cannot issue further delegations');
+
+  // Dave registers inside his scope. The record's owner is dave — he signed it
+  // — while the attribution names carol.
+  const daveCommit = c.expectOk(
+    await actor.commit({ commitmentHash: commitmentFor(dave.getPrincipal(), 10), metadataHash: [], expiresAt: [] }),
+    'dave commits');
+  const daveRecord = c.expectOk(
+    await actor.reveal(revealInput(daveCommit.id, 10, { collection: [collection.id] })),
+    'dave reveals inside his scope');
+  c.ok(daveRecord.owner.toText() === dave.getPrincipal().toText(), 'the record records the key that signed it');
+  const daveAttribution = (await actor.attribution(daveRecord.id))[0];
+  c.ok(daveAttribution.creator === creator.id, 'the record is attributed to carol, not to dave');
+  c.ok(daveAttribution.signer.toText() === dave.getPrincipal().toText(),
+    'the signer is kept apart from the creator');
+  c.ok('delegated' in daveAttribution.authority && daveAttribution.authority.delegated === scoped.id,
+    'the attribution names the delegation that authorized it');
+
+  // Out of scope. A delegate that could register into a collection it was not
+  // given would make the scope advisory.
+  const outOfScope = c.expectOk(
+    await actor.commit({ commitmentHash: commitmentFor(dave.getPrincipal(), 11), metadataHash: [], expiresAt: [] }),
+    'dave commits again');
+  c.expectErr(await actor.reveal(revealInput(outOfScope.id, 11, { collection: [other.id] })),
+    'unauthorized', 'a collection-scoped delegate cannot register into another collection');
+  c.expectErr(await actor.reveal(revealInput(outOfScope.id, 11)),
+    'unauthorized', 'nor outside any collection: no collection is not every collection');
+
+  // Organization member removal. Revoking has to stop new records without
+  // touching the ones already registered.
+  asCarol();
+  c.expectOk(await actor.revokeDelegation(scoped.id, 'left the organization'), 'carol revokes the delegation');
+  asDave();
+  c.expectErr(await actor.reveal(revealInput(outOfScope.id, 11, { collection: [collection.id] })),
+    'unauthorized', 'a revoked delegate cannot create new records');
+  c.ok((await actor.getRecord(daveRecord.id))[0] !== undefined,
+    'the record dave already registered is untouched');
+  c.ok((await actor.attribution(daveRecord.id))[0].creator === creator.id,
+    'and is still attributed to carol');
+
+  // Expiry, reached by moving the replica clock rather than by waiting.
+  asCarol();
+  const shortLived = c.expectOk(
+    await actor.createDelegation(erin.getPrincipal(), { all: null }, (await now()) + 2n * DAY),
+    'carol delegates to erin, unscoped');
+  asErin();
+  const erinCommit = c.expectOk(
+    await actor.commit({ commitmentHash: commitmentFor(erin.getPrincipal(), 12), metadataHash: [], expiresAt: [] }),
+    'erin commits while her delegation is live');
+  c.expectOk(await actor.reveal(revealInput(erinCommit.id, 12)), 'erin reveals while her delegation is live');
+
+  await pic.advanceTime(Number(3n * DAY / 1_000_000n));
+  await pic.tick();
+  c.ok('active' in (await actor.getDelegation(shortLived.id))[0].status,
+    'an expired delegation is still marked active: expiry is a deadline, not a status change');
+
+  const afterExpiry = c.expectOk(
+    await actor.commit({ commitmentHash: commitmentFor(erin.getPrincipal(), 13), metadataHash: [], expiresAt: [] }),
+    'erin commits after her delegation expired');
+  c.expectErr(await actor.reveal(revealInput(afterExpiry.id, 13)),
+    'unauthorized', 'an expired delegation authorizes nothing');
+
+  // Rotation. The identity survives; the retired key does not.
+  asCarol();
+  const rotated = c.expectOk(await actor.rotateKey(bob.getPrincipal(), 'scheduled rotation'), 'carol rotates to a new key');
+  c.ok(rotated.id === creator.id, 'the creator id survives the rotation');
+  c.ok(rotated.keys.length === 2, 'the retired key is kept in the history');
+  c.ok(rotated.keys[0].retiredAt.length === 1 && rotated.keys[1].retiredAt.length === 0,
+    'exactly one key is live after a rotation');
+  c.ok((await actor.attribution(daveRecord.id))[0].signer.toText() === dave.getPrincipal().toText(),
+    'a record registered before the rotation still names the key that signed it');
+
+  const retiredCommit = c.expectOk(
+    await actor.commit({ commitmentHash: commitmentFor(carol.getPrincipal(), 14), metadataHash: [], expiresAt: [] }),
+    'the retired key can still commit');
+  c.expectErr(await actor.reveal(revealInput(retiredCommit.id, 14)),
+    'unauthorized', 'but a rotated-away key cannot register anything new');
+
+  // Concurrent rotations: the second one has nothing to rotate, because the
+  // first already moved the identity out from under it.
+  c.expectErr(await actor.rotateKey(erin.getPrincipal(), 'racing rotation'),
+    'unauthorized', 'a second rotation from the retired key is refused');
+
+  // Recovery. Declared in advance by the root, delayed, and cancellable.
+  asBob();
+  c.expectErr(await actor.declareRecovery(bob.getPrincipal(), 30n * DAY),
+    'conflict', 'the guardian cannot be the key it would recover');
+  c.expectErr(await actor.declareRecovery(erin.getPrincipal(), DAY),
+    'invalidInput', 'a recovery delay below the minimum is refused');
+  c.expectOk(await actor.declareRecovery(erin.getPrincipal(), 30n * DAY), 'the root declares a recovery policy');
+
+  asDave();
+  c.expectErr(await actor.beginRecovery(creator.id, dave.getPrincipal()),
+    'unauthorized', 'only the declared guardian can begin a recovery');
+
+  asErin();
+  const recovery = c.expectOk(await actor.beginRecovery(creator.id, frank.getPrincipal()),
+    'the guardian begins a recovery');
+  c.ok('pending' in recovery.status, 'the recovery is pending, not applied');
+  c.ok(recovery.effectiveAt > (await now()), 'and does not take effect immediately');
+  c.expectErr(await actor.confirmRecovery(creator.id), 'conflict',
+    'a recovery cannot complete before its delay elapses');
+
+  // The delay exists so the current root can notice and stop it. That is what
+  // makes a recovery something other than a silent transfer of identity.
+  asBob();
+  c.expectOk(await actor.cancelRecovery(creator.id), 'the root cancels the recovery it did not ask for');
+  c.ok((await actor.getCreator(creator.id))[0].root.toText() === bob.getPrincipal().toText(),
+    'the identity did not move');
+
+  asErin();
+  c.expectOk(await actor.beginRecovery(creator.id, frank.getPrincipal()), 'the guardian tries again');
+  await pic.advanceTime(Number(31n * DAY / 1_000_000n));
+  await pic.tick();
+  const recovered = c.expectOk(await actor.confirmRecovery(creator.id), 'and completes it after the delay');
+  c.ok(recovered.root.toText() === frank.getPrincipal().toText(), 'the identity moved to the proposed key');
+  c.ok(recovered.keys.length === 3, 'the recovered-from key is retired into the history');
+  c.ok((await actor.attribution(daveRecord.id))[0].creator === creator.id,
+    'records registered before the recovery are still attributable');
+
   // ---------------------------------------------------------------- upgrade
   // The claim in docs/UPGRADE_PLAN.md that state survives is not observable in
   // the interpreter at all.
   // Snapshotted here rather than earlier, so the comparison spans the upgrade
   // and nothing else.
   const before = await actor.stats();
+  // Relative rather than a literal: the identity section above allocates
+  // commitments too, and an absolute id would have to be rewritten every time
+  // a test is inserted, which is how an assertion stops meaning anything.
+  const lastCommitmentId = before.commitments;
   await upgradeCanister({ pic, canisterId: fixture.canisterId, wasm, sender });
 
   const after = await actor.stats();
@@ -325,7 +493,8 @@ export async function suite({ appDir, pic, createIdentity, checks: c }) {
   const afterUpgrade = c.expectOk(
     await actor.commit({ commitmentHash: commitmentFor(alicePrincipal, 5), metadataHash: [], expiresAt: [] }),
     'a commit still works after the upgrade');
-  c.ok(afterUpgrade.id === 7n, 'commitment ids continue past the upgrade rather than restarting');
+  c.ok(afterUpgrade.id === lastCommitmentId + 1n,
+    'commitment ids continue past the upgrade rather than restarting');
 
   // The commitment check runs on the same code after an upgrade, against a
   // commitment stored before it.

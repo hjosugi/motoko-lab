@@ -74,12 +74,79 @@ type RevealInput = record {
   parents : vec nat;
   ai : AIDisclosure;
   algorithm : opt CommitmentAlgorithm;
+  collection : opt CollectionId;
 };
 type CertifiedRecord = record {
   "record" : ProofRecord;
   certificate : blob;
   witness : blob;
 };
+type CreatorId = nat;
+type CollectionId = nat;
+type DelegationId = nat;
+type KeyRecord = record {
+  "principal" : principal;
+  activeFrom : nat;
+  retiredAt : opt nat;
+  reason : text;
+};
+type RecoveryPolicy = record {
+  guardian : principal;
+  delayNanos : nat;
+  declaredAt : nat;
+};
+type Creator = record {
+  id : CreatorId;
+  root : principal;
+  keys : vec KeyRecord;
+  recovery : opt RecoveryPolicy;
+  createdAt : nat;
+};
+type Collection = record {
+  id : CollectionId;
+  creator : CreatorId;
+  name : text;
+  createdAt : nat;
+};
+type Scope = variant { all; collection : CollectionId };
+type DelegationStatus = variant {
+  active;
+  revoked : record { at : nat; reason : text };
+};
+type Delegation = record {
+  id : DelegationId;
+  creator : CreatorId;
+  delegate : principal;
+  scope : Scope;
+  expiresAt : nat;
+  createdAt : nat;
+  status : DelegationStatus;
+};
+type RecoveryStatus = variant {
+  pending;
+  completed : nat;
+  cancelled : record { at : nat; by : principal };
+};
+type Recovery = record {
+  creator : CreatorId;
+  proposedRoot : principal;
+  requestedBy : principal;
+  requestedAt : nat;
+  effectiveAt : nat;
+  status : RecoveryStatus;
+};
+type Authority = variant { root; delegated : DelegationId };
+type Attribution = record {
+  "record" : nat;
+  creator : CreatorId;
+  signer : principal;
+  authority : Authority;
+  collection : opt CollectionId;
+};
+type CreatorResult = variant { ok : Creator; err : Error };
+type CollectionResult = variant { ok : Collection; err : Error };
+type DelegationResult = variant { ok : Delegation; err : Error };
+type RecoveryResult = variant { ok : Recovery; err : Error };
 type CommitmentResult = variant { ok : Commitment; err : Error };
 type RecordResult = variant { ok : ProofRecord; err : Error };
 type Stats = record {
@@ -99,5 +166,19 @@ service : {
   getByArtifactHash : (blob) -> (opt ProofRecord) query;
   listRecords : (nat, nat) -> (vec ProofRecord) query;
   commitmentSpec : () -> (CommitmentSpec) query;
+  registerCreator : () -> (CreatorResult);
+  rotateKey : (principal, text) -> (CreatorResult);
+  declareRecovery : (principal, nat) -> (CreatorResult);
+  beginRecovery : (nat, principal) -> (RecoveryResult);
+  cancelRecovery : (nat) -> (RecoveryResult);
+  confirmRecovery : (nat) -> (CreatorResult);
+  createCollection : (text) -> (CollectionResult);
+  createDelegation : (principal, Scope, nat) -> (DelegationResult);
+  revokeDelegation : (nat, text) -> (DelegationResult);
+  getCreator : (nat) -> (opt Creator) query;
+  getCollection : (nat) -> (opt Collection) query;
+  getDelegation : (nat) -> (opt Delegation) query;
+  getRecovery : (nat) -> (opt Recovery) query;
+  attribution : (nat) -> (opt Attribution) query;
   stats : () -> (Stats) query;
 };

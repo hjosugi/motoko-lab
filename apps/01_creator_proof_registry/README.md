@@ -44,6 +44,14 @@ Candid UI URLは`icp deploy`のoutputに表示されます。
 | `getByArtifactHash` | anyone | artifact digest検索 |
 | `listRecords` | anyone | bounded pagination |
 | `commitmentSpec` | anyone | commitment layoutとsalt boundsを取得 |
+| `registerCreator` | authenticated | creator identityを取得 |
+| `rotateKey` | creator root | root keyを交代 (旧recordはそのまま) |
+| `createCollection` | creator root | delegationのscope単位を作成 |
+| `createDelegation` | creator root | scope・期限付きでdelegateを承認 |
+| `revokeDelegation` | creator root | delegateを失効 |
+| `declareRecovery` | creator root | guardianと遅延を事前宣言 |
+| `beginRecovery` / `cancelRecovery` / `confirmRecovery` | guardian / root | 遅延付きrecovery |
+| `attribution` | anyone | recordのcreator・signer・authorityを取得 |
 | `stats` | anyone | count取得 |
 
 ## Commitment
@@ -77,7 +85,6 @@ preimage中のprincipalは常にcallerのものです。requestから来た値�
 
 ## Production gaps
 
-- key rotation/delegation
 - C2PA/W3C VC bridge
 - abuse fee/rate limit
 - PocketIC and upgrade tests

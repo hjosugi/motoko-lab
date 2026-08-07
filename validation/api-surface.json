@@ -4,13 +4,28 @@
   "limitation": "This does not replace compiler-generated Candid or compatibility checking.",
   "status": "pass",
   "application_count": 6,
-  "method_count": 65,
+  "method_count": 79,
   "applications": [
     {
       "app": "01_creator_proof_registry",
       "motoko_methods": [
         {
+          "name": "attribution",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "beginRecovery",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
           "name": "cancelCommitment",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "cancelRecovery",
           "mode": "update",
           "argument_count": 1
         },
@@ -25,12 +40,47 @@
           "argument_count": 0
         },
         {
+          "name": "confirmRecovery",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "createCollection",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "createDelegation",
+          "mode": "update",
+          "argument_count": 3
+        },
+        {
+          "name": "declareRecovery",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
           "name": "getByArtifactHash",
           "mode": "query",
           "argument_count": 1
         },
         {
+          "name": "getCollection",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
           "name": "getCommitment",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getCreator",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getDelegation",
           "mode": "query",
           "argument_count": 1
         },
@@ -45,9 +95,19 @@
           "argument_count": 1
         },
         {
+          "name": "getRecovery",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
           "name": "listRecords",
           "mode": "query",
           "argument_count": 2
+        },
+        {
+          "name": "registerCreator",
+          "mode": "update",
+          "argument_count": 0
         },
         {
           "name": "reveal",
@@ -55,7 +115,17 @@
           "argument_count": 1
         },
         {
+          "name": "revokeDelegation",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
           "name": "revokeRecord",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "rotateKey",
           "mode": "update",
           "argument_count": 2
         },
@@ -67,7 +137,22 @@
       ],
       "candid_methods": [
         {
+          "name": "attribution",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "beginRecovery",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
           "name": "cancelCommitment",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "cancelRecovery",
           "mode": "update",
           "argument_count": 1
         },
@@ -82,12 +167,47 @@
           "argument_count": 0
         },
         {
+          "name": "confirmRecovery",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "createCollection",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "createDelegation",
+          "mode": "update",
+          "argument_count": 3
+        },
+        {
+          "name": "declareRecovery",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
           "name": "getByArtifactHash",
           "mode": "query",
           "argument_count": 1
         },
         {
+          "name": "getCollection",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
           "name": "getCommitment",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getCreator",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getDelegation",
           "mode": "query",
           "argument_count": 1
         },
@@ -102,9 +222,19 @@
           "argument_count": 1
         },
         {
+          "name": "getRecovery",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
           "name": "listRecords",
           "mode": "query",
           "argument_count": 2
+        },
+        {
+          "name": "registerCreator",
+          "mode": "update",
+          "argument_count": 0
         },
         {
           "name": "reveal",
@@ -112,7 +242,17 @@
           "argument_count": 1
         },
         {
+          "name": "revokeDelegation",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
           "name": "revokeRecord",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "rotateKey",
           "mode": "update",
           "argument_count": 2
         },

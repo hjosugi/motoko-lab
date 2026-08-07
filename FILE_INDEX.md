@@ -3,7 +3,7 @@
 このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
 完全性確認には`MANIFEST.sha256`を使用してください。
 
-Indexed files: **373**
+Indexed files: **376**
 
 ## Root
 
@@ -89,6 +89,7 @@ Indexed files: **373**
 - `apps/01_creator_proof_registry/backend/candid/backend.did`
 - `apps/01_creator_proof_registry/backend/canister.yaml`
 - `apps/01_creator_proof_registry/backend/src/Commitment.mo`
+- `apps/01_creator_proof_registry/backend/src/Identity.mo`
 - `apps/01_creator_proof_registry/backend/src/RecordDigest.mo`
 - `apps/01_creator_proof_registry/backend/src/Validation.mo`
 - `apps/01_creator_proof_registry/backend/src/main.mo`
@@ -96,12 +97,14 @@ Indexed files: **373**
 - `apps/01_creator_proof_registry/bench/commitment.bench.mo`
 - `apps/01_creator_proof_registry/docs/CERTIFIED_QUERIES.md`
 - `apps/01_creator_proof_registry/docs/COMMITMENT_V1.md`
+- `apps/01_creator_proof_registry/docs/IDENTITY.md`
 - `apps/01_creator_proof_registry/docs/THREAT_MODEL.md`
 - `apps/01_creator_proof_registry/docs/UPGRADE_PLAN.md`
 - `apps/01_creator_proof_registry/icp.yaml`
 - `apps/01_creator_proof_registry/mops.lock`
 - `apps/01_creator_proof_registry/mops.toml`
 - `apps/01_creator_proof_registry/test/Commitment.test.mo`
+- `apps/01_creator_proof_registry/test/Identity.test.mo`
 - `apps/01_creator_proof_registry/test/RecordDigest.test.mo`
 - `apps/01_creator_proof_registry/test/Validation.test.mo`
 - `apps/01_creator_proof_registry/test/record-digest.mjs`

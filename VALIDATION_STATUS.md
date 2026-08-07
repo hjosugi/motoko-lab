@@ -16,7 +16,7 @@
 - appごとの必須構成、version pin、recipe pin確認
 - Issue draft 40件のfront matter、連番、labels、milestones確認
 - Motoko sourceのdelimiter、local import、`persistent actor`、主要core APIの静的確認
-- 6アプリ・65 public methodsのMotoko/Candid method名、query/update mode、引数個数の機械照合
+- 6アプリ・79 public methodsのMotoko/Candid method名、query/update mode、引数個数の機械照合
 - 全8 canister interfaceのCandid drift検査 (pinned compilerの出力とcommitted `.did`の構造的一致) と、
   直近release tagに対するsubtyping互換検査 (`scripts/check_candid_compat.py`)
 - 全6アプリの`mops install`、`mops check`、Motoko unit test
@@ -181,8 +181,8 @@
 
 ## 2026-08-07に追加で実行済み (issue #2, PocketIC integration)
 
-- apps/01-05 の全アプリを pocket-ic 14.0.0 上で実行。**228 assertion、失敗0**
-  (01: 66 / 02: 31 / 03: 44 / 04: 39 / 05: 48)。共有 harness は `tools/pocket-ic/`、
+- apps/01-05 の全アプリを pocket-ic 14.0.0 上で実行。**280 assertion、失敗0**
+  (01: 118 / 02: 31 / 03: 44 / 04: 39 / 05: 48)。共有 harness は `tools/pocket-ic/`、
   各スイートは `apps/NN_*/test/replica.test.mjs`
 - app 01 の commitment検証 (#3) をレプリカ上で確認。commitmentは
   `protocol/tools/commitment.mjs` — canister側ではなくverifier側の実装 — で構築するので、
@@ -223,7 +223,7 @@
 - record encodingは意図的に2実装あります (`backend/src/RecordDigest.mo` と
   `test/record-digest.mjs`)。canisterにdigestを聞くverifierは何も検証していないためです。
   replica suiteは証明書付きrecordごとに両者を比較します
-- pocket-ic 14.0.0上で app 01 は 40 → 66 checks、全体で **228 assertion、失敗0**。
+- pocket-ic 14.0.0上で app 01 は 40 → 66 checks、全体で 228 assertion、失敗0。
   検証はレプリカから取得したsubnet公開鍵に対して行います (検証対象から鍵を取れば
   何も証明しません)
 - コスト測定 (`mops bench --replica pocket-ic`): certificationは`reveal` /
@@ -236,6 +236,31 @@
   `--package core`が2回出てコンパイラがどちらかを選んでしまいます
 
 詳細は`apps/01_creator_proof_registry/docs/CERTIFIED_QUERIES.md`。
+
+## 2026-08-07に追加で実行済み (apps/01_creator_proof_registry, issue #7)
+
+- creator identity・key rotation・scoped delegation・recovery。**recordは署名した
+  principalを恒久的に保持します**。rotationで旧recordを新しい鍵に書き換えるのは
+  provenanceの偽造です (登録時点ではその鍵が本当に署名者だった)。rotationはkey history
+  への追記で、attributionはその履歴を読んで解決します
+- identityはopt-inですが、**一度identityに紐づいたprincipalは統治から外れません**。
+  rotate済みの旧鍵・失効したdelegate・期限切れdelegate・scope外のdelegateはいずれも
+  拒否されます。そうでなければ各々が「ただのcaller」として登録し直せてしまい、
+  revocationもrotationも飾りになります。拒否理由は4つのどれかを明かしません
+- delegationはcollection単位または全体にscope可能、絶対期限が必須 (最大365日)、失効可能。
+  期限はdeadlineであってstatus変化ではないので、期限切れdelegationは`#active`のまま
+  何も認可しません。この点をスイートでassertしています
+- collection-scopedなdelegateがcollection指定なしで登録するのはscope**外**です。
+  `null`を「任意のcollection」と読むと、scopeの遵守がdelegate任せになります
+- recoveryはrootが鍵を保持しているうちに事前宣言し、最低7日の遅延を置き、双方が
+  キャンセルでき、`getRecovery`で常時可視です。後から追加できるrecovery経路は
+  乗っ取り経路であり、遅延は現rootが気づくための時間です
+- app 01 は 66 → 118 checks、全体で **280 assertion、失敗0**。#7のacceptance criteria
+  とtest planの全ケース (期限切れ・鍵の危殆化・組織メンバーの離脱・同時rotation) を含みます
+- Candid・stable dataともに追加のみ。`ProofRecord`は不変なので#6のcertified digestも
+  不変で、migrationは不要です
+
+詳細は`apps/01_creator_proof_registry/docs/IDENTITY.md`。
 
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
@@ -276,7 +301,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | Motoko/Candid API surface | offline mechanically cross-checked |
 | Motoko compile/test/Wasm/Candid | passed for all 6 applications |
 | Nix toolchain bootstrap | passed with read-only global npm prefix |
-| PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 228 + 55 assertions |
+| PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 280 + 55 assertions |
 | local replica (`icp deploy`) | passed for app 06 (icp-cli 1.2.0 / launcher 15.0.0) |
 | upgrade rehearsal | passed for all 6 applications; across a breaking Candid change, untried |
 | documentation site | 128 pages built strict, 0 warnings; published from `main` |
