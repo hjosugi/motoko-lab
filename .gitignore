@@ -19,3 +19,9 @@ tools/pocket-ic/package-lock.json
 site/
 site-src/
 .venv-docs/
+.claude/skills/graphify/
+.claude/settings.local.json
+.copilot/skills/graphify/
+.codex/skills/graphify/
+.codex/hooks.json
+graphify-out/

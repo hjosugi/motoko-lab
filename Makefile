@@ -41,3 +41,13 @@ docs:
 docs-serve:
 	python3 scripts/build_docs_site.py --check
 	mkdocs serve
+
+.PHONY: graphify-setup graphify-update
+
+## Install graphify and register its skill with Claude, Copilot and Codex.
+graphify-setup:
+	@sh scripts/graphify.sh setup
+
+## Upgrade graphify, refresh the skill, and update the knowledge graph.
+graphify-update:
+	@sh scripts/graphify.sh update
