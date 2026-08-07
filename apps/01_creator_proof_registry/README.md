@@ -39,7 +39,8 @@ Candid UI URLは`icp deploy`のoutputに表示されます。
 | `reveal` | commitment owner | proof recordを作成 |
 | `revokeRecord` | record owner | reason付き失効 |
 | `getCommitment` | anyone | commitment取得 |
-| `getRecord` | anyone | record取得 |
+| `getRecord` | anyone | record取得 (uncertified) |
+| `getRecordCertified` | anyone | recordをsubnet certificate + witness付きで取得 |
 | `getByArtifactHash` | anyone | artifact digest検索 |
 | `listRecords` | anyone | bounded pagination |
 | `commitmentSpec` | anyone | commitment layoutとsalt boundsを取得 |
@@ -76,7 +77,6 @@ preimage中のprincipalは常にcallerのものです。requestから来た値�
 
 ## Production gaps
 
-- certified query
 - key rotation/delegation
 - C2PA/W3C VC bridge
 - abuse fee/rate limit

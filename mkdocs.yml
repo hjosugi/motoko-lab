@@ -125,6 +125,7 @@ nav:
       - 01 Creator Proof Registry:
           - 概要: apps/01_creator_proof_registry/README.md
           - コミットメント検証: apps/01_creator_proof_registry/docs/COMMITMENT_V1.md
+          - 認証付きクエリ: apps/01_creator_proof_registry/docs/CERTIFIED_QUERIES.md
           - 脅威モデル: apps/01_creator_proof_registry/docs/THREAT_MODEL.md
           - アップグレード計画: apps/01_creator_proof_registry/docs/UPGRADE_PLAN.md
       - 02 Merkle Anchor:

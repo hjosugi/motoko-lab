@@ -11,7 +11,7 @@
   "icWasmObserved": "0.9.11",
   "applicationCount": 6,
   "issueDraftCount": 45,
-  "publicApiMethodCount": 64,
+  "publicApiMethodCount": 65,
   "license": "Apache-2.0",
   "release": "v2026.08.07",
   "validation": "offline and native Motoko checks passed for all six apps; app 06 additionally verified end to end on pocket-ic 14.0.0, including access control, per-principal quota, cycle metering and byzantine shard detection; every canister interface is gated in CI for drift against the pinned compiler and for Candid subtyping against the previous release; app 01 verifies its commit-reveal commitment on-chain and was exercised against a local icp deploy; manifest canonicalization is RFC 8785, passing the official vectors and byte-identical to serde_jcs and the canonicalize npm package"

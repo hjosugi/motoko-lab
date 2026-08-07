@@ -16,7 +16,7 @@
 - appごとの必須構成、version pin、recipe pin確認
 - Issue draft 40件のfront matter、連番、labels、milestones確認
 - Motoko sourceのdelimiter、local import、`persistent actor`、主要core APIの静的確認
-- 6アプリ・64 public methodsのMotoko/Candid method名、query/update mode、引数個数の機械照合
+- 6アプリ・65 public methodsのMotoko/Candid method名、query/update mode、引数個数の機械照合
 - 全8 canister interfaceのCandid drift検査 (pinned compilerの出力とcommitted `.did`の構造的一致) と、
   直近release tagに対するsubtyping互換検査 (`scripts/check_candid_compat.py`)
 - 全6アプリの`mops install`、`mops check`、Motoko unit test
@@ -181,8 +181,8 @@
 
 ## 2026-08-07に追加で実行済み (issue #2, PocketIC integration)
 
-- apps/01-05 の全アプリを pocket-ic 14.0.0 上で実行。**213 assertion、失敗0**
-  (01: 51 / 02: 31 / 03: 44 / 04: 39 / 05: 48)。共有 harness は `tools/pocket-ic/`、
+- apps/01-05 の全アプリを pocket-ic 14.0.0 上で実行。**228 assertion、失敗0**
+  (01: 66 / 02: 31 / 03: 44 / 04: 39 / 05: 48)。共有 harness は `tools/pocket-ic/`、
   各スイートは `apps/NN_*/test/replica.test.mjs`
 - app 01 の commitment検証 (#3) をレプリカ上で確認。commitmentは
   `protocol/tools/commitment.mjs` — canister側ではなくverifier側の実装 — で構築するので、
@@ -206,6 +206,36 @@
   それを渡す口がありません。harness は管理キャニスターの `install_code` を直接呼びます。
   `keep` を指定します — `replace` はヒープを捨てるため、「state が残る」系の検査が全部
   誤って通ります
+
+## 2026-08-07に追加で実行済み (apps/01_creator_proof_registry, issue #6)
+
+- certified query。`getRecordCertified`がsubnet certificateとpruned hash treeを返し、
+  readerはBLS署名を検証し、`/canister/<id>/certified_data`を取り出し、witnessを
+  reconstructしてrootが一致することを確認し、`["record", id]`の値をローカルで
+  再計算したdigestと突き合わせます
+- **witness rootがcertified dataであることの確認**が、抜けやすくかつ抜けると致命的な
+  ステップです。内部的にreconstructできても別のtreeを記述しているwitnessは何も証明
+  しません。mutation前に取得したwitnessを現在のcertificateと組み合わせるケースを
+  スイートに入れており、まさにこのステップで落ちます
+- certified digestは**全フィールド**を対象にします。identityだけを対象にすると
+  `storageUri` (artifactの実在場所) が検出不能に書き換え可能になり、失効も
+  「activeのまま配り続ける」ことで無効化できてしまいます
+- record encodingは意図的に2実装あります (`backend/src/RecordDigest.mo` と
+  `test/record-digest.mjs`)。canisterにdigestを聞くverifierは何も検証していないためです。
+  replica suiteは証明書付きrecordごとに両者を比較します
+- pocket-ic 14.0.0上で app 01 は 40 → 66 checks、全体で **228 assertion、失敗0**。
+  検証はレプリカから取得したsubnet公開鍵に対して行います (検証対象から鍵を取れば
+  何も証明しません)
+- コスト測定 (`mops bench --replica pocket-ic`): certificationは`reveal` /
+  `revokeRecord`に約0.9M〜1.2M instructionsを追加。commitment検査の約100kに対して
+  一桁大きく、両エンドポイントの支配的コストです。`put`はrecord数に対して単調では
+  ありません — radix trieなので挿入の深さはキーの分岐位置で決まります
+- `scripts/check_candid_compat.py`と`tools/pocket-ic/harness.mjs`はpackage pathを
+  `.mops/`のディレクトリ名からではなく`mops sources`から取得するよう変更。
+  `ic-certification`が`core@1`・`sha2@0`を持ち込むため、ディレクトリ走査では
+  `--package core`が2回出てコンパイラがどちらかを選んでしまいます
+
+詳細は`apps/01_creator_proof_registry/docs/CERTIFIED_QUERIES.md`。
 
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
@@ -246,7 +276,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | Motoko/Candid API surface | offline mechanically cross-checked |
 | Motoko compile/test/Wasm/Candid | passed for all 6 applications |
 | Nix toolchain bootstrap | passed with read-only global npm prefix |
-| PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 213 + 55 assertions |
+| PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 228 + 55 assertions |
 | local replica (`icp deploy`) | passed for app 06 (icp-cli 1.2.0 / launcher 15.0.0) |
 | upgrade rehearsal | passed for all 6 applications; across a breaking Candid change, untried |
 | documentation site | 128 pages built strict, 0 warnings; published from `main` |

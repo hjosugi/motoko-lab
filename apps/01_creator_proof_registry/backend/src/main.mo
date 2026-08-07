@@ -1,10 +1,13 @@
 import Blob "mo:core/Blob";
+import CertTree "mo:ic-certification/CertTree";
+import CertifiedData "mo:core/CertifiedData";
 import Commitment "Commitment";
 import Int "mo:core/Int";
 import Iter "mo:core/Iter";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 import Principal "mo:core/Principal";
+import RecordDigest "RecordDigest";
 import Time "mo:core/Time";
 import Validation "Validation";
 
@@ -40,35 +43,25 @@ persistent actor CreatorProofRegistry {
     status : CommitmentStatus;
   };
 
-  public type AIDisclosure = {
-    assisted : Bool;
-    mode : { #none; #assist; #generate; #transform; #other : Text };
-    provider : ?Text;
-    model : ?Text;
-    promptHash : ?Blob;
-    humanContribution : ?Text;
-  };
+  // Aliased rather than redeclared: `RecordDigest.encode` covers every field,
+  // so a field added here and forgotten there would silently fall outside what
+  // the certificate attests. Sharing the declaration makes that impossible.
+  public type AIDisclosure = RecordDigest.AIDisclosure;
 
-  public type RecordStatus = {
-    #active;
-    #revoked : { at : Nat; reason : Text };
-  };
+  public type RecordStatus = RecordDigest.RecordStatus;
 
-  public type ProofRecord = {
-    id : Nat;
-    commitmentId : Nat;
-    owner : Principal;
-    artifactHash : Blob;
-    manifestHash : Blob;
-    salt : Blob;
-    title : Text;
-    kind : Text;
-    mimeType : Text;
-    storageUri : Text;
-    parents : [Nat];
-    ai : AIDisclosure;
-    createdAt : Nat;
-    status : RecordStatus;
+  public type ProofRecord = RecordDigest.Record;
+
+  /// A record together with the evidence that the canister, and not the
+  /// transport, produced it.
+  public type CertifiedRecord = {
+    record : ProofRecord;
+    /// The system certificate: a BLS signature over the state tree, which
+    /// includes this canister's certified data.
+    certificate : Blob;
+    /// The pruned hash tree whose root is that certified data, revealing the
+    /// digest of this record and nothing else.
+    witness : Blob;
   };
 
   public type CommitInput = {
@@ -102,6 +95,11 @@ persistent actor CreatorProofRegistry {
     revokedRecords : Nat;
   };
 
+  /// The certified hash tree. `Store` is plain data so it persists; `Ops` is
+  /// the class that operates on it and is rebuilt on every upgrade.
+  let certified : CertTree.Store = CertTree.newStore();
+  transient let tree = CertTree.Ops(certified);
+
   let commitments = Map.empty<Nat, Commitment>();
   let commitmentHashIndex = Map.empty<Blob, Nat>();
   let records = Map.empty<Nat, ProofRecord>();
@@ -113,6 +111,18 @@ persistent actor CreatorProofRegistry {
   var revokedRecordCount : Nat = 0;
 
   func nowNanos() : Nat { Int.abs(Time.now()) };
+
+  /// Writes a record's digest into the certified tree and republishes the root.
+  ///
+  /// `setCertifiedData` only works in an update call, and the root it publishes
+  /// is only signed once the round ends — so a query in the *same* round as the
+  /// write can still see the previous certificate. That is why every mutation
+  /// calls this before returning rather than batching, and why a client that
+  /// needs certainty right now uses an update call instead.
+  func certify(record : ProofRecord) {
+    tree.put([RecordDigest.treeLabel, RecordDigest.idKey(record.id)], RecordDigest.digest(record));
+    tree.setCertifiedData()
+  };
 
   func rejectAnonymous(caller : Principal) : ?Error {
     if (Principal.isAnonymous(caller)) ?#anonymousNotAllowed else null
@@ -341,6 +351,7 @@ persistent actor CreatorProofRegistry {
     Map.add(records, Nat.compare, recordId, record);
     Map.add(artifactHashIndex, Blob.compare, input.artifactHash, recordId);
     activeRecordCount += 1;
+    certify(record);
 
     let updatedCommitment : Commitment = {
       id = commitment.id;
@@ -386,6 +397,10 @@ persistent actor CreatorProofRegistry {
     Map.add(records, Nat.compare, id, updated);
     activeRecordCount -= 1;
     revokedRecordCount += 1;
+    // Revocation is a status change, and a status change nobody can detect is
+    // a revocation that does not work: an intermediary could keep serving the
+    // record as active. Re-certifying is what makes the withdrawal visible.
+    certify(updated);
     #ok(updated)
   };
 
@@ -409,6 +424,29 @@ persistent actor CreatorProofRegistry {
       func(entry : (Nat, ProofRecord)) : ProofRecord { entry.1 }
     );
     Iter.toArray(values)
+  };
+
+  /// `getRecord`, with the evidence that the answer came from the canister.
+  ///
+  /// A plain query response is unsigned, so a boundary node, a proxy, or a
+  /// compromised frontend can change any field of it and nothing downstream can
+  /// tell. This returns the system certificate and a witness alongside the
+  /// record; a reader recomputes `RecordDigest.encode` over what it received,
+  /// checks the witness reveals that digest under `["record", id]`, and checks
+  /// the witness root is the certified data the certificate signs.
+  ///
+  /// `null` means no such record. Absence is *not* certified here: the witness
+  /// mechanism can prove it, but a reader that needs a proven absence should
+  /// call this as an update call, which is answered by consensus and needs no
+  /// certificate. See docs/CERTIFIED_QUERIES.md.
+  public query func getRecordCertified(id : Nat) : async ?CertifiedRecord {
+    let ?record = Map.get(records, Nat.compare, id) else return null;
+    let ?certificate = CertifiedData.getCertificate() else return null;
+    ?{
+      record;
+      certificate;
+      witness = tree.encodeWitness(tree.reveal([RecordDigest.treeLabel, RecordDigest.idKey(id)]));
+    }
   };
 
   /// Lets a verifier read the commitment rules off the canister instead of

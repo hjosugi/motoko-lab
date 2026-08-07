@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "@dfinity/pic": "^0.22.0"
+    "@dfinity/pic": "^0.22.0",
+    "@dfinity/agent": "^3.3.0",
+    "@dfinity/candid": "^3.3.0"
   }
 }

@@ -16,8 +16,10 @@
 //
 //   node tools/pocket-ic/run.mjs 01
 
-import { bigintSafe, buildCanister, digest, salt, upgradeCanister } from '../../../tools/pocket-ic/harness.mjs';
+import { bigintSafe, buildCanister, digest, equalBytes, salt, upgradeCanister } from '../../../tools/pocket-ic/harness.mjs';
+import { CertificateError, verifyCertifiedValue } from '../../../tools/pocket-ic/certificate.mjs';
 import { commitmentHex } from '../../../protocol/tools/commitment.mjs';
+import { recordDigest, recordPath } from './record-digest.mjs';
 
 export const name = '01_creator_proof_registry';
 
@@ -211,14 +213,92 @@ export async function suite({ appDir, pic, createIdentity, checks: c }) {
   c.ok(found.length === 1 && found[0].id === record.id, 'a record is findable by artifact hash');
   c.ok((await actor.getByArtifactHash(digest(200))).length === 0, 'an unknown artifact hash finds nothing');
 
-  const before = await actor.stats();
-  c.ok(before.records === 2n && before.activeRecords === 1n && before.revokedRecords === 1n,
+  const counted = await actor.stats();
+  c.ok(counted.records === 2n && counted.activeRecords === 1n && counted.revokedRecords === 1n,
     'stats count active and revoked separately');
   c.ok((await actor.listRecords(0n, 100n)).length === 2, 'listRecords returns both records');
+
+  // ------------------------------------------------- certified queries (#6)
+  // A query response is unsigned, so anything between the canister and the
+  // reader can change it. None of this is observable in the interpreter: there
+  // is no subnet, no signature, and no certified data.
+  // The subnet's own public key, which is what a reader would have obtained
+  // from the NNS and pinned. Verification has to be against a key the reader
+  // already trusts; taking it from the response would verify nothing.
+  const subnetId = await pic.getCanisterSubnetId(fixture.canisterId);
+  const rootKey = await pic.getPubKey(subnetId);
+  const verify = async (certified, id) =>
+    verifyCertifiedValue({
+      certificate: certified.certificate,
+      witness: certified.witness,
+      canisterId: fixture.canisterId,
+      rootKey,
+      path: recordPath(id),
+    });
+
+  const certifiedActive = (await actor.getRecordCertified(parented.id))[0];
+  c.ok(certifiedActive !== undefined, 'a record can be fetched with its certificate');
+  const attested = await verify(certifiedActive, parented.id);
+  c.ok(equalBytes(attested, recordDigest(certifiedActive.record)),
+    'the subnet attests the digest of the record it returned');
+
+  // Every field is covered, so altering any one of them is detectable. This is
+  // the substitution the certification exists to stop: a record that still
+  // looks valid but points somewhere else.
+  const tampered = { ...certifiedActive.record, storageUri: 'ipfs://attacker-controlled' };
+  c.ok(!equalBytes(attested, recordDigest(tampered)),
+    'a record with a rewritten storageUri no longer matches the attested digest');
+  c.ok(!equalBytes(attested, recordDigest({ ...certifiedActive.record, title: 'something else' })),
+    'a record with a rewritten title no longer matches the attested digest');
+
+  // A witness that verifies internally but is not rooted in the certified data
+  // proves nothing, and is what a reader who skipped that comparison would
+  // accept.
+  const corrupted = Uint8Array.from(certifiedActive.witness);
+  corrupted[corrupted.length - 1] ^= 0xff;
+  await c.expectThrows(
+    () => verify({ ...certifiedActive, witness: corrupted }, parented.id),
+    CertificateError,
+    'a corrupted witness is rejected',
+  );
+
+  // A stale witness. Certified data only changes when the tree does, so this
+  // needs a mutation between the two reads — otherwise both certificates carry
+  // the same root and pairing them is perfectly legitimate.
+  const staleWitness = certifiedActive.witness;
+  const fifth = c.expectOk(
+    await actor.commit({ commitmentHash: commitmentFor(alicePrincipal, 6), metadataHash: [], expiresAt: [] }),
+    'alice commits again, to move the certified tree');
+  c.expectOk(await actor.reveal(revealInput(fifth.id, 6)), 'and reveals it, which re-certifies the root');
+
+  const fresh = (await actor.getRecordCertified(parented.id))[0];
+  c.ok(!equalBytes(fresh.witness, staleWitness), 'the witness changed when the tree did');
+  await c.expectThrows(
+    () => verify({ certificate: fresh.certificate, witness: staleWitness }, parented.id),
+    CertificateError,
+    'a witness from before the last mutation is rejected against the current certificate',
+  );
+  c.ok(equalBytes(await verify(fresh, parented.id), recordDigest(fresh.record)),
+    'the current witness still attests the unchanged record');
+
+  c.ok((await actor.getRecordCertified(4242n)).length === 0, 'an unknown record has no certificate');
+
+  // Revocation has to be certified too. An intermediary that could keep
+  // serving a withdrawn record as active would make revocation cosmetic.
+  const certifiedRevoked = (await actor.getRecordCertified(record.id))[0];
+  c.ok('revoked' in certifiedRevoked.record.status, 'the revoked record is fetched as revoked');
+  const revokedAttested = await verify(certifiedRevoked, record.id);
+  c.ok(equalBytes(revokedAttested, recordDigest(certifiedRevoked.record)),
+    'the subnet attests the revoked status, not only the record identity');
+  c.ok(!equalBytes(revokedAttested, recordDigest({ ...certifiedRevoked.record, status: { active: null } })),
+    'presenting the revoked record as active no longer matches the attested digest');
 
   // ---------------------------------------------------------------- upgrade
   // The claim in docs/UPGRADE_PLAN.md that state survives is not observable in
   // the interpreter at all.
+  // Snapshotted here rather than earlier, so the comparison spans the upgrade
+  // and nothing else.
+  const before = await actor.stats();
   await upgradeCanister({ pic, canisterId: fixture.canisterId, wasm, sender });
 
   const after = await actor.stats();
@@ -231,13 +311,21 @@ export async function suite({ appDir, pic, createIdentity, checks: c }) {
   c.ok((await actor.getByArtifactHash(digest(1))).length === 1,
     'the artifact hash index survives the upgrade');
 
+  // The hash tree lives in stable state and `Ops` is rebuilt on upgrade. If the
+  // tree were lost, `getRecordCertified` would still answer — with a witness
+  // rooted in an empty tree — so this has to compare against the certificate,
+  // not merely check that a witness came back.
+  const afterUpgradeCertified = (await actor.getRecordCertified(record.id))[0];
+  c.ok(equalBytes(await verify(afterUpgradeCertified, record.id), recordDigest(afterUpgradeCertified.record)),
+    'a record certified before the upgrade still verifies after it');
+
   // Ids must keep counting up. Reuse after an upgrade would let a new record
   // take a retired id, which is exactly what a provenance registry cannot do.
   asAlice();
   const afterUpgrade = c.expectOk(
     await actor.commit({ commitmentHash: commitmentFor(alicePrincipal, 5), metadataHash: [], expiresAt: [] }),
     'a commit still works after the upgrade');
-  c.ok(afterUpgrade.id === 6n, 'commitment ids continue past the upgrade rather than restarting');
+  c.ok(afterUpgrade.id === 7n, 'commitment ids continue past the upgrade rather than restarting');
 
   // The commitment check runs on the same code after an upgrade, against a
   // commitment stored before it.

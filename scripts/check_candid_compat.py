@@ -205,21 +205,39 @@ def canisters_of(app: Path) -> list[Canister]:
 def vendored_packages(app: Path, root: Path) -> dict[str, Path]:
     """Every vendored Mops package, which `moc --idl` needs on the package path.
 
-    The app's own `.mops/` is what `mops install` and `vendor_core_offline.sh`
-    populate. The kit-wide `.mops-cache/` holds the same packages, downloaded
-    once by the vendor script, and it lets this check run against an app whose
-    `.mops/` was cleared — which `package_kit.py` does on every release build.
-
     Every package is passed, not only `mo:core`: an app that imports anything
-    else — `apps/01_creator_proof_registry` imports `mo:sha2` for on-chain
-    commitment verification — fails to compile with a partial package path, and
-    a compile failure here reads as "no interface to compare", which would let
+    else — `apps/01_creator_proof_registry` imports `mo:sha2` and
+    `mo:ic-certification` — fails to compile with a partial package path, and a
+    compile failure here reads as "no interface to compare", which would let
     real drift through unnoticed.
 
-    `.mops/` wins over `.mops-cache/` for the same package name, because that is
-    the tree the app actually builds against.
+    `mops sources` is asked first, because a directory name stops being the
+    package name once two major versions of one package are installed.
+    `ic-certification` brings its own `base`, `core` and `sha2`, which mops
+    resolves to `base@0`, `core@1` and `sha2@0` while the app's own stay
+    unqualified. Deriving names from `.mops/` would emit `--package core` twice
+    and the compiler would take whichever came first.
+
+    The directory scan remains as a fallback for the case `mops` cannot run: a
+    ZIP distribution, or a checkout whose `.mops/` was cleared and refilled from
+    the kit-wide `.mops-cache/` by `vendor_core_offline.sh`. It is only correct
+    while no package appears at two major versions, which is why it is second.
     """
+    try:
+        listing = subprocess.run(
+            ["mops", "sources"], cwd=app, capture_output=True, text=True, check=True
+        ).stdout
+    except (OSError, subprocess.CalledProcessError):
+        listing = ""
+
     found: dict[str, Path] = {}
+    for line in listing.splitlines():
+        parts = line.split()
+        if len(parts) == 3 and parts[0] == "--package":
+            found[parts[1]] = (app / parts[2]).resolve()
+    if found:
+        return found
+
     for base in (app / ".mops", root / ".mops-cache"):
         if not base.is_dir():
             continue

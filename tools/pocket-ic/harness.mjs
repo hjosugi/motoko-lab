@@ -17,7 +17,6 @@
 //   node tools/pocket-ic/run.mjs 01    # one
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, readdirSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -39,17 +38,24 @@ function moc(appDir) {
 /// `--package` for every dependency the app has installed, not just `mo:core`.
 ///
 /// Hardcoding `core` was fine while it was the only dependency in the kit and
-/// stops being fine the moment an app has a second one —
-/// `apps/01_creator_proof_registry` imports `mo:sha2` for on-chain commitment
-/// verification. The failure is a compile error, which reads as "the harness is
-/// broken" rather than "the package path is short", so it is worth doing once
-/// here properly.
+/// stopped being fine the moment an app had a second one:
+/// `apps/01_creator_proof_registry` imports `mo:sha2` and `mo:ic-certification`.
+///
+/// `mops sources` is asked rather than `.mops/` scanned, because the directory
+/// name is not the package name once two major versions of the same package are
+/// installed. `ic-certification` brings its own `base`, `core` and `sha2`, and
+/// mops resolves those to `base@0`, `core@1` and `sha2@0` while ours stay
+/// unqualified. A scan would emit `--package core` twice and the compiler would
+/// take whichever came first.
 function packageArgs(appDir) {
-  const mops = resolve(appDir, '.mops');
-  if (!existsSync(mops)) return [];
-  return readdirSync(mops, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && entry.name.includes('@'))
-    .flatMap((entry) => ['--package', entry.name.split('@')[0], resolve(mops, entry.name, 'src')]);
+  return execFileSync('mops', ['sources'], { cwd: appDir })
+    .toString()
+    .split('\n')
+    .filter((line) => line.startsWith('--package'))
+    .flatMap((line) => {
+      const [, name, path] = line.split(/\s+/);
+      return ['--package', name, resolve(appDir, path)];
+    });
 }
 
 /// Compiles one canister with the pinned compiler and generates its JS binding
@@ -112,6 +118,34 @@ export class Checks {
     console.log(`  ok  ${description} -> ${variant}`);
     return result.err[variant];
   }
+
+  /// Asserts `body` rejects, **with the expected error class**. Used for the
+  /// client-side verification failures, which are thrown rather than returned:
+  /// a check that only asserted "it threw" would pass on a typo in the test.
+  async expectThrows(body, expected, description) {
+    let thrown = null;
+    try {
+      await body();
+    } catch (error) {
+      thrown = error;
+    }
+    if (thrown === null) {
+      throw new Error(`FAILED: ${description} -> it did not throw`);
+    }
+    if (!(thrown instanceof expected)) {
+      throw new Error(`FAILED: ${description} -> expected ${expected.name}, got ${thrown}`);
+    }
+    this.count += 1;
+    console.log(`  ok  ${description} -> ${thrown.name}`);
+    return thrown;
+  }
+}
+
+/// Byte-wise equality for the digests and roots the certified paths compare.
+export function equalBytes(a, b) {
+  const left = new Uint8Array(a);
+  const right = new Uint8Array(b);
+  return left.length === right.length && left.every((byte, index) => byte === right[index]);
 }
 
 export const bigintSafe = (_key, value) => (typeof value === 'bigint' ? Number(value) : value);

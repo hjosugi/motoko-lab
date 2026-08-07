@@ -75,6 +75,11 @@ type RevealInput = record {
   ai : AIDisclosure;
   algorithm : opt CommitmentAlgorithm;
 };
+type CertifiedRecord = record {
+  "record" : ProofRecord;
+  certificate : blob;
+  witness : blob;
+};
 type CommitmentResult = variant { ok : Commitment; err : Error };
 type RecordResult = variant { ok : ProofRecord; err : Error };
 type Stats = record {
@@ -90,6 +95,7 @@ service : {
   revokeRecord : (nat, text) -> (RecordResult);
   getCommitment : (nat) -> (opt Commitment) query;
   getRecord : (nat) -> (opt ProofRecord) query;
+  getRecordCertified : (nat) -> (opt CertifiedRecord) query;
   getByArtifactHash : (blob) -> (opt ProofRecord) query;
   listRecords : (nat, nat) -> (vec ProofRecord) query;
   commitmentSpec : () -> (CommitmentSpec) query;

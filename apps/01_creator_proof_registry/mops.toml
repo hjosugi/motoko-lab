@@ -12,6 +12,12 @@ core = "2.6.0"
 # research-ag (https://github.com/research-ag/sha2), and `core` is its only
 # dependency. See docs/COMMITMENT_V1.md for the selection rationale.
 sha2 = "0.2.5"
+# Certified queries for public verification. The IC hash tree, witness pruning
+# and CBOR encoding, by the author of the certification specification.
+# Apache-2.0/MIT, https://github.com/nomeata/ic-certification. It brings its own
+# `base`, `core@1` and `sha2@0` alongside ours; see docs/CERTIFIED_QUERIES.md
+# for why that was the better trade than hand-rolling a hash tree.
+ic-certification = "1.1.0"
 
 # `mops bench` only. Kept out of `[dependencies]` so the offline vendoring path
 # in scripts/vendor_core_offline.sh, and therefore `scripts/check_all_apps.sh`,

@@ -7,6 +7,6 @@
 - large input: hard caps
 - anonymous spam: rejected; production adds fee/quota
 - compromised key: future delegation/rotation and revocation
-- query tampering: future certified query
+- query tampering: `getRecordCertified` returns the subnet certificate and a witness over a digest covering every field, including revocation status, so an altered response is detectable (`docs/CERTIFIED_QUERIES.md`). Other read paths remain uncertified; the fallback is an update call
 - bad canonicalization: use standard implementation and vectors
 - malicious URI: clients must validate scheme/content; registry stores pointer only

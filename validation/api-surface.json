@@ -4,7 +4,7 @@
   "limitation": "This does not replace compiler-generated Candid or compatibility checking.",
   "status": "pass",
   "application_count": 6,
-  "method_count": 64,
+  "method_count": 65,
   "applications": [
     {
       "app": "01_creator_proof_registry",
@@ -36,6 +36,11 @@
         },
         {
           "name": "getRecord",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getRecordCertified",
           "mode": "query",
           "argument_count": 1
         },
@@ -88,6 +93,11 @@
         },
         {
           "name": "getRecord",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getRecordCertified",
           "mode": "query",
           "argument_count": 1
         },
