@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v2026.09.22
 
 - Added creator identity, key rotation and scoped delegation to `apps/01_creator_proof_registry` (#7). A record's creator used to *be* the principal that signed it — one key, forever — so a lost key was a lost body of work, an organization could not offboard a member without abandoning what they registered, and nobody could say "this assistant may publish for me, on this project, until March".
 - A record keeps the principal that signed it, permanently. Rewriting old records to point at a new key is the obvious implementation of rotation and it is falsifying provenance: at the moment of registration that key really was the signer. Rotation appends to a key history instead, and attribution is resolved by reading it.
@@ -22,6 +22,7 @@
 - `apps/04` and `apps/05` move the replica clock to reach the bounty deadline and the quota rollover, paths the interpreter cannot express at all. `apps/05`'s admin gate is `Principal.isController`, which only a replica can answer.
 - Found while building it: upgrading a `persistent actor` needs the `wasm_memory_persistence` install option, and `@dfinity/pic@0.22.0`'s `upgradeCanister()` has no field for it, so the harness calls `install_code` on the management canister directly. It passes `keep`; `replace` discards the heap, which would make every "state survives" assertion pass for the wrong reason.
 - Added `.github/workflows/replica.yml` and `make replica-tests`.
+- Regenerated `FILE_INDEX.md` and `MANIFEST.sha256` from a clean checkout. The previous inventory had been produced in a working tree that also held gitignored agent skill directories and npm lockfiles, so it listed 375 entries of which 33 are in neither the repository nor the kit; the packaged artifact now carries 343.
 
 ## v2026.08.07
 

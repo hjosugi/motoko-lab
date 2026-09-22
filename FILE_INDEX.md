@@ -3,7 +3,7 @@
 このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
 完全性確認には`MANIFEST.sha256`を使用してください。
 
-Indexed files: **376**
+Indexed files: **343**
 
 ## Root
 
@@ -28,44 +28,6 @@ Indexed files: **376**
 ## `.claude/`
 
 - `.claude/CLAUDE.md`
-- `.claude/settings.json`
-- `.claude/skills/graphify/.graphify_version`
-- `.claude/skills/graphify/SKILL.md`
-- `.claude/skills/graphify/references/add-watch.md`
-- `.claude/skills/graphify/references/exports.md`
-- `.claude/skills/graphify/references/extraction-spec.md`
-- `.claude/skills/graphify/references/github-and-merge.md`
-- `.claude/skills/graphify/references/hooks.md`
-- `.claude/skills/graphify/references/query.md`
-- `.claude/skills/graphify/references/transcribe.md`
-- `.claude/skills/graphify/references/update.md`
-
-## `.codex/`
-
-- `.codex/hooks.json`
-- `.codex/skills/graphify/.graphify_version`
-- `.codex/skills/graphify/SKILL.md`
-- `.codex/skills/graphify/references/add-watch.md`
-- `.codex/skills/graphify/references/exports.md`
-- `.codex/skills/graphify/references/extraction-spec.md`
-- `.codex/skills/graphify/references/github-and-merge.md`
-- `.codex/skills/graphify/references/hooks.md`
-- `.codex/skills/graphify/references/query.md`
-- `.codex/skills/graphify/references/transcribe.md`
-- `.codex/skills/graphify/references/update.md`
-
-## `.copilot/`
-
-- `.copilot/skills/graphify/.graphify_version`
-- `.copilot/skills/graphify/SKILL.md`
-- `.copilot/skills/graphify/references/add-watch.md`
-- `.copilot/skills/graphify/references/exports.md`
-- `.copilot/skills/graphify/references/extraction-spec.md`
-- `.copilot/skills/graphify/references/github-and-merge.md`
-- `.copilot/skills/graphify/references/hooks.md`
-- `.copilot/skills/graphify/references/query.md`
-- `.copilot/skills/graphify/references/transcribe.md`
-- `.copilot/skills/graphify/references/update.md`
 
 ## `.github/`
 
@@ -207,7 +169,6 @@ Indexed files: **376**
 - `apps/06_distributed_llm/test/fixtures/LyingWorker.mo`
 - `apps/06_distributed_llm/tools/latency-model.mjs`
 - `apps/06_distributed_llm/tools/latency-model.test.mjs`
-- `apps/06_distributed_llm/tools/package-lock.json`
 - `apps/06_distributed_llm/tools/package.json`
 - `apps/06_distributed_llm/tools/pocket-ic-e2e.mjs`
 - `apps/06_distributed_llm/tools/pocket-ic-setup.mjs`
@@ -391,6 +352,7 @@ Indexed files: **376**
 - `scripts/create_labels.sh`
 - `scripts/deploy_app.sh`
 - `scripts/generate_file_index.py`
+- `scripts/graphify.sh`
 - `scripts/install_didc.sh`
 - `scripts/issue_loader.py`
 - `scripts/package_kit.py`
@@ -404,7 +366,6 @@ Indexed files: **376**
 
 - `tools/pocket-ic/certificate.mjs`
 - `tools/pocket-ic/harness.mjs`
-- `tools/pocket-ic/package-lock.json`
 - `tools/pocket-ic/package.json`
 - `tools/pocket-ic/run.mjs`
 - `tools/pocket-ic/setup.mjs`
