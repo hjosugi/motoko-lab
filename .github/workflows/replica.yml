@@ -41,3 +41,11 @@ jobs:
           source ./scripts/toolchain_env.sh
           motoko_add_toolchain_to_path
           node tools/pocket-ic/run.mjs
+      # Not an application suite: the C2PA bridge (#10) end to end against app
+      # 01 — a credential naming a certified record, verified online and from a
+      # saved bundle, before and after the record is revoked.
+      - name: Run the C2PA bridge against a replica
+        run: |
+          source ./scripts/toolchain_env.sh
+          motoko_add_toolchain_to_path
+          node tools/pocket-ic/c2pa-bridge.test.mjs

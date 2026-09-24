@@ -2,15 +2,14 @@
 
 ## C2PA
 
-C2PA manifest assertionへ次を含める案:
+実装済みです (#10)。仕様・検証手順・trust/revocationの意味は`C2PA_BRIDGE.md`。
 
-- registry canister principal
-- proof record ID
-- artifact/manifest digest
-- verification URI
-- AI disclosure summary
-
-C2PA asset-specific signingとICP recordは相互参照し、どちらか一方だけをsource of truthにしません。
+- custom assertion `io.github.hjosugi.icp-proof`: network、canister id、record id、owner principal、artifact/manifest digest、AI disclosure summary、certified query名
+- `c2pa.hash.data` = 未署名fileのSHA-256 = recordの`artifactHash`。credentialを剥がしても`getByArtifactHash`でrecordに戻れます
+- `c2pa.actions.v2`の`digitalSourceType`はrecordのAI disclosureから導出し、understateを拒否します
+- creatorはcommit済みmanifestの`extensions["io.github.hjosugi.c2pa"].signers`でC2PA署名鍵 (SPKI SHA-256) を宣言できます。宣言外の鍵によるcredentialは`invalid`
+- verifierはcredential (X.509 trust list) とrecord (IC root key) を別々のtrust rootで検証し、どちらか一方をsource of truthにしません
+- c2patool 0.27.22と双方向に照合済み
 
 ## W3C Verifiable Credentials
 

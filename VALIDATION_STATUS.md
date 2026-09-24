@@ -262,6 +262,38 @@
 
 詳細は`apps/01_creator_proof_registry/docs/IDENTITY.md`。
 
+## 2026-09-24に追加で実行済み (protocol, issue #10, C2PA bridge)
+
+- C2PA Technical Specification 2.4 (April 2026) を確認し、byte-levelの規則は
+  c2patool 0.27.22 (c2pa-rs 0.90.22) の出力を実測して確定。assertionのhashed URIは
+  superboxの**payload** (description boxとcontent box、superbox自身のLBox/TBoxは除く)、
+  `c2pa.hash.data`のexclusionは`caBX` chunk全体 (length・CRCを含む) を覆います
+- PNG用のmanifest writer / validatorをdependency-freeで実装 (CBOR、JUMBF、COSE_Sign1、
+  X.509 test PKI)。offline suite `protocol/tools/c2pa.test.mjs` は**116 check**:
+  CBOR preferred serializationの境界値、JUMBF UUID、証明書profile、Ed25519/ES256署名、
+  pixel改変・assertion改変・claim改変・manifest storeの移動・CRC破損の検出、
+  example 5 fileのbyte単位再現、全verdict (revoked / broken link / unreachable /
+  certification failure / credential laundering / AI disclosureのunderstate /
+  gathered assertionによるlinkの拒否)
+- **c2patoolとの双方向照合** (`protocol/tools/c2pa-crosscheck.mjs`、network必須のためCI外):
+  example credentialはtest root CAをtrust anchorにして`validation_state: Trusted`・failure 0件、
+  anchorなしでは`Valid`でfailureは`signingCredential.untrusted`の1件のみ。ここで書いた
+  ES256 credentialも`Trusted`。逆方向にc2patoolが自身のsample ES256 chainで署名したPNG
+  (thumbnail・ingredient・gathered assertionを含む) の署名・全hashed URI・data hashを
+  ここのvalidatorが検証
+- pocket-ic 14.0.0上のend-to-end (`tools/pocket-ic/c2pa-bridge.test.mjs`、**22 check**):
+  app 01にPNGをcommit/revealし、そのrecordを参照するcredentialを埋め込み、
+  `getRecordCertified`経由のonline検証 (BLS証明書をsubnet keyで検証) と保存bundleからの
+  offline検証の両方で`verified`。bundle内recordの書き換え・誤ったroot key・存在しない
+  record (broken link)・到達できないcanisterをそれぞれ区別して報告。revoke後は同じ
+  credentialが`revoked`になり、revoke前のbundleは「保存時点ではactive」と日付付きで
+  報告、revoke前のrecordを新しい証明書に継ぎ合わせるとcertificationが失敗します。
+  credentialを剥がしたcopyも`getByArtifactHash`でrecordへ戻れることを確認
+- 非対応 (明記): JPEG/BMFFなど他container、ingredient/update manifest、redaction、
+  RFC 3161 timestamp、OCSP、trust list policy全体
+
+詳細は`protocol/C2PA_BRIDGE.md`。
+
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、
@@ -298,6 +330,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | JSON Schema/test vectors | locally validated |
 | RFC 8785 canonicalization | official vectors passed; byte-identical to serde_jcs 0.2.0 and canonicalize 3.0.0 |
 | Commitment layout v1 | frozen; 39 conformance vectors reproduced by independent Rust and TypeScript implementations |
+| C2PA bridge (PNG) | 116 offline checks + 22 on pocket-ic 14.0.0; credentials read as Trusted by c2patool 0.27.22 and c2patool credentials validated here |
 | Motoko/Candid API surface | offline mechanically cross-checked |
 | Motoko compile/test/Wasm/Candid | passed for all 6 applications |
 | Nix toolchain bootstrap | passed with read-only global npm prefix |

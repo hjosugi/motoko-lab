@@ -1,0 +1,79 @@
+{
+  "version": "0.1",
+  "canonicalization": "RFC8785",
+  "artifact": {
+    "name": "gradient.png",
+    "mediaType": "image/png",
+    "sizeBytes": 463,
+    "digest": {
+      "algorithm": "sha256",
+      "hex": "bc9854f99dbe38c18f0ae3d55ad8fc7583c03b645fdc7be1ee68524a2888871e"
+    },
+    "storageUri": "https://hjosugi.github.io/motoko-lab/examples/gradient.png",
+    "normalization": {
+      "binary": true,
+      "textEncoding": null,
+      "unicode": null,
+      "lineEndings": null
+    }
+  },
+  "creator": {
+    "principal": "2vxsx-fae",
+    "displayName": "Example Creator",
+    "organization": null,
+    "credentialUris": []
+  },
+  "process": {
+    "declaredCreatedAt": "2026-09-24T00:00:00Z",
+    "tools": [
+      {
+        "name": "Example image model",
+        "version": "2026-09",
+        "role": "Generated the image",
+        "attestationUri": null
+      }
+    ],
+    "humanStatement": "I wrote the prompt and selected this output.",
+    "sealedEvidenceUri": null,
+    "environmentDigest": null
+  },
+  "ai": {
+    "assisted": true,
+    "mode": "generate",
+    "systems": [
+      {
+        "provider": "Example AI Provider",
+        "model": "Example Image Model",
+        "version": "2026-09",
+        "role": "Generated the image"
+      }
+    ],
+    "promptDigest": null,
+    "humanContribution": "Prompt authorship and selection.",
+    "attestationUris": []
+  },
+  "derivation": {
+    "parents": [],
+    "notes": null
+  },
+  "license": {
+    "termsUri": "https://example.org/licenses/creator-proof-example-v1",
+    "termsDigest": {
+      "algorithm": "sha256",
+      "hex": "177685de465408927f1b2f65e6cca29f319f6684fd375c9808b02871c39a693d"
+    },
+    "spdxId": null
+  },
+  "extensions": {
+    "io.github.hjosugi.c2pa": {
+      "signers": [
+        {
+          "spki": {
+            "algorithm": "sha256",
+            "hex": "53faeb828e8dae464aa89ce6990d33699cbebe65cb5df1bc91e37da570ee3c73"
+          }
+        }
+      ]
+    }
+  }
+}

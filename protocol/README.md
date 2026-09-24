@@ -18,6 +18,14 @@
 - `tools/provenance-cli.test.mjs`: Node test
 - `tools/crosscheck.mjs`: serde_jcs / canonicalize npmとのcross-implementation照合 (opt-in)
 - `CANONICALIZATION.md`: canonicalizationの仕様と決定事項
+- `C2PA_BRIDGE.md`: C2PA content credentialとregistry recordの相互参照、検証手順、trust/revocationの意味
+- `tools/cbor.mjs` / `tools/jumbf.mjs` / `tools/cose.mjs` / `tools/x509.mjs`: C2PAが使うCBOR・JUMBF・COSE_Sign1・X.509 (dependency-free)
+- `tools/c2pa.mjs`: PNG用C2PA manifest writer / validator
+- `tools/c2pa-bridge.mjs`: ICP proof assertion、credential発行、offline bundle、検証CLI
+- `tools/c2pa.test.mjs`: C2PA bridgeのoffline test
+- `tools/c2pa-crosscheck.mjs`: c2patool 0.27.22との双方向照合 (opt-in、network必須)
+- `schemas/c2pa-verification-report.schema.json`: C2PA bridgeの検証レポート
+- `examples/c2pa/`: credential付きPNG、record bundle、creator manifest、test root CA
 
 ## Commands
 
@@ -30,6 +38,11 @@ node protocol/tools/provenance-cli.mjs commitment \
   --manifest-hash <64-hex> \
   --salt 00112233445566778899aabbccddeeff
 node protocol/tools/provenance-cli.test.mjs
+node protocol/tools/c2pa.test.mjs
+node protocol/tools/c2pa-bridge.mjs verify protocol/examples/c2pa/gradient.c2pa.png \
+  --bundle protocol/examples/c2pa/record-bundle.json \
+  --trust-anchors protocol/examples/c2pa/test-root-ca.pem \
+  --manifest protocol/examples/c2pa/manifest.json
 ```
 
 ## Canonicalization
@@ -63,3 +76,11 @@ byte-levelの仕様、principal textual formの検証規則、error behaviour、
 principalは**canonical formのみ**を受け付けます。uppercaseは黙ってlowercaseにせずrejectします。hashされるbytesがcase-insensitiveではない以上、そう振る舞うべきだからです。
 
 saltはreveal時にpublicになります。128 bit以上のentropyが必要です。canisterは`reveal`時にcommitmentを再計算し、独立したverifierも同じ値を再計算できます。
+
+## C2PA bridge
+
+PNGのC2PA content credentialにregistry recordへの参照 (`io.github.hjosugi.icp-proof` assertion) を埋め込み、verifierはcredentialの署名・hard bindingと、certified queryで取得したrecordのstatusを**別々に**検証してから1つのverdictにまとめます。credentialが有効でもrecordがrevokeされていれば`revoked`、recordが存在しなければ`unlinked` (broken link)、registryに到達できなければ`unverifiable`です。
+
+`c2pa.hash.data`はmanifest storeを除いたfile全体のhashなので、未署名のoriginal fileのSHA-256、つまりrecordの`artifactHash`と一致します。credentialを剥がされたcopyも`getByArtifactHash`でrecordに戻れます。creatorはcommit済みmanifestの`extensions`で署名鍵を事前宣言でき、他人が同じassetに署名したcredential (credential laundering) は`invalid`になります。
+
+writer/validatorはc2patool 0.27.22と双方向に照合済みです (example credentialはtest root CAをtrust anchorにして`Trusted`)。実装範囲と非対応項目は`C2PA_BRIDGE.md`を参照してください。

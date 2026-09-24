@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hjosugi.github.io/motoko-lab/schemas/c2pa-verification-report.schema.json",
+  "title": "C2PA credential and ICP registry verification report",
+  "description": "Output of protocol/tools/c2pa-bridge.mjs verify. The credential, the registry link, the record and the bindings between them are reported separately; `verdict` combines them. See protocol/C2PA_BRIDGE.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "verifiedAt", "verdict", "asset", "credential", "link", "record", "binding", "errors", "warnings"],
+  "properties": {
+    "format": { "const": "c2pa-icp-verification/1" },
+    "verifiedAt": { "type": "string", "format": "date-time" },
+    "verdict": {
+      "description": "verified: every check passed. verified-with-warnings: nothing failed, but something could not be established (trust, certification, signer binding, freshness). revoked: the credential is intact and the record it names was withdrawn. invalid: the credential is broken, or contradicts the record it names. unlinked: the credential names no record, or one that does not exist. unverifiable: the registry could not be consulted or its answer failed certification. no-credential: the asset carries no C2PA manifest.",
+      "enum": ["verified", "verified-with-warnings", "revoked", "invalid", "unlinked", "unverifiable", "no-credential"]
+    },
+    "asset": {
+      "type": "object",
+      "required": ["mediaType", "unsignedSha256"],
+      "properties": {
+        "mediaType": { "type": "string" },
+        "unsignedSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256 of the asset with its manifest store removed: the hard-binding hash, and the artifact hash a registry record holds." }
+      }
+    },
+    "credential": {
+      "type": "object",
+      "required": ["present", "valid", "status"],
+      "properties": {
+        "present": { "type": "boolean" },
+        "manifest": { "type": ["string", "null"] },
+        "claimGenerator": { "type": ["string", "null"] },
+        "valid": { "type": "boolean", "description": "Claim signature, every hashed URI and the hard binding verified, and the signing certificate has the claim-signing profile. Says nothing about trust." },
+        "signer": {
+          "type": ["object", "null"],
+          "properties": {
+            "subject": { "type": "string" },
+            "issuer": { "type": "string" },
+            "serialNumber": { "type": "string" },
+            "algorithm": { "type": "string" },
+            "spkiSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            "trusted": { "type": ["boolean", "null"], "description": "null: no trust list was configured, so trust was not evaluated." },
+            "profile": { "type": "boolean" },
+            "reasons": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "status": {
+          "type": "array",
+          "description": "C2PA validation status codes (claimSignature.validated, assertion.dataHash.mismatch, ...).",
+          "items": {
+            "type": "object",
+            "required": ["code", "explanation"],
+            "properties": { "code": { "type": "string" }, "url": { "type": "string" }, "explanation": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "link": {
+      "type": "object",
+      "required": ["assertion", "resolution", "certification"],
+      "properties": {
+        "assertion": { "enum": ["present", "missing", "not-checked"] },
+        "network": { "type": "string" },
+        "canisterId": { "type": "string" },
+        "recordId": { "type": "string" },
+        "resolution": { "enum": ["found", "not-found", "unreachable", "not-checked"] },
+        "source": { "type": ["string", "null"], "enum": ["online", "bundle", null] },
+        "certification": { "enum": ["verified", "unverified", "failed", "not-checked"] },
+        "fetchedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "record": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["active", "revoked", "not-checked"] },
+        "revokedAt": { "type": "string", "description": "Nanoseconds since the epoch, as a decimal string." },
+        "revocationReason": { "type": "string" },
+        "artifactHashMatch": { "type": "boolean" },
+        "manifestHashMatch": { "type": "boolean" },
+        "ownerMatch": { "type": "boolean" }
+      }
+    },
+    "binding": {
+      "type": "object",
+      "required": ["signer", "disclosure"],
+      "properties": {
+        "signer": { "enum": ["declared", "undeclared", "not-declared", "manifest-mismatch", "not-checked"] },
+        "disclosure": { "enum": ["consistent", "understated", "not-checked"] }
+      }
+    },
+    "errors": { "type": "array", "items": { "type": "string" } },
+    "warnings": { "type": "array", "items": { "type": "string" } }
+  }
+}
