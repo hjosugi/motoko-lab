@@ -7,7 +7,7 @@
    upstream report
 1. `BOOTSTRAP.md`
 2. `ARCHITECTURE_MAP.md`
-3. `ISSUE_TRIAGE_RUBRIC.md`
+3. `ISSUE_TRIAGE_RUBRIC.md` (適用例: `TRIAGE_2026-09.md` — 2026-09時点のopen issue分類、再現9件、contribution候補3件)
 4. `FIRST_10_PRS.md`
 5. `RELEASE_CHECKLIST.md`
 

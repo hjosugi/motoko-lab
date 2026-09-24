@@ -568,6 +568,15 @@
 - 一覧作成で見つかったphase 1のblocker: app 06のorchestratorとworkerは最初の呼び出し者がownerになる
   (公開環境ではfront-runされうる)、app 05のcontrollerはreporter policyの外で任意のtenantのusageを記録できる
 
+## 2026-09-25に追加で実行済み (compiler, issue #31)
+
+- `caffeinelabs/motoko`のopen issue 211件 (PR除く) をread-onlyで取得・分類
+- 再現9件をmoc 1.11.1 (pinned) と1.16.1 (最新release、2026-09-16) で実行
+  (`compiler/repros/triage-2026-09/run.mjs`)。両versionで結果は同一: 4件は再現
+  (#3464 OOPS、#3819 IR type error、#4701 `compile_lit_pat`、#2017)、5件は記載どおりには
+  再現せず (#3624はcrashが消えたが`--check`と`-c`が不一致、#3993・#3117・#4733・#3855)
+- masterはbuildしていません (docに明記)。upstreamへのcomment・反応は一切行っていません
+
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、

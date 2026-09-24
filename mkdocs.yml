@@ -193,6 +193,8 @@ nav:
       - リリースチェックリスト: compiler/RELEASE_CHECKLIST.md
       - OCaml/Dune/Nix/Wasm カリキュラム: compiler/OCAML_DUNE_NIX_WASM_CURRICULUM.md
       - 再現例 — envVar rope trap: compiler/repros/envvar-rope/README.md
+      - Issueトリアージ 2026-09: compiler/TRIAGE_2026-09.md
+      - 再現例 — トリアージ 2026-09: compiler/repros/triage-2026-09/README.md
       - コンパイラアーキテクチャ: docs/13_COMPILER_ARCHITECTURE.md
       - メンテナへの道: docs/12_MAINTAINER_PATH.md
       - 貢献プレイブック: docs/14_CONTRIBUTION_PLAYBOOK.md

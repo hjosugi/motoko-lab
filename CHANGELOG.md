@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Added `compiler/TRIAGE_2026-09.md` (#31), a read-only triage of the 211 open issues on `caffeinelabs/motoko`: classified against `ISSUE_TRIAGE_RUBRIC.md`, with nine reproduction notes run on the pinned moc 1.11.1 and the latest release, 1.16.1. Four still reproduce on both — #3464 (a Float literal above 1.79e308 crashes the front end), #3819 (`await async { trap }` fails the IR type check), #4701 (Float literal patterns are accepted and not compiled), #2017 (an object body may end in a value) — and five do not as written: #3624's crash is gone but `--check` now passes a program `-c` rejects with M0038, and #3993, #3117, #4733 and #3855 look fixed.
+- Master was not built, and the document says so instead of claiming current-master status: "reproduces on 1.16.1" means exactly that. The stale and duplicate observations (#3819 and #4578 likely share a root cause; four issues look fixed) are worded as suggestions to offer the maintainers — nothing was posted upstream.
+- Three contribution candidates, each with scope, test location and risk: turning the #3464 crash into a diagnostic, making `--check` report M0038, and deciding Float literal patterns for #4701. The repros live in `compiler/repros/triage-2026-09/` with a runner that takes any number of `moc` binaries.
+
 ## v2026.09.25
 
 - Added the governance and SNS-readiness decision record (#40), `docs/26_GOVERNANCE_DECISION_RECORD.md`: a single controller only while nothing of value depends on the canisters; before mainnet, k-of-n threshold controllers, announced module hashes checked against the reproducible build, a public log of every privileged call, and parameter changes behind a delay; emergency powers that only withhold service, need a smaller threshold, and expire in 72 hours unless ratified; and SNS go/no-go criteria that make "no" the default until the audit, reproducible releases, legal and privacy reviews and a year of operations exist.
