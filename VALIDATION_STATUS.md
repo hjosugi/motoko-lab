@@ -372,6 +372,28 @@
 
 詳細は`apps/01_creator_proof_registry/docs/DISPUTES.md`。
 
+## 2026-09-24に追加で実行済み (protocol, issue #11, Verifiable Credentials)
+
+- VC Data Model 2.0 / Data Integrity EdDSA Cryptosuites v1.0 (`eddsa-jcs-2022`) /
+  Bitstring Status List v1.0 (いずれもW3C Recommendation, 2025-05-15) を確認
+- **W3C Recommendation自身のtest vector (Appendix B.3) をbyte単位で再現**: canonical
+  document、canonical proof config、両hash、連結hash、64-byte Ed25519署名、proofValue。
+  Ed25519は決定的なので、署名一致はpipeline全体の一致を意味します
+- offline suite `protocol/tools/vc.test.mjs` は**80 check**: Multikey / did:key、
+  base58-btc、status listのbit順 (index 0 = 先頭byteのMSB)・gzip bomb上限・privacy最小長、
+  example 4 fileのbyte単位再現、verdict (expired / not-yet-valid / revoked / suspended /
+  unknown issuer / type外issuer / issuer偽装 / key rotation前後 / compromised key /
+  status list取得不能・他issuer署名・短すぎ・purpose違い・bit改竄 / status必須 /
+  registryとの不整合)
+- pocket-ic 14.0.0上のregistry cross-check (`tools/pocket-ic/vc.test.mjs`、**20 check**):
+  app 01でcreator登録・collection・delegationを作成し、それを提示するcredentialがacceptされ、
+  `revokeDelegation`後は**credentialを変えずに**rejectされること。2日のdelegationは
+  replica clockがexpiryを越えるとreject。membershipはcreatorの`rotateKey`でstaleになり、
+  新rootへの再発行でaccept。reviewはrecordのhash不一致でreject、record revoke後はwarning
+- selective disclosureは調査のみ (SD-JWT = RFC 9901、`ecdsa-sd-2023`、`bbs-2023` CRD)
+
+詳細は`protocol/VERIFIABLE_CREDENTIALS.md`。
+
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、
@@ -408,6 +430,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | JSON Schema/test vectors | locally validated |
 | RFC 8785 canonicalization | official vectors passed; byte-identical to serde_jcs 0.2.0 and canonicalize 3.0.0 |
 | Commitment layout v1 | frozen; 39 conformance vectors reproduced by independent Rust and TypeScript implementations |
+| Verifiable Credentials (eddsa-jcs-2022) | W3C Recommendation vector reproduced byte for byte; 80 offline checks + 20 on pocket-ic 14.0.0 against app 01 identity |
 | C2PA bridge (PNG) | 116 offline checks + 22 on pocket-ic 14.0.0; credentials read as Trusted by c2patool 0.27.22 and c2patool credentials validated here |
 | Merkle tree v1 | frozen; 98 transparency-dev RFC 9162 probes, 43 v1 vectors, verified by independent JavaScript and Motoko implementations |
 | Motoko/Candid API surface | offline mechanically cross-checked |

@@ -13,15 +13,14 @@
 
 ## W3C Verifiable Credentials
 
-credential use cases:
+実装済みです (#11)。仕様・policy・data minimizationは`VERIFIABLE_CREDENTIALS.md`。
 
-- organization membership
-- delegated project signing authority
-- reviewer/agency verification
-- identity recovery approval
-- dispute outcome
-
-credentialのrevocation/statusを必ず確認します。
+- VC Data Model 2.0、Data Integrity `eddsa-jcs-2022` (W3C Recommendationのvectorをbyte単位で再現)、Bitstring Status List v1.0
+- credential type: `CreatorMembershipCredential`、`DelegatedAuthorityCredential`、`ProvenanceReviewCredential`
+- issuer allowlist/policy (type単位の権限、鍵履歴によるrotation、compromised key)
+- unknown issuerはwarning (`unknown-issuer`) で成功扱いしません。expired/revoked/suspendedはreject、status取得不能はfail closed
+- registry (#7) とのread-only cross-check: on-chain delegationのrevoke・expire、creatorのkey rotationがcredentialの検証結果に直接反映されます
+- 未実装 (研究のみ): selective disclosure (SD-JWT VC / `ecdsa-sd-2023` / `bbs-2023`)、identity recovery approval・dispute outcome credential
 
 ## RFC 8785
 

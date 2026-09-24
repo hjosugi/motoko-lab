@@ -1,0 +1,42 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2"
+  ],
+  "id": "urn:uuid:6f0e3c1a-0000-4000-8000-000000000001",
+  "type": [
+    "VerifiableCredential",
+    "CreatorMembershipCredential"
+  ],
+  "issuer": "did:key:z6Mkq3KV8vdiAUq4qoryex7cMW4mpZrVWq1q146ovm5eCJva",
+  "validFrom": "2026-04-01T00:00:00Z",
+  "validUntil": "2027-04-01T00:00:00Z",
+  "credentialStatus": {
+    "id": "https://studio.example/status/1#94567",
+    "type": "BitstringStatusListEntry",
+    "statusPurpose": "revocation",
+    "statusListIndex": "94567",
+    "statusListCredential": "https://studio.example/status/1"
+  },
+  "credentialSubject": {
+    "id": "urn:icp:principal:ni7sa-birce-ircei-rceir-ceirc-eirce-ircei-rceir-ceirc-eirce-iqe",
+    "memberOf": {
+      "name": "Example Studio"
+    },
+    "role": "member",
+    "creator": {
+      "canisterId": "rrkah-fqaaa-aaaaa-aaaaq-cai",
+      "creatorId": "1"
+    }
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-04-01T00:00:00Z",
+    "verificationMethod": "did:key:z6Mkq3KV8vdiAUq4qoryex7cMW4mpZrVWq1q146ovm5eCJva#z6Mkq3KV8vdiAUq4qoryex7cMW4mpZrVWq1q146ovm5eCJva",
+    "proofPurpose": "assertionMethod",
+    "@context": [
+      "https://www.w3.org/ns/credentials/v2"
+    ],
+    "proofValue": "zMgKqWucErU7E67EpT5qN9RA4RUNKeuG72KqLPP8JzytZZYkeNAmv8baYvoH3QSz4J7iaK3WuqPyjVArezNyrBew"
+  }
+}

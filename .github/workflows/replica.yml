@@ -54,3 +54,11 @@ jobs:
           source ./scripts/toolchain_env.sh
           motoko_add_toolchain_to_path
           node tools/pocket-ic/c2pa-bridge.test.mjs
+      # Verifiable credentials (#11) against app 01's creator identity: a
+      # credential the chain stops agreeing with — revoked, expired, rotated
+      # away — is rejected without the credential itself changing.
+      - name: Run the credential registry cross-check against a replica
+        run: |
+          source ./scripts/toolchain_env.sh
+          motoko_add_toolchain_to_path
+          node tools/pocket-ic/vc.test.mjs

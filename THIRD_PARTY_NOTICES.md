@@ -12,8 +12,12 @@
 - Mops: https://docs.mops.one/ and https://mops.one/
 - Candid: https://github.com/dfinity/candid
 - W3C Verifiable Credentials Data Model: https://www.w3.org/TR/vc-data-model-2.0/
+- W3C Data Integrity EdDSA Cryptosuites v1.0: https://www.w3.org/TR/vc-di-eddsa/ — `protocol/test-vectors/vc/eddsa-jcs-2022.json`はAppendix B.3のtest vectorを転記したものです (W3C Software and Document License: https://www.w3.org/copyright/software-license-2023/)
+- W3C Bitstring Status List v1.0: https://www.w3.org/TR/vc-bitstring-status-list/
 - JSON Canonicalization Scheme: https://www.rfc-editor.org/rfc/rfc8785
-- C2PA specification: https://c2pa.org/specifications/specifications/2.3/index.html
+- C2PA specification 2.4: https://spec.c2pa.org/specifications/specifications/2.4/specs/C2PA_Specification.html
+- c2patool (contentauth/c2pa-rs): https://github.com/contentauth/c2pa-rs — MIT/Apache-2.0。`protocol/tools/c2pa-crosscheck.mjs`がopt-inの照合時にrelease binaryを取得します (再配布はしていません)
+- IPTC Digital Source Type vocabulary: https://cv.iptc.org/newscodes/digitalsourcetype/
 - DeFiLlama data: https://defillama.com/ — volatile third-party metrics
 - Caffeine help center: https://help.caffeine.ai/
 

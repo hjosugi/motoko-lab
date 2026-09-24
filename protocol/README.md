@@ -32,6 +32,13 @@
 - `tools/c2pa-crosscheck.mjs`: c2patool 0.27.22との双方向照合 (opt-in、network必須)
 - `schemas/c2pa-verification-report.schema.json`: C2PA bridgeの検証レポート
 - `examples/c2pa/`: credential付きPNG、record bundle、creator manifest、test root CA
+- `VERIFIABLE_CREDENTIALS.md`: W3C VC 2.0 (membership / delegated authority / review)、`eddsa-jcs-2022`、Bitstring Status List、issuer policy、registry cross-check、個人データ最小化review
+- `tools/multikey.mjs`: base58-btc、multibase、Ed25519 Multikey、did:key
+- `tools/vc.mjs`: credential builder、eddsa-jcs-2022 proof、status list、policy付き検証CLI
+- `tools/vc.test.mjs`: VCのoffline test (W3C Recommendationのvectorを含む)
+- `test-vectors/vc/eddsa-jcs-2022.json`: W3C Data Integrity EdDSA Cryptosuites v1.0 Appendix B.3のvector
+- `schemas/vc-verification-report.schema.json`: VC検証レポート
+- `examples/vc/`: membership / delegation / review credential、status list、issuer policy
 
 ## Commands
 
@@ -45,6 +52,10 @@ node protocol/tools/provenance-cli.mjs commitment \
   --salt 00112233445566778899aabbccddeeff
 node protocol/tools/provenance-cli.test.mjs
 node protocol/tools/c2pa.test.mjs
+node protocol/tools/vc.test.mjs
+node protocol/tools/vc.mjs verify protocol/examples/vc/membership.json \
+  --policy protocol/examples/vc/policy.json \
+  --status-list https://studio.example/status/1=protocol/examples/vc/status-list.json
 node protocol/tools/c2pa-bridge.mjs verify protocol/examples/c2pa/gradient.c2pa.png \
   --bundle protocol/examples/c2pa/record-bundle.json \
   --trust-anchors protocol/examples/c2pa/test-root-ca.pem \
@@ -94,3 +105,9 @@ PNGのC2PA content credentialにregistry recordへの参照 (`io.github.hjosugi.
 `c2pa.hash.data`はmanifest storeを除いたfile全体のhashなので、未署名のoriginal fileのSHA-256、つまりrecordの`artifactHash`と一致します。credentialを剥がされたcopyも`getByArtifactHash`でrecordに戻れます。creatorはcommit済みmanifestの`extensions`で署名鍵を事前宣言でき、他人が同じassetに署名したcredential (credential laundering) は`invalid`になります。
 
 writer/validatorはc2patool 0.27.22と双方向に照合済みです (example credentialはtest root CAをtrust anchorにして`Trusted`)。実装範囲と非対応項目は`C2PA_BRIDGE.md`を参照してください。
+
+## Verifiable Credentials
+
+principalは鍵の保持を示すだけで、組織のmemberであること、creatorの代理で登録できること、reviewerが記録を検証したことは示しません。それらは第三者の主張なので、W3C VC 2.0 credentialとして`eddsa-jcs-2022` (RFC 8785 + Ed25519) で署名し、検証します。W3C Recommendation自身のtest vectorを署名bytesまで再現します。
+
+unknown issuerは**warningであって成功ではありません** (verdict `unknown-issuer`、exit 2)。expired / revoked / suspendedはreject、status listが取得できなければfail closedです。issuerの鍵rotationはpolicy上の履歴として表現し (#7と同じ考え方)、`compromised`の鍵は過去の`created`も信用しません。registry adapterを渡すと、delegation credentialはon-chain delegationより多くを主張できません。chain側でrevoke・expire・key rotationが起きれば、credentialを変えずに検証結果がrejectになります。詳細は`VERIFIABLE_CREDENTIALS.md`。

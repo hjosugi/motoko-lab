@@ -1,0 +1,36 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2"
+  ],
+  "id": "urn:uuid:6f0e3c1a-0000-4000-8000-000000000002",
+  "type": [
+    "VerifiableCredential",
+    "DelegatedAuthorityCredential"
+  ],
+  "issuer": "did:key:z6Mkoh17YWU1uYAVdKh1T8qLYeVcBUFicVWoroqf58e49Ho7",
+  "validFrom": "2026-05-01T00:00:00Z",
+  "validUntil": "2026-11-01T00:00:00Z",
+  "credentialSubject": {
+    "id": "urn:icp:principal:edqku-vjcei-rceir-ceirc-eirce-ircei-rceir-ceirc-eirce-ircei-rae",
+    "authorizedBy": {
+      "canisterId": "rrkah-fqaaa-aaaaa-aaaaq-cai",
+      "creatorId": "1",
+      "delegationId": "1"
+    },
+    "scope": {
+      "type": "collection",
+      "collectionId": "1"
+    }
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-05-01T00:00:00Z",
+    "verificationMethod": "did:key:z6Mkoh17YWU1uYAVdKh1T8qLYeVcBUFicVWoroqf58e49Ho7#z6Mkoh17YWU1uYAVdKh1T8qLYeVcBUFicVWoroqf58e49Ho7",
+    "proofPurpose": "assertionMethod",
+    "@context": [
+      "https://www.w3.org/ns/credentials/v2"
+    ],
+    "proofValue": "z234jN7XpJPiEnfUp1C6Q5bM1i46G5vgDoGAMGD38bmvoiKoXKQVoSnDBaFfudkGnW6XuTVKg6bbWEYTAuAc58s3N"
+  }
+}

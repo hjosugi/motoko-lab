@@ -1,0 +1,32 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2"
+  ],
+  "id": "urn:uuid:6f0e3c1a-0000-4000-8000-000000000003",
+  "type": [
+    "VerifiableCredential",
+    "ProvenanceReviewCredential"
+  ],
+  "issuer": "did:key:z6MkmBCVE92wTKkM8zvKeLSAK9NyouzCqyiUQyLWq1pYx3Jy",
+  "validFrom": "2026-06-01T00:00:00Z",
+  "credentialSubject": {
+    "id": "urn:icp:record:rrkah-fqaaa-aaaaa-aaaaq-cai:1",
+    "artifactHash": "3eabac0a5996ee655269410d496b8c48eb23dd051094bd53aa30c5437a859eb3",
+    "manifestHash": "273be698ff9d6dbd10e2ac563abae60b14cd439152c153953d22262a6bcddd6b",
+    "review": {
+      "outcome": "consistent",
+      "method": "Recomputed the artifact and manifest digests and checked the commitment against the certified record."
+    }
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-06-01T00:00:00Z",
+    "verificationMethod": "did:key:z6MkmBCVE92wTKkM8zvKeLSAK9NyouzCqyiUQyLWq1pYx3Jy#z6MkmBCVE92wTKkM8zvKeLSAK9NyouzCqyiUQyLWq1pYx3Jy",
+    "proofPurpose": "assertionMethod",
+    "@context": [
+      "https://www.w3.org/ns/credentials/v2"
+    ],
+    "proofValue": "z2k6jUokG4GQ3ZmZvP9utDGeZmc6jVbqeq5CFZhBqd1uzv8bKqZTgfe4SeE3nJeqKryK7tn3pSAUpZmesPxo8LBMp"
+  }
+}

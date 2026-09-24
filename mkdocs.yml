@@ -162,6 +162,7 @@ nav:
       - 正規化 (RFC 8785): protocol/CANONICALIZATION.md
       - 相互運用計画: protocol/INTEROPERABILITY.md
       - C2PA bridge: protocol/C2PA_BRIDGE.md
+      - Verifiable Credentials: protocol/VERIFIABLE_CREDENTIALS.md
       - プロダクトPRD: docs/22_AI_PROVENANCE_PRODUCT_PRD.md
 
   - ラボ:

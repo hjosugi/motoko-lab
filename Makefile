@@ -32,6 +32,7 @@ replica-tests:
 	node tools/pocket-ic/setup.mjs
 	node tools/pocket-ic/run.mjs
 	node tools/pocket-ic/c2pa-bridge.test.mjs
+	node tools/pocket-ic/vc.test.mjs
 
 # Documentation site. `site-src/` is staged from the repository rather than
 # being a second copy of it; see scripts/build_docs_site.py.

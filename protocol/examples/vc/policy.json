@@ -1,0 +1,54 @@
+{
+  "statusFailure": "reject",
+  "issuers": [
+    {
+      "name": "Example Studio",
+      "types": [
+        "CreatorMembershipCredential"
+      ],
+      "requireStatus": true,
+      "keys": [
+        {
+          "verificationMethod": "did:key:z6MketDfoy2ighwRJi98R6tGT4UzQz3PUwNZFQdAU9UWdVRZ#z6MketDfoy2ighwRJi98R6tGT4UzQz3PUwNZFQdAU9UWdVRZ",
+          "activeFrom": "2025-01-01T00:00:00Z",
+          "retiredAt": "2026-03-01T00:00:00Z",
+          "status": "superseded"
+        },
+        {
+          "verificationMethod": "did:key:z6Mkq3KV8vdiAUq4qoryex7cMW4mpZrVWq1q146ovm5eCJva#z6Mkq3KV8vdiAUq4qoryex7cMW4mpZrVWq1q146ovm5eCJva",
+          "activeFrom": "2026-03-01T00:00:00Z",
+          "retiredAt": null,
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "name": "Creator 1 (self-issued delegations)",
+      "types": [
+        "DelegatedAuthorityCredential"
+      ],
+      "keys": [
+        {
+          "verificationMethod": "did:key:z6Mkoh17YWU1uYAVdKh1T8qLYeVcBUFicVWoroqf58e49Ho7#z6Mkoh17YWU1uYAVdKh1T8qLYeVcBUFicVWoroqf58e49Ho7",
+          "activeFrom": "2026-01-01T00:00:00Z",
+          "retiredAt": null,
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "name": "Example Review Board",
+      "types": [
+        "ProvenanceReviewCredential"
+      ],
+      "keys": [
+        {
+          "verificationMethod": "did:key:z6MkmBCVE92wTKkM8zvKeLSAK9NyouzCqyiUQyLWq1pYx3Jy#z6MkmBCVE92wTKkM8zvKeLSAK9NyouzCqyiUQyLWq1pYx3Jy",
+          "activeFrom": "2026-01-01T00:00:00Z",
+          "retiredAt": null,
+          "status": "active"
+        }
+      ]
+    }
+  ]
+}

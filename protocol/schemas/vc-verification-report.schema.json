@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hjosugi.github.io/motoko-lab/schemas/vc-verification-report.schema.json",
+  "title": "Verifiable Credential verification report",
+  "description": "Output of protocol/tools/vc.mjs verify. Each check is reported on its own; `verdict` combines them. `unknown-issuer` is not a kind of success. See protocol/VERIFIABLE_CREDENTIALS.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "verifiedAt", "verdict", "credential", "checks", "reasons", "errors", "warnings"],
+  "properties": {
+    "format": { "const": "vc-verification/1" },
+    "verifiedAt": { "type": "string", "format": "date-time" },
+    "verdict": {
+      "description": "accepted: every check passed. accepted-with-warnings: nothing failed, something could not be established or deserves attention. unknown-issuer: the proof is valid, but the issuer is not in the policy — a warning, never a success. rejected: at least one check failed; `reasons` says which.",
+      "enum": ["accepted", "accepted-with-warnings", "unknown-issuer", "rejected"]
+    },
+    "credential": {
+      "type": "object",
+      "required": ["id", "types", "issuer"],
+      "properties": {
+        "id": { "type": ["string", "null"] },
+        "types": { "type": "array", "items": { "type": "string" } },
+        "issuer": { "type": ["string", "null"] }
+      }
+    },
+    "checks": {
+      "type": "object",
+      "required": ["proof", "issuer", "validity", "status", "registry"],
+      "properties": {
+        "proof": { "enum": ["verified", "failed", "not-checked"] },
+        "issuer": { "enum": ["trusted", "unknown", "not-authorized", "retired-key", "compromised-key", "mismatch", "not-checked"] },
+        "validity": { "enum": ["current", "expired", "not-yet-valid", "not-checked"] },
+        "status": { "enum": ["active", "revoked", "suspended", "unavailable", "none", "not-checked"] },
+        "registry": { "enum": ["consistent", "inconsistent", "unavailable", "not-checked"] }
+      }
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "malformed", "invalid-proof", "issuer-mismatch", "issuer-not-authorized", "retired-issuer-key",
+          "compromised-issuer-key", "expired", "not-yet-valid", "revoked", "suspended", "status-unavailable",
+          "status-required", "registry-mismatch"
+        ]
+      }
+    },
+    "errors": { "type": "array", "items": { "type": "string" } },
+    "warnings": { "type": "array", "items": { "type": "string" } }
+  }
+}
