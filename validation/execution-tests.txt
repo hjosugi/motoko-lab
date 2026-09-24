@@ -2,10 +2,12 @@ Motoko Mastery Kit offline execution checks
 Snapshot: 2026-07-20 JST
 Root: /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab
 
-[1/11] Shell syntax
+[1/12] Shell syntax
 + bash -n /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/scripts/bootstrap_toolchain.sh
 
 + bash -n /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/scripts/check_all_apps.sh
+
++ bash -n /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/scripts/check_reproducible_build.sh
 
 + bash -n /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/scripts/create_issues.sh
 
@@ -25,18 +27,19 @@ Root: /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-48
 
 + bash -n /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/scripts/verify_versions.sh
 
-[2/11] Python source compilation without bytecode output
+[2/12] Python source compilation without bytecode output
 ok: scripts/build_docs_site.py
 ok: scripts/check_api_surface.py
 ok: scripts/check_candid_compat.py
 ok: scripts/check_privileged_actions.py
+ok: scripts/check_supply_chain.py
 ok: scripts/generate_file_index.py
 ok: scripts/issue_loader.py
 ok: scripts/package_kit.py
 ok: scripts/validate_kit.py
-compiled: 8 Python files
+compiled: 9 Python files
 
-[3/11] Node syntax
+[3/12] Node syntax
 + node --check /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/protocol/tools/ai-attestation.mjs
 
 + node --check /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/protocol/tools/ai-attestation.test.mjs
@@ -83,42 +86,108 @@ compiled: 8 Python files
 
 + node --check /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/protocol/tools/x509.mjs
 
-[4/11] Provenance protocol tests
+[4/12] Provenance protocol tests
 + node /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/protocol/tools/provenance-cli.test.mjs
 ok: 192 assertions — 6 official RFC 8785 vectors, 21 accepted and 26 rejected edge vectors, 17 accepted and 22 rejected commitment vectors, 2 provenance vectors
 
 + node /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/protocol/tools/merkle.test.mjs
 ok: 568 merkle checks — 98 transparency-dev probes, 15 trees, 7 multiproofs, 21 rejections
 
-[5/11] C2PA bridge tests
+[5/12] C2PA bridge tests
 + node /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/protocol/tools/c2pa.test.mjs
 c2pa bridge: 116 checks passed
 
-[6/11] Verifiable credential tests
+[6/12] Verifiable credential tests
 + node /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/protocol/tools/vc.test.mjs
 verifiable credentials: 80 checks passed
 
-[7/11] AI attestation tests
+[7/12] AI attestation tests
 + node /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/protocol/tools/ai-attestation.test.mjs
 ai attestation: 51 checks passed
 
-[8/11] Motoko/Candid API surface
+[8/12] Tenant sharding model
++ node /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/tools/sharding/model.test.mjs
+  ok  all 6 delivery orders of a three-way duplicate give the index the same answer
+  ok  the earliest commitment holds the hash, whichever shard reported first
+  ok  an exact tie on commitment time is broken by shard id, and the later claim is kept as a duplicate, not deleted
+  ok  commitment time outranks shard and commitment id
+  ok  the index built from 50 interleavings with duplicate delivery equals one rebuilt from the logs
+  ok  a gap in a shard's sequence is refused, and a redelivered event is a no-op
+  ok  the index reports how far it has read each shard
+  ok  alice moves from s1 to s2
+  ok  a client with a pre-move route is redirected once and its write lands on the new shard
+  ok  the old shard refuses a write for a moved tenant and says where it went
+  ok  nothing is written to the old shard after the move
+  ok  a move is interrupted after the copy
+  ok  writes during a move are refused as retryable, not lost or split between shards
+  ok  running the move again finishes it
+  ok  the moved records are identical, by content hash, to the source
+  ok  no move is left pending and the route points at the new shard
+  ok  the retried write succeeds on the new shard
+  ok  a write to a tenant on an unavailable shard fails outright
+  ok  tenants on other shards are unaffected
+  ok  the index keeps serving, and its high-water marks say which shard it has not heard from
+  ok  nothing was half-applied while it was down
+  ok  studio write 1
+  ok  studio write 2
+  ok  studio write 3
+  ok  studio write 4
+  ok  studio write 5
+  ok  studio write 6
+  ok  studio write 7
+  ok  studio write 8
+  ok  studio write 9
+  ok  studio write 10
+  ok  studio write 11
+  ok  studio write 12
+  ok  studio write 13
+  ok  studio write 14
+  ok  studio write 15
+  ok  studio write 16
+  ok  studio write 17
+  ok  studio write 18
+  ok  studio write 19
+  ok  studio write 20
+  ok  studio write 21
+  ok  studio write 22
+  ok  studio write 23
+  ok  studio write 24
+  ok  studio write 25
+  ok  studio write 26
+  ok  studio write 27
+  ok  studio write 28
+  ok  studio write 29
+  ok  studio write 30
+  ok  a hot tenant split by collection spreads over three shards
+  ok  a collection without a route of its own uses the tenant's
+  ok  a record may derive from a record on another shard, checked against that shard
+  ok  an unknown cross-shard parent is refused
+  ok  an unreachable parent shard is a retryable refusal, never an unverified acceptance
+  ok  a revoked cross-shard parent is refused, as it is on one canister
+  ok  export page at 0 carries a checksum that matches
+  ok  export page at 2 carries a checksum that matches
+  ok  a tenant's export comes from one shard and holds all of its records, moved and new
+  ok  the move itself is an event, so billing and audit can see when a tenant changed shard
+
+sharding model: 61 checks passed
+
+[9/12] Motoko/Candid API surface
 + python3 /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/scripts/check_api_surface.py /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab --json-report /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/validation/api-surface.json --markdown-report /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/validation/API_SURFACE.md
 Motoko/Candid API surface: PASS
 Applications: 6 | Methods: 125
 
-[9/11] GitHub automation dry-runs
+[10/12] GitHub automation dry-runs
 Dry run only. Set APPLY=1 TARGET_REPO=owner/repo after review.
 label commands: 40
 Dry run only. Set APPLY=1 TARGET_REPO=owner/repo after review.
 issue dry-run output lines: 45
 
-[10/11] Structural validation
+[11/12] Structural validation
 + python3 /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/scripts/validate_kit.py /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab --json-report /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/validation/structural-validation.json
 Motoko Mastery Kit structural validation
 Status: PASS
-Files: 433 | Lines: 54082 | Size: 2.4 MiB
-Apps: 6 | Issues: 45 | Numbered docs: 27
+Files: 452 | Lines: 56037 | Size: 2.5 MiB
+Apps: 6 | Issues: 45 | Numbered docs: 29
 
 Warnings:
 - apps/01_creator_proof_registry/mops.lock does not end with LF
@@ -133,7 +202,7 @@ All offline structural checks passed.
 Run check_all_apps.sh for pinned native compilation; PocketIC remains a separate integration gate.
 JSON report: /var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab/validation/structural-validation.json
 
-[11/11] Workspace hygiene
+[12/12] Workspace hygiene
 No generated dependency or cache directory can reach the package.
 
 OFFLINE CHECKS: PASS

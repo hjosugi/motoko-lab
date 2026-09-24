@@ -3,7 +3,7 @@
 このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
 完全性確認には`MANIFEST.sha256`を使用してください。
 
-Indexed files: **433**
+Indexed files: **452**
 
 ## Root
 
@@ -223,8 +223,20 @@ Indexed files: **433**
 - `compiler/OCAML_DUNE_NIX_WASM_CURRICULUM.md`
 - `compiler/README.md`
 - `compiler/RELEASE_CHECKLIST.md`
+- `compiler/TRIAGE_2026-09.md`
 - `compiler/repros/envvar-rope/EnvVarRope.mo`
 - `compiler/repros/envvar-rope/README.md`
+- `compiler/repros/triage-2026-09/AsyncHelperName.mo`
+- `compiler/repros/triage-2026-09/AwaitNone.mo`
+- `compiler/repros/triage-2026-09/DeprecationTwice.mo`
+- `compiler/repros/triage-2026-09/FloatLiteralOverflow.mo`
+- `compiler/repros/triage-2026-09/FloatPattern.mo`
+- `compiler/repros/triage-2026-09/ForwardImport.mo`
+- `compiler/repros/triage-2026-09/ObjectTerminalValue.mo`
+- `compiler/repros/triage-2026-09/OrPatterns.mo`
+- `compiler/repros/triage-2026-09/README.md`
+- `compiler/repros/triage-2026-09/TopLevelAwait.mo`
+- `compiler/repros/triage-2026-09/run.mjs`
 
 ## `docs/`
 
@@ -255,6 +267,8 @@ Indexed files: **433**
 - `docs/24_UPGRADE_MIGRATION_STRATEGY.md`
 - `docs/25_COST_AND_CAPACITY_MODEL.md`
 - `docs/26_GOVERNANCE_DECISION_RECORD.md`
+- `docs/27_TENANT_SHARDING_DESIGN.md`
+- `docs/28_SUPPLY_CHAIN.md`
 
 ## `github/`
 
@@ -435,6 +449,8 @@ Indexed files: **433**
 - `scripts/check_api_surface.py`
 - `scripts/check_candid_compat.py`
 - `scripts/check_privileged_actions.py`
+- `scripts/check_reproducible_build.sh`
+- `scripts/check_supply_chain.py`
 - `scripts/create_issues.sh`
 - `scripts/create_labels.sh`
 - `scripts/deploy_app.sh`
@@ -449,6 +465,10 @@ Indexed files: **433**
 - `scripts/vendor_core_offline.sh`
 - `scripts/verify_versions.sh`
 
+## `supply-chain/`
+
+- `supply-chain/dependencies.json`
+
 ## `tools/`
 
 - `tools/pocket-ic/c2pa-bridge.test.mjs`
@@ -459,6 +479,8 @@ Indexed files: **433**
 - `tools/pocket-ic/run.mjs`
 - `tools/pocket-ic/setup.mjs`
 - `tools/pocket-ic/vc.test.mjs`
+- `tools/sharding/model.mjs`
+- `tools/sharding/model.test.mjs`
 
 ## `validation/`
 

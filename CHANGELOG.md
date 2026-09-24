@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v2026.09.25
 
 - Added dependency provenance and reproducible-build verification (#29), `docs/28_SUPPLY_CHAIN.md`. `supply-chain/dependencies.json` records every Mops package (direct and transitive), toolchain component, npm and Python package and CI action with its exact version, license, source and maintainer, and `scripts/check_supply_chain.py` fails CI when the tree and the list disagree — an unreviewed package, a silently changed version, a range instead of a pin, an unlisted action, a license outside the Apache-2.0-compatible allowlist. Its self-test proves each case bites; `--sbom` emits a CycloneDX 1.5 SBOM with a per-package SHA-256 from the lock.
 - Pinned the three npm CLIs in `scripts/bootstrap_toolchain.sh` (ic-mops 2.20.0, icp-cli 1.2.0, ic-wasm 0.11.1) and the replica harness packages in `tools/pocket-ic/package.json` exactly. Both were ways for the build to change without a commit: the bootstrap installed whatever npm served that day, and the harness used caret ranges with its lockfile ignored.
@@ -12,8 +12,6 @@
 - Added `compiler/TRIAGE_2026-09.md` (#31), a read-only triage of the 211 open issues on `caffeinelabs/motoko`: classified against `ISSUE_TRIAGE_RUBRIC.md`, with nine reproduction notes run on the pinned moc 1.11.1 and the latest release, 1.16.1. Four still reproduce on both — #3464 (a Float literal above 1.79e308 crashes the front end), #3819 (`await async { trap }` fails the IR type check), #4701 (Float literal patterns are accepted and not compiled), #2017 (an object body may end in a value) — and five do not as written: #3624's crash is gone but `--check` now passes a program `-c` rejects with M0038, and #3993, #3117, #4733 and #3855 look fixed.
 - Master was not built, and the document says so instead of claiming current-master status: "reproduces on 1.16.1" means exactly that. The stale and duplicate observations (#3819 and #4578 likely share a root cause; four issues look fixed) are worded as suggestions to offer the maintainers — nothing was posted upstream.
 - Three contribution candidates, each with scope, test location and risk: turning the #3464 crash into a diagnostic, making `--check` report M0038, and deciding Float literal patterns for #4701. The repros live in `compiler/repros/triage-2026-09/` with a runner that takes any number of `moc` binaries.
-
-## v2026.09.25
 
 - Added the governance and SNS-readiness decision record (#40), `docs/26_GOVERNANCE_DECISION_RECORD.md`: a single controller only while nothing of value depends on the canisters; before mainnet, k-of-n threshold controllers, announced module hashes checked against the reproducible build, a public log of every privileged call, and parameter changes behind a delay; emergency powers that only withhold service, need a smaller threshold, and expire in 72 hours unless ratified; and SNS go/no-go criteria that make "no" the default until the audit, reproducible releases, legal and privacy reviews and a year of operations exist.
 - The record separates what may be governed from what never may: rewriting, deleting or re-attributing a record, dispute event, receipt, invoice or payment is enforced by the absence of a method, not by a policy.
@@ -88,7 +86,7 @@
 - Fees are explicit and their changes are handled: the deposit carries one ledger fee per payout, a fee change before funding returns `#feeChanged` with the new approval, and after funding the winner is paid in full while the platform's share absorbs the difference. A `BadFee` also updates the registered fee, so later bounties are priced at what the ledger actually charges.
 - The accounting invariant — winner + platform + fees paid + dust = deposit, dust ≤ one fee — is checked for 576 combinations of reward, rate, funding fee and payout fee in the interpreter, and against the ledger in the replica suite, where every escrow's subaccount balance equals what its op log says after every scenario. `test/fixtures/MockLedger.mo` implements ICRC-2 the way the reference ledger does and can execute a transfer and drop its reply. App 04's suite goes from 39 to 123 checks, covering the test plan: allowance expiry, fee changes, insufficient funds, and duplicate callbacks on both the pull and the payout.
 - Candid is additive, `award` and `cancelBounty` keep their signatures, and stable data gains side tables only. Bounties on unregistered ledgers, and every bounty posted before this, behave exactly as before.
-- Regenerated `FILE_INDEX.md`, `MANIFEST.sha256` and the validation reports from a clean checkout: 433 entries, 125 public canister methods. The structural validation ran with `jsonschema` installed, so the provenance, C2PA and AI-attestation example manifests were validated against their schemas rather than skipped.
+- Regenerated `FILE_INDEX.md`, `MANIFEST.sha256` and the validation reports from a clean checkout: 452 entries, 125 public canister methods. The structural validation ran with `jsonschema` installed, so the provenance, C2PA and AI-attestation example manifests were validated against their schemas rather than skipped.
 
 ## v2026.09.22
 
