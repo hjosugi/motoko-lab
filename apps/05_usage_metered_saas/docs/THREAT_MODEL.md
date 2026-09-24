@@ -11,3 +11,8 @@
 - idempotency prevents duplicate billing events
 - controller is high privilege; use organization-controlled keys
 - period reset uses canister time and resets on first event after boundary
+- invoice tampering: invoices are never edited; payments and adjustments are separate appended records, and every amount is recomputable from the named events and plan snapshot (`docs/BILLING.md`)
+- late usage rewriting a closed period: usage belongs to the period it is recorded in; a late receipt is billed in the open period and marked late, and the issued invoice stays as it was
+- forged or reused payments: a block is read from a controller-registered ledger and must be a transfer to the payee account carrying the invoice's memo (which binds this canister and invoice id), made after the invoice was issued; `(ledger, block)` applies at most once
+- double refunds: adjustments carry an operator reference that is unique per invoice, so a retried credit note is not applied twice
+- invoice disclosure: invoices are readable only by the tenant and controllers

@@ -147,6 +147,7 @@ nav:
       - 05 Usage-Metered SaaS:
           - 概要: apps/05_usage_metered_saas/README.md
           - 署名付きusage receipt: apps/05_usage_metered_saas/docs/RECEIPTS.md
+          - 請求期間とinvoice: apps/05_usage_metered_saas/docs/BILLING.md
           - 脅威モデル: apps/05_usage_metered_saas/docs/THREAT_MODEL.md
           - アップグレード計画: apps/05_usage_metered_saas/docs/UPGRADE_PLAN.md
       - 06 Distributed LLM:

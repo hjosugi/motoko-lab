@@ -4,6 +4,10 @@ import Iter "mo:core/Iter";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 import Array "mo:core/Array";
+import Billing "Billing";
+import Error "mo:core/Error";
+import Icrc3 "Icrc3";
+import List "mo:core/List";
 import Principal "mo:core/Principal";
 import Receipt "Receipt";
 import Text "mo:core/Text";
@@ -94,6 +98,60 @@ persistent actor UsageMeteredSaaS {
     publicKey : ?Blob;
   };
 
+  // ------------------------------------------------ billing (#14) ------
+  // `Billing.mo` has the rules; these are the names the interface exposes.
+
+  public type Invoice = Billing.Invoice;
+  public type InvoicePayment = Billing.Payment;
+  public type InvoiceAdjustment = Billing.Adjustment;
+  public type InvoiceStatus = Billing.Status;
+
+  /// An invoice with everything that has been applied to it. The invoice
+  /// itself never changes; `balance` and `status` are computed from the rest.
+  public type InvoiceView = {
+    invoice : Invoice;
+    payments : [InvoicePayment];
+    adjustments : [InvoiceAdjustment];
+    balance : Int;
+    status : InvoiceStatus;
+    /// Where and how to pay: the ledger registered for the invoice currency,
+    /// if any, the account to pay, and the memo the transfer must carry.
+    ledger : ?BillingLedger;
+    payTo : Icrc3.Account;
+  };
+
+  public type BillingLedger = {
+    ledger : Principal;
+    symbol : Text;
+    decimals : Nat8;
+    fee : Nat;
+    registeredAt : Nat;
+  };
+
+  public type AdjustmentInput = {
+    kind : Billing.AdjustmentKind;
+    amount : Nat;
+    reason : Text;
+    reference : Text;
+  };
+
+  /// `Error` plus the two outcomes only a ledger can produce. A separate type
+  /// so no tag is added to the released `Error`.
+  public type BillingError = {
+    #anonymousNotAllowed;
+    #unauthorized;
+    #notFound;
+    #invalidInput : Text;
+    #duplicate : Text;
+    #conflict : Text;
+    /// The ledger could not be asked. Nothing changed; retry as is.
+    #ledgerUnavailable : Text;
+    /// The ledger answered and the block does not pay this invoice.
+    #rejected : Text;
+  };
+
+  public type BillingResult<T> = { #ok : T; #err : BillingError };
+
   public type ReceiptSpec = {
     domain : Text;
     curve : Text;
@@ -121,6 +179,21 @@ persistent actor UsageMeteredSaaS {
   let receiptOf = Map.empty<Nat, SignedReceipt>();
   var nextKeyId : Nat = 1;
 
+  let invoices = Map.empty<Nat, Invoice>();
+  let invoicesOf = Map.empty<Principal, [Nat]>();
+  /// Event ids recorded in each tenant's open period, which the next close
+  /// moves into an invoice.
+  let openPeriodEvents = Map.empty<Principal, List.List<Nat>>();
+  /// Receipts observed before the open period began, per tenant.
+  let openPeriodLate = Map.empty<Principal, Nat>();
+  let invoicePayments = Map.empty<Nat, [InvoicePayment]>();
+  let invoiceAdjustments = Map.empty<Nat, [InvoiceAdjustment]>();
+  /// `ledger:block` to invoice id: a block pays at most one invoice, once.
+  let invoicePaymentIndex = Map.empty<Text, Nat>();
+  let billingLedgers = Map.empty<Principal, BillingLedger>();
+  var nextInvoiceId : Nat = 1;
+  var nextAdjustmentId : Nat = 1;
+
   func nowNanos() : Nat { Int.abs(Time.now()) };
 
   func isController(caller : Principal) : Bool { Principal.isController(caller) };
@@ -138,14 +211,77 @@ persistent actor UsageMeteredSaaS {
     null
   };
 
-  func currentTenant(tenant : Tenant, now : Nat) : Tenant {
-    let periodNanos = tenant.plan.periodSeconds * 1_000_000_000;
-    if (now >= tenant.periodStartedAt + periodNanos) {
-      {
-        principal = tenant.principal; displayName = tenant.displayName; plan = tenant.plan;
-        used = 0; periodStartedAt = now; enabled = tenant.enabled; createdAt = tenant.createdAt;
-      }
-    } else tenant
+  /// Issues the invoice for `[tenant.periodStartedAt, billedUntil)` and returns
+  /// the tenant moved to a period starting at `billedUntil`. The only place an
+  /// invoice is created, and it moves the period in the same step, so no
+  /// period can be closed twice.
+  func closePeriodAt(tenant : Tenant, billedUntil : Nat, reason : Billing.CloseReason, now : Nat) : Tenant {
+    let events = switch (Map.get(openPeriodEvents, Principal.compare, tenant.principal)) {
+      case (?list) List.toArray(list);
+      case null [];
+    };
+    let late = switch (Map.get(openPeriodLate, Principal.compare, tenant.principal)) {
+      case (?count) count;
+      case null 0;
+    };
+    let moved : Tenant = { tenant with used = 0; periodStartedAt = billedUntil };
+    // A plan change at the instant a period began has nothing to bill.
+    if (billedUntil <= tenant.periodStartedAt and events.size() == 0) return moved;
+
+    let usage = Billing.tally(
+      Array.filterMap<Nat, (Text, Nat)>(
+        events,
+        func(id : Nat) : ?(Text, Nat) {
+          switch (Map.get(usageEvents, Nat.compare, id)) {
+            case (?event) ?(event.category, event.units);
+            case null null;
+          }
+        }
+      )
+    );
+    let (lines, total) = Billing.lines(tenant.plan, tenant.periodStartedAt, billedUntil, usage);
+    let id = nextInvoiceId;
+    nextInvoiceId += 1;
+    let previous = switch (Map.get(invoicesOf, Principal.compare, tenant.principal)) {
+      case (?ids) ids;
+      case null [];
+    };
+    let invoice : Invoice = {
+      id;
+      tenant = tenant.principal;
+      sequence = previous.size() + 1;
+      plan = tenant.plan;
+      currency = tenant.plan.currency;
+      periodStart = tenant.periodStartedAt;
+      billedUntil;
+      closedAt = now;
+      reason;
+      eventIds = events;
+      lateEvents = late;
+      lines;
+      total;
+      paymentMemo = Billing.paymentMemo(Principal.fromActor(UsageMeteredSaaS), id);
+    };
+    Map.add(invoices, Nat.compare, id, invoice);
+    Map.add(invoicesOf, Principal.compare, tenant.principal, Array.concat(previous, [id]));
+    Map.remove(openPeriodEvents, Principal.compare, tenant.principal);
+    Map.remove(openPeriodLate, Principal.compare, tenant.principal);
+    moved
+  };
+
+  /// Closes every period of `tenant` that has ended by `now`, as one invoice
+  /// covering all of them, and stores the tenant in its current period.
+  ///
+  /// Periods are aligned to the plan: the next one starts where the last one
+  /// ended, not at the first event after it, so a quiet month is still a
+  /// month and the boundaries an invoice names are the plan's.
+  func advancePeriod(tenant : Tenant, now : Nat) : Tenant {
+    let length = tenant.plan.periodSeconds * 1_000_000_000;
+    if (now < tenant.periodStartedAt + length) return tenant;
+    let whole = Nat.sub(now, tenant.periodStartedAt) / length;
+    let moved = closePeriodAt(tenant, tenant.periodStartedAt + whole * length, #periodEnd, now);
+    Map.add(tenants, Principal.compare, tenant.principal, moved);
+    moved
   };
 
   public shared ({ caller }) func setReporter(reporter : Principal, enabled : Bool) : async Result<Bool> {
@@ -176,11 +312,14 @@ persistent actor UsageMeteredSaaS {
   public shared ({ caller }) func setTenantPlan(tenantPrincipal : Principal, plan : Plan) : async Result<Tenant> {
     if (not isController(caller)) return #err(#unauthorized);
     switch (validatePlan(plan)) { case (?error) return #err(error); case null {} };
-    let ?current = Map.get(tenants, Principal.compare, tenantPrincipal) else return #err(#notFound);
-    let updated : Tenant = {
-      principal = current.principal; displayName = current.displayName; plan = plan;
-      used = 0; periodStartedAt = nowNanos(); enabled = current.enabled; createdAt = current.createdAt;
-    };
+    let ?stored = Map.get(tenants, Principal.compare, tenantPrincipal) else return #err(#notFound);
+    // Whole periods that ended under the old plan are billed as such first;
+    // then the part of the open period the old plan was in force is billed pro
+    // rata, and the new plan starts a fresh period now. Usage recorded so far
+    // stays on the old plan's invoice: it happened under that plan.
+    let now = nowNanos();
+    let current = closePeriodAt(advancePeriod(stored, now), now, #planChange, now);
+    let updated : Tenant = { current with plan = plan; used = 0; periodStartedAt = now };
     Map.add(tenants, Principal.compare, tenantPrincipal, updated);
     #ok(updated)
   };
@@ -256,9 +395,11 @@ persistent actor UsageMeteredSaaS {
 
   /// Everything both paths share once the reporter is authorized: the
   /// idempotency index, the tenant, the quota, and the event itself.
-  func record(tenantPrincipal : Principal, units : Nat, category : Text, idempotencyKey : Text, by : Principal, now : Nat) : Recorded {
+  func record(tenantPrincipal : Principal, units : Nat, category : Text, idempotencyKey : Text, by : Principal, observedAt : Nat, now : Nat) : Recorded {
     let ?storedTenant = Map.get(tenants, Principal.compare, tenantPrincipal) else return #rejected(#tenantUnavailable);
-    let tenant = currentTenant(storedTenant, now);
+    // Closing an ended period happens before anything else, including a
+    // refusal below: the invoice is due whether or not this event is accepted.
+    let tenant = advancePeriod(storedTenant, now);
     if (not tenant.enabled) return #rejected(#tenantUnavailable);
     let scopedKey = Principal.toText(tenantPrincipal) # ":" # idempotencyKey;
     switch (Map.get(usageIdempotency, Text.compare, scopedKey)) {
@@ -288,6 +429,22 @@ persistent actor UsageMeteredSaaS {
       enabled = tenant.enabled; createdAt = tenant.createdAt;
     };
     Map.add(tenants, Principal.compare, tenantPrincipal, updatedTenant);
+    // Usage belongs to the period it is recorded in. A receipt observed before
+    // that period began is counted here and marked late, and the invoice it
+    // would have belonged to stays exactly as it was issued.
+    let open = switch (Map.get(openPeriodEvents, Principal.compare, tenantPrincipal)) {
+      case (?list) list;
+      case null {
+        let list = List.empty<Nat>();
+        Map.add(openPeriodEvents, Principal.compare, tenantPrincipal, list);
+        list
+      };
+    };
+    List.add(open, id);
+    if (observedAt < tenant.periodStartedAt) {
+      let late = switch (Map.get(openPeriodLate, Principal.compare, tenantPrincipal)) { case (?n) n; case null 0 };
+      Map.add(openPeriodLate, Principal.compare, tenantPrincipal, late + 1)
+    };
     #recorded(event)
   };
 
@@ -342,7 +499,7 @@ persistent actor UsageMeteredSaaS {
         case null {};
       }
     };
-    switch (record(input.tenant, input.units, input.category, input.idempotencyKey, caller, now)) {
+    switch (record(input.tenant, input.units, input.category, input.idempotencyKey, caller, now, now)) {
       case (#recorded(event)) {
         if (bound) noteRecorded(caller, event.units, now);
         #ok(event)
@@ -407,7 +564,7 @@ persistent actor UsageMeteredSaaS {
       case (?rejection) return reject(rejection);
       case null {};
     };
-    switch (record(receipt.tenant, receipt.units, receipt.category, receipt.idempotencyKey, caller, now)) {
+    switch (record(receipt.tenant, receipt.units, receipt.category, receipt.idempotencyKey, caller, receipt.observedAt, now)) {
       case (#recorded(event)) {
         Map.add(receiptOf, Nat.compare, event.id, signed);
         noteRecorded(caller, event.units, now);
@@ -542,6 +699,217 @@ persistent actor UsageMeteredSaaS {
       maxAgeNanos = Receipt.maxAgeNanos;
       maxBatch = Receipt.maxBatch;
     }
+  };
+
+  // ------------------------------------------------ billing (#14) ------
+
+  func payTo() : Icrc3.Account { { owner = Principal.fromActor(UsageMeteredSaaS); subaccount = null } };
+
+  func ledgerForCurrency(currency : Text) : ?BillingLedger {
+    for (ledger in Map.values(billingLedgers)) {
+      if (ledger.symbol == currency) return ?ledger
+    };
+    null
+  };
+
+  func viewOf(invoice : Invoice) : InvoiceView {
+    let payments = switch (Map.get(invoicePayments, Nat.compare, invoice.id)) { case (?list) list; case null [] };
+    let adjustments = switch (Map.get(invoiceAdjustments, Nat.compare, invoice.id)) { case (?list) list; case null [] };
+    {
+      invoice;
+      payments;
+      adjustments;
+      balance = Billing.balance(invoice.total, payments, adjustments);
+      status = Billing.status(invoice.total, payments, adjustments);
+      ledger = ledgerForCurrency(invoice.currency);
+      payTo = payTo();
+    }
+  };
+
+  func mayRead(caller : Principal, tenant : Principal) : Bool {
+    Principal.equal(caller, tenant) or isController(caller)
+  };
+
+  /// Registers a ledger invoices in its symbol can be paid with, reading the
+  /// symbol, decimals and fee from the ledger itself. Controllers only: which
+  /// tokens settle invoices is operator policy, and a registered ledger is
+  /// trusted to report its own history.
+  public shared ({ caller }) func registerBillingLedger(ledger : Principal) : async BillingResult<BillingLedger> {
+    if (not isController(caller)) return #err(#unauthorized);
+    if (Principal.isAnonymous(ledger)) return #err(#invalidInput("ledger is invalid"));
+    let token : Icrc3.Ledger = actor (Principal.toText(ledger));
+    let metadata = try {
+      (await token.icrc1_symbol(), await token.icrc1_decimals(), await token.icrc1_fee())
+    } catch (error) {
+      return #err(#ledgerUnavailable("the ledger did not answer its ICRC-1 metadata queries: " # Error.message(error)))
+    };
+    switch (ledgerForCurrency(metadata.0)) {
+      case (?existing) {
+        if (not Principal.equal(existing.ledger, ledger)) {
+          return #err(#conflict("another ledger is already registered for " # metadata.0))
+        }
+      };
+      case null {};
+    };
+    let info : BillingLedger = {
+      ledger;
+      symbol = metadata.0;
+      decimals = metadata.1;
+      fee = metadata.2;
+      registeredAt = nowNanos();
+    };
+    Map.add(billingLedgers, Principal.compare, ledger, info);
+    #ok(info)
+  };
+
+  /// Closes the tenant's period if it has ended, without waiting for the next
+  /// usage event to do it. A period that has not ended cannot be closed here;
+  /// one that has is closed exactly once, by whichever call comes first.
+  public shared ({ caller }) func closePeriod(tenantPrincipal : Principal) : async BillingResult<InvoiceView> {
+    if (not mayRead(caller, tenantPrincipal)) return #err(#unauthorized);
+    let ?tenant = Map.get(tenants, Principal.compare, tenantPrincipal) else return #err(#notFound);
+    let before = nextInvoiceId;
+    let moved = advancePeriod(tenant, nowNanos());
+    if (nextInvoiceId == before) {
+      return #err(#conflict("the current period has not ended"))
+    };
+    ignore moved;
+    let ?invoice = Map.get(invoices, Nat.compare, before) else return #err(#notFound);
+    #ok(viewOf(invoice))
+  };
+
+  /// Appends a credit or debit note. The invoice is not edited and nothing is
+  /// deleted. `reference` is the operator's own id for the adjustment: a retry
+  /// with the same reference and content returns the adjustment already made,
+  /// and the same reference with different content is refused.
+  public shared ({ caller }) func adjustInvoice(invoiceId : Nat, input : AdjustmentInput) : async BillingResult<InvoiceView> {
+    if (not isController(caller)) return #err(#unauthorized);
+    let ?invoice = Map.get(invoices, Nat.compare, invoiceId) else return #err(#notFound);
+    if (input.amount == 0) return #err(#invalidInput("an adjustment needs a non-zero amount"));
+    if (not Validation.validText(input.reason, 1, 500)) return #err(#invalidInput("reason length is invalid"));
+    if (not Validation.validText(input.reference, 1, 100)) return #err(#invalidInput("reference length is invalid"));
+    let existing = switch (Map.get(invoiceAdjustments, Nat.compare, invoiceId)) { case (?list) list; case null [] };
+    for (adjustment in existing.values()) {
+      if (adjustment.reference == input.reference) {
+        if (adjustment.kind == input.kind and adjustment.amount == input.amount and adjustment.reason == input.reason) {
+          return #ok(viewOf(invoice))
+        };
+        return #err(#duplicate("the reference is already used by a different adjustment"))
+      }
+    };
+    if (existing.size() >= 100) return #err(#conflict("the invoice has reached its adjustment limit"));
+    let adjustment : InvoiceAdjustment = {
+      id = nextAdjustmentId;
+      invoice = invoiceId;
+      kind = input.kind;
+      amount = input.amount;
+      reason = input.reason;
+      reference = input.reference;
+      by = caller;
+      at = nowNanos();
+    };
+    nextAdjustmentId += 1;
+    Map.add(invoiceAdjustments, Nat.compare, invoiceId, Array.concat(existing, [adjustment]));
+    #ok(viewOf(invoice))
+  };
+
+  type PayCheck = { #done : BillingResult<InvoiceView>; #fetch : (Invoice, BillingLedger) };
+
+  func payPreflight(caller : Principal, invoiceId : Nat, ledger : Principal, block : Nat) : PayCheck {
+    let ?invoice = Map.get(invoices, Nat.compare, invoiceId) else return #done(#err(#notFound));
+    if (not mayRead(caller, invoice.tenant)) return #done(#err(#unauthorized));
+    let ?token = Map.get(billingLedgers, Principal.compare, ledger) else {
+      return #done(#err(#invalidInput("the ledger is not registered for billing")))
+    };
+    if (token.symbol != invoice.currency) {
+      return #done(#err(#invalidInput("the invoice is in " # invoice.currency # ", not " # token.symbol)))
+    };
+    switch (Map.get(invoicePaymentIndex, Text.compare, Principal.toText(ledger) # ":" # Nat.toText(block))) {
+      // The same block for the same invoice is a retry: answer as before.
+      case (?paid) {
+        if (paid == invoiceId) return #done(#ok(viewOf(invoice)));
+        return #done(#err(#duplicate("this ledger block has already paid another invoice")))
+      };
+      case null {};
+    };
+    #fetch(invoice, token)
+  };
+
+  /// Applies a ledger payment to an invoice. The caller supplies a block
+  /// index; every property of the payment is read from the ledger.
+  ///
+  /// Safe to repeat: the same block for the same invoice returns the invoice
+  /// as paid and applies nothing twice, and a ledger that cannot be asked
+  /// changes nothing. Everything is re-checked after the ledger call, because
+  /// another message may have applied the same block while this one waited.
+  public shared ({ caller }) func payInvoice(invoiceId : Nat, ledger : Principal, block : Nat) : async BillingResult<InvoiceView> {
+    switch (payPreflight(caller, invoiceId, ledger, block)) {
+      case (#done(result)) return result;
+      case (#fetch(_, token)) {
+        let fetched = await* Billing.fetchBlock(actor (Principal.toText(token.ledger)) : Icrc3.Ledger, block);
+        switch (payPreflight(caller, invoiceId, ledger, block)) {
+          case (#done(result)) return result;
+          case (#fetch(invoice, current)) applyPayment(invoice, current, block, fetched);
+        }
+      };
+    }
+  };
+
+  func applyPayment(invoice : Invoice, token : BillingLedger, block : Nat, fetched : Billing.Fetched) : BillingResult<InvoiceView> {
+    let raw = switch (fetched) {
+      case (#unavailable(reason)) return #err(#ledgerUnavailable(reason));
+      case (#missing) return #err(#rejected("the ledger has no block at that index"));
+      case (#block(value)) value;
+    };
+    let transfer = switch (Icrc3.decode(raw)) {
+      case (#malformed(reason)) return #err(#rejected("the block is malformed: " # reason));
+      case (#notTransfer(kind)) return #err(#rejected("the block is not a transfer: " # kind));
+      case (#transfer(transfer)) transfer;
+    };
+    switch (Billing.checkPayment(transfer, payTo(), invoice)) {
+      case (?reason) return #err(#rejected(reason));
+      case null {};
+    };
+    let payment : InvoicePayment = {
+      invoice = invoice.id;
+      ledger = token.ledger;
+      block;
+      symbol = token.symbol;
+      decimals = token.decimals;
+      from = transfer.from;
+      amount = transfer.amount;
+      paidAt = transfer.timestamp;
+      appliedAt = nowNanos();
+    };
+    let existing = switch (Map.get(invoicePayments, Nat.compare, invoice.id)) { case (?list) list; case null [] };
+    Map.add(invoicePayments, Nat.compare, invoice.id, Array.concat(existing, [payment]));
+    Map.add(invoicePaymentIndex, Text.compare, Principal.toText(token.ledger) # ":" # Nat.toText(block), invoice.id);
+    #ok(viewOf(invoice))
+  };
+
+  public query ({ caller }) func getInvoice(invoiceId : Nat) : async ?InvoiceView {
+    let ?invoice = Map.get(invoices, Nat.compare, invoiceId) else return null;
+    if (not mayRead(caller, invoice.tenant)) return null;
+    ?viewOf(invoice)
+  };
+
+  public query ({ caller }) func listInvoices(tenantPrincipal : Principal) : async [Invoice] {
+    if (not mayRead(caller, tenantPrincipal)) return [];
+    let ids = switch (Map.get(invoicesOf, Principal.compare, tenantPrincipal)) { case (?ids) ids; case null [] };
+    Array.filterMap<Nat, Invoice>(ids, func(id : Nat) : ?Invoice { Map.get(invoices, Nat.compare, id) })
+  };
+
+  /// The invoice as the customer-readable JSON document in docs/BILLING.md.
+  public query ({ caller }) func invoiceJson(invoiceId : Nat) : async ?Text {
+    let ?invoice = Map.get(invoices, Nat.compare, invoiceId) else return null;
+    if (not mayRead(caller, invoice.tenant)) return null;
+    let view = viewOf(invoice);
+    let customer = switch (Map.get(tenants, Principal.compare, invoice.tenant)) {
+      case (?tenant) tenant.displayName;
+      case null "";
+    };
+    let decimals = switch (view.ledger) { case (?ledger) ?ledger.decimals; case null null };
+    ?Billing.json(invoice, customer, decimals, view.payments, view.adjustments)
   };
 
   public query func getTenant(principal : Principal) : async ?Tenant { Map.get(tenants, Principal.compare, principal) };

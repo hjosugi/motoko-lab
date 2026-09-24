@@ -189,11 +189,79 @@ type Plan =
    priceMinorUnits: nat;
    quota: nat;
  };
+type LineKind =
+ variant {
+   subscription;
+   usage: text;
+ };
+type Line =
+ record {
+   amount: nat;
+   kind: LineKind;
+   quantity: nat;
+ };
 type KeyStatus =
  variant {
    active;
    compromised: nat;
    retired: nat;
+ };
+type InvoiceView =
+ record {
+   adjustments: vec InvoiceAdjustment;
+   balance: int;
+   invoice: Invoice;
+   ledger: opt BillingLedger;
+   payTo: Account;
+   payments: vec InvoicePayment;
+   status: InvoiceStatus;
+ };
+type InvoiceStatus =
+ variant {
+   creditBalance;
+   paid;
+   partiallyPaid;
+   unpaid;
+ };
+type InvoicePayment =
+ record {
+   amount: nat;
+   appliedAt: nat;
+   block: nat;
+   decimals: nat8;
+   from: Account;
+   invoice: nat;
+   ledger: principal;
+   paidAt: nat;
+   symbol: text;
+ };
+type InvoiceAdjustment =
+ record {
+   amount: nat;
+   at: nat;
+   by: principal;
+   id: nat;
+   invoice: nat;
+   kind: AdjustmentKind;
+   reason: text;
+   reference: text;
+ };
+type Invoice =
+ record {
+   billedUntil: nat;
+   closedAt: nat;
+   currency: text;
+   eventIds: vec nat;
+   id: nat;
+   lateEvents: nat;
+   lines: vec Line;
+   paymentMemo: blob;
+   periodStart: nat;
+   plan: Plan;
+   reason: CloseReason;
+   sequence: nat;
+   tenant: principal;
+   total: nat;
  };
 type Error =
  variant {
@@ -207,6 +275,40 @@ type Error =
                     requested: nat;
                     used: nat;
                   };
+   unauthorized;
+ };
+type CloseReason =
+ variant {
+   periodEnd;
+   planChange;
+ };
+type InvoiceResult =
+ variant {
+   err: BillingError;
+   ok: InvoiceView;
+ };
+type BillingLedgerResult =
+ variant {
+   err: BillingError;
+   ok: BillingLedger;
+ };
+type BillingLedger =
+ record {
+   decimals: nat8;
+   fee: nat;
+   ledger: principal;
+   registeredAt: nat;
+   symbol: text;
+ };
+type BillingError =
+ variant {
+   anonymousNotAllowed;
+   conflict: text;
+   duplicate: text;
+   invalidInput: text;
+   ledgerUnavailable: text;
+   notFound;
+   rejected: text;
    unauthorized;
  };
 type AuditEntry =
@@ -223,23 +325,63 @@ type ApiKeyRecord =
    revokedAt: opt nat;
    tenant: principal;
  };
+type AdjustmentKind =
+ variant {
+   credit;
+   debit;
+ };
+type AdjustmentInput =
+ record {
+   amount: nat;
+   kind: AdjustmentKind;
+   reason: text;
+   reference: text;
+ };
+type Account =
+ record {
+   owner: principal;
+   subaccount: opt blob;
+ };
 service : {
   /// Registers a signing key for a reporter. Controllers only: a reporter that
   /// could add its own keys would let a stolen principal mint one.
   addReporterKey: (reporter: principal, publicKey: blob) -> (Result_5);
+  /// Appends a credit or debit note. The invoice is not edited and nothing is
+  /// deleted. `reference` is the operator's own id for the adjustment: a retry
+  /// with the same reference and content returns the adjustment already made,
+  /// and the same reference with different content is refused.
+  adjustInvoice: (invoiceId: nat, input: AdjustmentInput) ->
+   (InvoiceResult);
+  /// Closes the tenant's period if it has ended, without waiting for the next
+  /// usage event to do it. A period that has not ended cannot be closed here;
+  /// one that has is closed exactly once, by whichever call comes first.
+  closePeriod: (tenantPrincipal: principal) -> (InvoiceResult);
   createTenant: (input: TenantInput) -> (Result_1);
   /// Usage events with their receipts and signing keys, for an auditor who
   /// wants to re-verify billing without trusting this canister.
   exportUsageAudit: (start: nat, limit: nat) -> (vec AuditEntry) query;
   getApiKey: (hash: blob) -> (opt ApiKeyRecord) query;
+  getInvoice: (invoiceId: nat) -> (opt InvoiceView) query;
   getReporter: (reporter: principal) -> (opt ReporterView) query;
   getTenant: ("principal": principal) -> (opt Tenant) query;
   getUsageEvent: (id: nat) -> (opt UsageEvent) query;
+  /// The invoice as the customer-readable JSON document in docs/BILLING.md.
+  invoiceJson: (invoiceId: nat) -> (opt text) query;
+  listInvoices: (tenantPrincipal: principal) -> (vec Invoice) query;
   listUsageEvents: (start: nat, limit: nat) -> (vec UsageEvent) query;
   /// Declares a key stolen: nothing it signed is accepted any more, whatever
   /// time the receipt claims. The reporter may do this itself as well as a
   /// controller — it can only make the key less useful, never more.
   markReporterKeyCompromised: (keyId: nat) -> (Result_5);
+  /// Applies a ledger payment to an invoice. The caller supplies a block
+  /// index; every property of the payment is read from the ledger.
+  ///
+  /// Safe to repeat: the same block for the same invoice returns the invoice
+  /// as paid and applies nothing twice, and a ledger that cannot be asked
+  /// changes nothing. Everything is re-checked after the ledger call, because
+  /// another message may have applied the same block while this one waited.
+  payInvoice: (invoiceId: nat, ledger: principal, block: nat) ->
+   (InvoiceResult);
   /// The rules a signer has to follow, read off the canister rather than
   /// hardcoded, including the `canister` every receipt must name.
   receiptSpec: () -> (ReceiptSpec) query;
@@ -250,6 +392,11 @@ service : {
   recordUsage: (input: UsageInput) -> (Result_6);
   registerApiKeyHash: (tenantPrincipal: principal, hash: blob, keyLabel:
    text) -> (Result_4);
+  /// Registers a ledger invoices in its symbol can be paid with, reading the
+  /// symbol, decimals and fee from the ledger itself. Controllers only: which
+  /// tokens settle invoices is operator policy, and a registered ledger is
+  /// trusted to report its own history.
+  registerBillingLedger: (ledger: principal) -> (BillingLedgerResult);
   /// Rotates a key out. Receipts it signed before now still verify.
   retireReporterKey: (keyId: nat) -> (Result_5);
   revokeApiKeyHash: (hash: blob) -> (Result_4);

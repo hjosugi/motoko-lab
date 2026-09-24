@@ -409,6 +409,217 @@ export async function suite({ appDir, pic, createIdentity, checks: c }) {
   c.ok(view.keys.map((key) => Object.keys(key.status)[0]).join() === 'retired,compromised,active',
     'the reporter view shows every key and its status');
 
+  // ----------------------------------------------------- billing (#14) --
+  // Periods, invoices, payments and adjustments. The period boundary, the
+  // plan change and the late receipt all need the replica clock; the payments
+  // need a ledger, which `test/fixtures/MockLedger.mo` provides.
+  const PERIOD = 24n * HOUR;
+  const TKN_PLAN = { name: 'daily', quota: 1_000n, periodSeconds: 86_400n, priceMinorUnits: 3_000n, currency: 'TKN' };
+  const initech = createIdentity('initech');
+  const initechPrincipal = initech.getPrincipal();
+  const gateway = createIdentity('gateway');
+  const deviceE = generateSigner();
+
+  const mockLedger = await buildCanister({
+    appDir, name: 'billing_mock_ledger', main: 'test/fixtures/MockLedger.mo', did: 'test/fixtures/mock_ledger.did',
+  });
+  const { idlFactory: ledgerIdl } = await import(mockLedger.idl);
+  const tkn = await pic.setupCanister({ idlFactory: ledgerIdl, wasm: mockLedger.wasm, sender });
+  const xtk = await pic.setupCanister({ idlFactory: ledgerIdl, wasm: mockLedger.wasm, sender });
+  await xtk.actor.setSymbol('XTK');
+  const payee = { owner: fixture.canisterId, subaccount: [] };
+  const tenantAccount = { owner: initechPrincipal, subaccount: [] };
+  await tkn.actor.mint(tenantAccount, 1_000_000n);
+  await xtk.actor.mint(tenantAccount, 1_000_000n);
+  tkn.actor.setIdentity(initech);
+  xtk.actor.setIdentity(initech);
+  const pay = async (ledger, amount, memo, to = payee) => {
+    const result = await ledger.actor.icrc1_transfer({
+      from_subaccount: [], to, amount, fee: [], memo: memo ? [memo] : [], created_at_time: [],
+    });
+    if (!('Ok' in result)) throw new Error(`transfer failed: ${JSON.stringify(result, bigintSafe)}`);
+    return result.Ok;
+  };
+
+  actor.setIdentity(stranger);
+  c.expectErr(await actor.registerBillingLedger(tkn.canisterId), 'unauthorized', 'only a controller registers a billing ledger');
+  actor.setIdentity(admin);
+  const tknInfo = c.expectOk(await actor.registerBillingLedger(tkn.canisterId), 'the controller registers a TKN ledger');
+  c.ok(tknInfo.symbol === 'TKN' && tknInfo.decimals === 8 && tknInfo.fee === 10_000n,
+    'its symbol, decimals and fee are read from the ledger, so amounts are explicit');
+  c.expectOk(await actor.registerBillingLedger(xtk.canisterId), 'and an XTK ledger');
+
+  c.expectOk(await actor.createTenant({ principal: initechPrincipal, displayName: 'Initech "Billing" Dept.', plan: TKN_PLAN }),
+    'a tenant on a daily plan');
+  c.expectOk(await actor.setReporter(gateway.getPrincipal(), true), 'a gateway reporter');
+  c.expectOk(await actor.setReporterPolicy(gateway.getPrincipal(), {
+    tenants: { only: [initechPrincipal] }, categories: { any: null },
+    maxUnitsPerEvent: 100n, maxUnitsPerWindow: 1_000n, windowSeconds: 3_600n, requireSignatures: false,
+  }), 'scoped to that tenant');
+  const keyE = c.expectOk(await actor.addReporterKey(gateway.getPrincipal(), deviceE.publicKey), 'with a device key');
+  const periodOneStart = (await actor.getTenant(initechPrincipal))[0].periodStartedAt;
+  // `pic.getTime()` is in milliseconds; a minute keeps the receipt signed
+  // below unambiguously after the key was registered.
+  await advance(MINUTE);
+
+  actor.setIdentity(reporter);
+  const e1 = c.expectOk(await actor.recordUsage(usage(10, 'b-1', { tenant: initechPrincipal })), 'usage in the first period');
+  const e2 = c.expectOk(await actor.recordUsage(usage(5, 'b-2', { tenant: initechPrincipal, category: 'storage' })), 'more usage');
+  const e3 = c.expectOk(await actor.recordUsage(usage(3, 'b-3', { tenant: initechPrincipal })), 'and more');
+  // Observed now, relayed only after the period has closed.
+  const lateReceipt = deviceE.sign({
+    canister: fixture.canisterId, reporter: gateway.getPrincipal(), keyId: keyE.id, tenant: initechPrincipal,
+    units: 7n, category: 'api-call', idempotencyKey: 'late-1', observedAt: await now(),
+  });
+
+  actor.setIdentity(initech);
+  c.expectErr(await actor.closePeriod(initechPrincipal), 'conflict', 'a period that has not ended cannot be closed');
+  actor.setIdentity(stranger);
+  c.expectErr(await actor.closePeriod(initechPrincipal), 'unauthorized', 'a stranger cannot close someone else\'s period');
+
+  // ------------------------------------------------------ the period closes
+  await advance(PERIOD + HOUR);
+  actor.setIdentity(initech);
+  const inv1 = c.expectOk(await actor.closePeriod(initechPrincipal), 'the tenant closes its ended period').invoice;
+  c.ok(inv1.sequence === 1n && 'periodEnd' in inv1.reason, 'invoice 1, closed at the period end');
+  c.ok(inv1.periodStart === periodOneStart && inv1.billedUntil === periodOneStart + PERIOD,
+    'it covers exactly the plan\'s period, not up to whenever it was closed');
+  c.ok(inv1.eventIds.join() === [e1.id, e2.id, e3.id].join() && inv1.lateEvents === 0n,
+    'it names every usage event of the period');
+  c.expectErr(await actor.closePeriod(initechPrincipal), 'conflict', 'the same period closes once');
+
+  // Reproducible from the events and the plan it names, by someone who does
+  // not trust the canister's arithmetic.
+  const recompute = async (invoice) => {
+    const totals = new Map();
+    for (const id of invoice.eventIds) {
+      const [event] = await actor.getUsageEvent(id);
+      totals.set(event.category, (totals.get(event.category) ?? 0n) + event.units);
+    }
+    const length = invoice.plan.periodSeconds * 1_000_000_000n;
+    const used = invoice.billedUntil - invoice.periodStart;
+    const fee = invoice.plan.priceMinorUnits * (used / length) + invoice.plan.priceMinorUnits * (used % length) / length;
+    return { fee, totals };
+  };
+  const checkReproducible = async (invoice, label) => {
+    const { fee, totals } = await recompute(invoice);
+    const usageLines = invoice.lines.filter((line) => 'usage' in line.kind);
+    c.ok(invoice.lines[0].amount === fee && invoice.total === fee
+      && usageLines.length === totals.size
+      && usageLines.every((line) => totals.get(line.kind.usage) === line.quantity && line.amount === 0n),
+      `${label} is reproducible from its events and plan`);
+  };
+  await checkReproducible(inv1, 'invoice 1');
+  c.ok(inv1.total === 3_000n, 'a full period bills the full plan price');
+
+  // ------------------------------------------------------------- late event
+  actor.setIdentity(gateway);
+  const [lateOutcome] = c.expectOk(await actor.submitReceipts([lateReceipt]), 'a receipt observed in the closed period arrives late');
+  c.ok('recorded' in lateOutcome, 'it is accepted');
+  actor.setIdentity(initech);
+  const firstAgain = (await actor.getInvoice(inv1.id))[0].invoice;
+  c.ok(JSON.stringify(firstAgain, bigintSafe) === JSON.stringify(inv1, bigintSafe),
+    'and the invoice already issued for that period is unchanged');
+
+  // ------------------------------------------------ plan change mid-period
+  await advance(6n * HOUR);
+  actor.setIdentity(admin);
+  const PLAN_TWO = { ...TKN_PLAN, name: 'daily-plus', priceMinorUnits: 4_800n, quota: 2_000n };
+  c.expectOk(await actor.setTenantPlan(initechPrincipal, PLAN_TWO), 'the plan changes mid-period');
+  actor.setIdentity(initech);
+  const invoices = await actor.listInvoices(initechPrincipal);
+  const inv2 = invoices[1];
+  c.ok(invoices.length === 2 && 'planChange' in inv2.reason && inv2.plan.name === 'daily',
+    'the old plan is invoiced up to the change, under the old plan');
+  c.ok(inv2.periodStart === inv1.billedUntil, 'periods are contiguous: no gap and no overlap');
+  c.ok(inv2.total > 0n && inv2.total < 3_000n, 'pro rata for the part of the period the old plan was in force');
+  c.ok(inv2.eventIds.length === 1 && inv2.lateEvents === 1n,
+    'the late receipt is billed in the period it arrived in, and marked late');
+  await checkReproducible(inv2, 'a pro-rata invoice');
+
+  // --------------------------------------------------------- currency change
+  await advance(2n * HOUR);
+  actor.setIdentity(admin);
+  c.expectOk(await actor.setTenantPlan(initechPrincipal, { ...PLAN_TWO, name: 'xtk', priceMinorUnits: 1_000n, currency: 'XTK' }),
+    'the plan moves to another currency');
+  await advance(PERIOD + HOUR);
+  actor.setIdentity(initech);
+  const fourthView = c.expectOk(await actor.closePeriod(initechPrincipal), 'the first XTK period closes');
+  const [, , inv3, inv4] = await actor.listInvoices(initechPrincipal);
+  c.ok(inv3.currency === 'TKN' && inv4.currency === 'XTK',
+    'the invoice before the change stays in the old currency and the next one is in the new');
+  c.ok(fourthView.ledger[0].symbol === 'XTK' && inv4.total === 1_000n, 'and names the ledger it can be paid with');
+
+  // --------------------------------------------------------------- payment
+  const memoOf = (invoice) => invoice.paymentMemo;
+  const wrongPlace = await pay(tkn, 500n, memoOf(inv1), { owner: stranger.getPrincipal(), subaccount: [] });
+  c.expectErr(await actor.payInvoice(inv1.id, tkn.canisterId, wrongPlace), 'rejected',
+    'a transfer to another account does not pay the invoice');
+  const wrongMemo = await pay(tkn, 500n, memoOf(inv2));
+  c.expectErr(await actor.payInvoice(inv1.id, tkn.canisterId, wrongMemo), 'rejected',
+    'a transfer carrying another invoice\'s memo does not pay this one');
+  c.expectErr(await actor.payInvoice(inv4.id, tkn.canisterId, wrongMemo), 'invalidInput',
+    'an XTK invoice cannot be paid through the TKN ledger');
+
+  const partBlock = await pay(tkn, 1_000n, memoOf(inv1));
+  const partial = c.expectOk(await actor.payInvoice(inv1.id, tkn.canisterId, partBlock), 'a partial payment');
+  c.ok('partiallyPaid' in partial.status && partial.balance === 2_000n, 'leaves a balance');
+  const againView = c.expectOk(await actor.payInvoice(inv1.id, tkn.canisterId, partBlock), 'the same block is submitted again');
+  c.ok(againView.payments.length === 1 && againView.balance === 2_000n, 'and applies exactly once');
+  c.expectErr(await actor.payInvoice(inv2.id, tkn.canisterId, partBlock), 'duplicate',
+    'a block that paid one invoice cannot pay another');
+
+  const restBlock = await pay(tkn, 2_000n, memoOf(inv1));
+  await tkn.actor.setAvailable(false);
+  c.expectErr(await actor.payInvoice(inv1.id, tkn.canisterId, restBlock), 'ledgerUnavailable',
+    'a ledger that cannot be asked changes nothing');
+  await tkn.actor.setAvailable(true);
+  const settledView = c.expectOk(await actor.payInvoice(inv1.id, tkn.canisterId, restBlock), 'the retry succeeds');
+  c.ok('paid' in settledView.status && settledView.balance === 0n && settledView.payments[1].from.owner.toText() === initechPrincipal.toText(),
+    'the invoice is paid, and the payer is read from the ledger');
+  const xtkBlock = await pay(xtk, 1_000n, memoOf(inv4));
+  c.ok('paid' in c.expectOk(await actor.payInvoice(inv4.id, xtk.canisterId, xtkBlock), 'the XTK invoice is paid in XTK').status,
+    'in its own currency');
+
+  // ---------------------------------------------------- refund and credit
+  const secondBefore = JSON.stringify((await actor.getInvoice(inv2.id))[0].invoice, bigintSafe);
+  actor.setIdentity(initech);
+  c.expectErr(await actor.adjustInvoice(inv2.id, { kind: { credit: null }, amount: 100n, reason: 'x', reference: 'cn-0' }),
+    'unauthorized', 'a tenant cannot credit itself');
+  actor.setIdentity(admin);
+  const credited = c.expectOk(await actor.adjustInvoice(inv2.id, {
+    kind: { credit: null }, amount: 250n, reason: 'Service credit for the outage', reference: 'cn-1',
+  }), 'the operator issues a credit note');
+  c.ok(credited.balance === inv2.total - 250n, 'the balance falls by the credit');
+  const retried = c.expectOk(await actor.adjustInvoice(inv2.id, {
+    kind: { credit: null }, amount: 250n, reason: 'Service credit for the outage', reference: 'cn-1',
+  }), 'the same credit note is retried');
+  c.ok(retried.adjustments.length === 1, 'and is not applied twice');
+  c.expectErr(await actor.adjustInvoice(inv2.id, { kind: { credit: null }, amount: 999n, reason: 'x', reference: 'cn-1' }),
+    'duplicate', 'a reference is not reused for a different adjustment');
+  const refundView = c.expectOk(await actor.adjustInvoice(inv1.id, {
+    kind: { credit: null }, amount: 500n, reason: 'Refund of overbilled storage', reference: 'rf-1',
+  }), 'a paid invoice is credited');
+  c.ok('creditBalance' in refundView.status && refundView.balance === -500n, 'and shows the credit the tenant is owed');
+  c.ok(JSON.stringify((await actor.getInvoice(inv2.id))[0].invoice, bigintSafe) === secondBefore,
+    'adjustments are separate records: the invoice itself is never edited');
+
+  // ----------------------------------------------------------- JSON export
+  actor.setIdentity(initech);
+  const exported = JSON.parse((await actor.invoiceJson(inv1.id))[0]);
+  c.ok(exported.format === 'icp-usage-invoice:v1' && exported.customer === 'Initech "Billing" Dept.'
+    && exported.currency === 'TKN' && exported.decimals === 8 && exported.totalMinorUnits === 3000
+    && exported.balanceMinorUnits === -500 && exported.status === 'credit balance',
+    'the invoice exports as valid JSON a customer can read, quotes and all');
+  c.ok(exported.lines.length === 3 && exported.payments.length === 2 && exported.adjustments.length === 1
+    && exported.paymentMemo === Buffer.from(inv1.paymentMemo).toString('hex')
+    && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(exported.periodStart),
+    'with its lines, payments, adjustments, payment memo and RFC 3339 times');
+  actor.setIdentity(stranger);
+  c.ok((await actor.invoiceJson(inv1.id)).length === 0 && (await actor.listInvoices(initechPrincipal)).length === 0,
+    'another principal cannot read the tenant\'s invoices');
+  const invoicesBeforeUpgrade = JSON.stringify(await (async () => { actor.setIdentity(admin); return actor.listInvoices(initechPrincipal); })(), bigintSafe);
+
   const before = await actor.stats();
 
   // ---------------------------------------------------------------- upgrade
@@ -450,4 +661,16 @@ export async function suite({ appDir, pic, createIdentity, checks: c }) {
     await actor.submitReceipts([deviceB.sign(await receipt({ keyId: keyB.id, idempotencyKey: 'x-3' }))]),
     'the stolen key tries again after the upgrade');
   c.ok(rejection(stillStolen) === 'keyNotValid', 'and is still refused');
+
+  // Invoices, payments and adjustments are the billing record; an upgrade
+  // that lost any of them would lose what customers owe.
+  actor.setIdentity(admin);
+  c.ok(JSON.stringify(await actor.listInvoices(initechPrincipal), bigintSafe) === invoicesBeforeUpgrade,
+    'every invoice survives the upgrade unchanged');
+  const firstAfter = (await actor.getInvoice(inv1.id))[0];
+  c.ok(firstAfter.payments.length === 2 && firstAfter.adjustments.length === 1 && firstAfter.balance === -500n,
+    'with its payments and adjustments');
+  actor.setIdentity(initech);
+  const replayedPayment = c.expectOk(await actor.payInvoice(inv1.id, tkn.canisterId, partBlock), 'a payment is resubmitted after the upgrade');
+  c.ok(replayedPayment.payments.length === 2, 'and still applies only once');
 }

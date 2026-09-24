@@ -117,8 +117,10 @@ def extract_motoko_methods(text: str) -> list[Method]:
         # `shared` may appear bare (`public shared func f()`), with a caller
         # pattern (`public shared ({ caller }) func f()`), or not at all. The
         # previous pattern required the caller pattern and silently skipped
-        # every method declared without one.
-        r"(?P<prefix>(?:(?:shared(?:\s*\([^)]*\))?|composite|query)\s+)*)"
+        # every method declared without one. `query` takes a caller pattern
+        # the same way (`public query ({ caller }) func f()`), which the
+        # pattern before that skipped just as silently.
+        r"(?P<prefix>(?:(?:shared|query)(?:\s*\([^)]*\))?\s+|composite\s+)*)"
         r"func\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(",
         flags=re.MULTILINE,
     )

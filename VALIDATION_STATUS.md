@@ -511,6 +511,32 @@
 
 詳細は`apps/04_bounty_board/docs/ESCROW.md`。
 
+## 2026-09-25に追加で実行済み (apps/05_usage_metered_saas, issue #14)
+
+- billing period・invoice・payment・adjustment。**invoiceは一度だけ作られ、以後変更されません**。
+  支払いとadjustment (credit / debit note) は別レコードとして追記し、balanceと状態は
+  3つから計算します。credit適用後もinvoice recordがbyte単位で同一であることを確認
+- periodはplanの境界に揃い、一度だけcloseされます (rollover時・`closePeriod`・plan変更時)。
+  closeと次期間への移行が同じ処理なので同じ期間を2回closeする経路はなく、
+  期間終了前や2回目の`closePeriod`は`#conflict`
+- 締め後に届いたreceipt (#15のoffline batch) は**記録された期間**に計上され`lateEvents`で
+  示されます。閉じたinvoiceは遡って変わりません
+- plan変更は旧planの日割り (切り捨て) で締め、新planは新しい期間から。通貨変更後も
+  旧invoiceは旧通貨のままで、そのledgerでしか支払えません
+- 支払いはICRC-1 transferのblockをledgerから読んで検証 (#12と同じICRC-3 adapter):
+  payee account・invoice memo (canister principalとinvoice idを束縛)・発行後のtimestamp。
+  `(ledger, block)`は一度しか適用されず、ledger不通は何も変えずに再試行可能
+- 全invoiceをsuite側 (JavaScript) で`getUsageEvent`とplan snapshotから再計算して一致を確認
+- `invoiceJson`は顧客向けJSON (RFC 8259 escape、RFC 3339時刻、整数minor unitとdecimals)
+- app 05 は 121 → 183 checks、全体で **732 assertion、失敗0** (pocket-ic 14.0.0)。
+  #14のtest plan (late event / plan change mid-period / refund・credit / currency change)
+  とacceptance criteriaを全て含み、upgrade後もinvoice・payment・adjustmentが残り
+  支払いの再提出が二重適用されないことを確認
+- Candid: 追加のみ。stable data: map追加のみで`Tenant`・`UsageEvent`は不変。
+  挙動の変更: periodの開始が「境界後最初のevent」からplan境界に揃います (quotaのreset位置のみ)
+
+詳細は`apps/05_usage_metered_saas/docs/BILLING.md`。
+
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、
@@ -554,7 +580,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | Motoko/Candid API surface | offline mechanically cross-checked |
 | Motoko compile/test/Wasm/Candid | passed for all 6 applications |
 | Nix toolchain bootstrap | passed with read-only global npm prefix |
-| PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 670 + 55 assertions |
+| PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 732 + 55 assertions |
 | local replica (`icp deploy`) | passed for app 06 (icp-cli 1.2.0 / launcher 15.0.0) |
 | upgrade rehearsal | passed for all 6 applications; across a breaking Candid change, untried |
 | documentation site | 128 pages built strict, 0 warnings; published from `main` |

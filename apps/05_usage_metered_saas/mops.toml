@@ -14,6 +14,9 @@ core = "2.6.0"
 # `xtended-numbers` and `xtended-iter`; see docs/RECEIPTS.md for why verifying
 # on-chain was worth them.
 ecdsa = "8.0.1"
+# SHA-256 for invoice payment memos (#14). The same package and version apps/01,
+# apps/02 and apps/03 use: Apache-2.0, research-ag/sha2, `core` its only dependency.
+sha2 = "0.2.5"
 
 [toolchain]
 moc = "1.11.1"
