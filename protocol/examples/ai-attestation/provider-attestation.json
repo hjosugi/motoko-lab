@@ -1,0 +1,45 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2"
+  ],
+  "id": "urn:uuid:9b1f2c3d-0000-4000-8000-000000000001",
+  "type": [
+    "VerifiableCredential",
+    "AIGenerationAttestation"
+  ],
+  "issuer": "did:key:z6Mkr4f8uW7gStxjKK6yYev1RxwLAnhaK9NimpX6qz8tvjEZ",
+  "validFrom": "2026-07-20T00:04:00Z",
+  "credentialSubject": {
+    "id": "urn:sha256:3eabac0a5996ee655269410d496b8c48eb23dd051094bd53aa30c5437a859eb3",
+    "output": {
+      "sha256": "3eabac0a5996ee655269410d496b8c48eb23dd051094bd53aa30c5437a859eb3",
+      "mediaType": "text/plain"
+    },
+    "generation": {
+      "provider": "Example AI Provider",
+      "model": {
+        "id": "example-text-model",
+        "version": "2026-07-01",
+        "alias": "example-text-model-latest"
+      },
+      "role": "assist",
+      "prompt": {
+        "scheme": "icp-ai-prompt:v1",
+        "digest": "cc8ac6c338949a76397ad2492a4faca242f3e26ce6ba8fb3c238e78bcaea32bf"
+      },
+      "generatedAt": "2026-07-20T00:04:00Z"
+    },
+    "requestedBy": "urn:icp:principal:aaaaa-aa"
+  },
+  "proof": {
+    "type": "DataIntegrityProof",
+    "cryptosuite": "eddsa-jcs-2022",
+    "created": "2026-07-20T00:04:00Z",
+    "verificationMethod": "did:key:z6Mkr4f8uW7gStxjKK6yYev1RxwLAnhaK9NimpX6qz8tvjEZ#z6Mkr4f8uW7gStxjKK6yYev1RxwLAnhaK9NimpX6qz8tvjEZ",
+    "proofPurpose": "assertionMethod",
+    "@context": [
+      "https://www.w3.org/ns/credentials/v2"
+    ],
+    "proofValue": "z3viCkbmNt4Nan19aYh8bJjN7RByGuSy771PYm7x5Bhme59e2FoKn7t6R2ZBDWF3WDq3jKHh5CDGGmmzCHj5NPMsb"
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hjosugi.github.io/motoko-lab/schemas/ai-attestation.schema.json",
+  "title": "AI generation attestation",
+  "description": "An AIGenerationAttestation: a Verifiable Credential (VC Data Model 2.0, eddsa-jcs-2022 proof) in which a provider service or a local tool attests that it produced an output. See protocol/AI_ATTESTATION.md; the structural rules are also enforced by validateAttestationSubject in protocol/tools/ai-attestation.mjs.",
+  "type": "object",
+  "required": ["@context", "id", "type", "issuer", "validFrom", "credentialSubject", "proof"],
+  "properties": {
+    "@context": { "type": "array", "prefixItems": [{ "const": "https://www.w3.org/ns/credentials/v2" }], "minItems": 1 },
+    "id": { "type": "string" },
+    "type": { "type": "array", "contains": { "const": "AIGenerationAttestation" } },
+    "issuer": { "type": "string", "pattern": "^did:key:z" },
+    "validFrom": { "type": "string", "format": "date-time" },
+    "credentialStatus": { "type": ["object", "array"] },
+    "credentialSubject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "output", "generation"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^urn:sha256:[0-9a-f]{64}$", "description": "urn:sha256:<output.sha256>. The attestation is about these bytes and no others." },
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sha256"],
+          "properties": {
+            "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            "mediaType": { "type": "string", "maxLength": 100 }
+          }
+        },
+        "generation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["provider", "model", "role", "generatedAt"],
+          "properties": {
+            "provider": { "$ref": "#/$defs/safeText100" },
+            "model": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "version"],
+              "properties": {
+                "id": { "$ref": "#/$defs/safeText200" },
+                "version": { "$ref": "#/$defs/safeText100", "description": "The resolved version. Required: an alias names a moving target." },
+                "alias": { "$ref": "#/$defs/safeText200", "description": "What was requested, when it was an alias." },
+                "weightsSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "For local models: the weights file that ran." }
+              }
+            },
+            "role": { "enum": ["generate", "transform", "assist"] },
+            "prompt": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["scheme", "digest"],
+              "properties": {
+                "scheme": { "const": "icp-ai-prompt:v1" },
+                "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "SHA-256(\"icp-ai-prompt:v1\" || 0x00 || salt || 0x00 || prompt). Never the prompt, never an unsalted hash of it." }
+              }
+            },
+            "generatedAt": { "type": "string", "format": "date-time" }
+          }
+        },
+        "requestedBy": { "type": "string", "pattern": "^urn:icp:principal:[a-z0-9-]+$" }
+      }
+    },
+    "proof": {
+      "type": "object",
+      "required": ["type", "cryptosuite", "created", "verificationMethod", "proofPurpose", "proofValue"],
+      "properties": {
+        "type": { "const": "DataIntegrityProof" },
+        "cryptosuite": { "const": "eddsa-jcs-2022" }
+      }
+    }
+  },
+  "$defs": {
+    "safeText100": { "type": "string", "minLength": 1, "maxLength": 100, "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\u202a-\\u202e\\u2066-\\u2069]*$" },
+    "safeText200": { "type": "string", "minLength": 1, "maxLength": 200, "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\u202a-\\u202e\\u2066-\\u2069]*$" }
+  }
+}

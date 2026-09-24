@@ -424,6 +424,24 @@
 
 詳細は`apps/03_license_marketplace/docs/PAYMENTS.md`。
 
+## 2026-09-25に追加で実行済み (protocol, issue #39, AI attestation)
+
+- `AIGenerationAttestation` (provider / local tool) と`AIUsageReviewCredential` (organization) を
+  #11のVC基盤 (eddsa-jcs-2022、issuer policy、key rotation、status list) の上に定義。
+  evidence levelは`none` / `self-asserted` / `tool-signed` / `organization-reviewed`
+- offline suite `protocol/tools/ai-attestation.test.mjs` は**51 check**: example 5 fileの
+  byte単位再現、sealed promptの開示と誤開示、**平文SHA-256のpromptは推測リストで復元でき、
+  sealed commitmentは復元できない**ことの実演、3段階の区別、他artifactへのreplay (単独 /
+  有効なattestationと併用 / reviewのreplay)、編集前draftをparentとして束縛、manifestとの
+  矛盾 (AI使用のunderstate、prompt commitment不一致、未記載model、別principal宛て)、
+  provider key rotation前後・compromised key・status listによるrevoke、provider不在
+  (生成時 / 検証時、fail closedとwarn)、model aliasの解決とversion欠落、local modelと
+  未登録local key、model名・provider名へのprompt injection (改行・ANSI escape・RLO)
+- attestation schema (`protocol/schemas/ai-attestation.schema.json`) とexample manifestを
+  jsonschema 4.x (Draft 2020-12) で検証
+
+詳細は`protocol/AI_ATTESTATION.md`。
+
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、
@@ -460,6 +478,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | JSON Schema/test vectors | locally validated |
 | RFC 8785 canonicalization | official vectors passed; byte-identical to serde_jcs 0.2.0 and canonicalize 3.0.0 |
 | Commitment layout v1 | frozen; 39 conformance vectors reproduced by independent Rust and TypeScript implementations |
+| AI tool/model attestation | 51 offline checks; three evidence levels, replay, sealed prompts, rotation/revocation, prompt injection |
 | Verifiable Credentials (eddsa-jcs-2022) | W3C Recommendation vector reproduced byte for byte; 80 offline checks + 20 on pocket-ic 14.0.0 against app 01 identity |
 | C2PA bridge (PNG) | 116 offline checks + 22 on pocket-ic 14.0.0; credentials read as Trusted by c2patool 0.27.22 and c2patool credentials validated here |
 | Merkle tree v1 | frozen; 98 transparency-dev RFC 9162 probes, 43 v1 vectors, verified by independent JavaScript and Motoko implementations |

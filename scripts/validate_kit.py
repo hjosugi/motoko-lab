@@ -434,7 +434,8 @@ def check_protocol(report: Report) -> None:
         validator = jsonschema.Draft202012Validator(schema)
         # c2pa/manifest.json is the creator manifest behind the C2PA bridge
         # example; it carries the signer declaration in `extensions`.
-        for name in ("human-only.json", "ai-assisted.json", "c2pa/manifest.json"):
+        # ai-attestation/manifest.json carries a sealed prompt commitment.
+        for name in ("human-only.json", "ai-assisted.json", "c2pa/manifest.json", "ai-attestation/manifest.json"):
             instance = json.loads((protocol / "examples" / name).read_text(encoding="utf-8"))
             errors = sorted(validator.iter_errors(instance), key=lambda e: list(e.path))
             if errors:

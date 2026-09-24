@@ -22,6 +22,10 @@
 - registry (#7) とのread-only cross-check: on-chain delegationのrevoke・expire、creatorのkey rotationがcredentialの検証結果に直接反映されます
 - 未実装 (研究のみ): selective disclosure (SD-JWT VC / `ecdsa-sd-2023` / `bbs-2023`)、identity recovery approval・dispute outcome credential
 
+## AI tool and model attestation
+
+実装済みです (#39)。`AI_ATTESTATION.md`。W3C VC (#11) の上に`AIGenerationAttestation` (provider / local tool) と`AIUsageReviewCredential` (organization) を定義し、証拠の強さを`self-asserted` / `tool-signed` / `organization-reviewed`で報告します。promptはsalt付きcommitmentのみ、attestationは出力digestに束縛されます。
+
 ## RFC 8785
 
 manifest canonical bytesは全languageで一致します。`tools/jcs.mjs`が実装し、official vector 6件とedge vector 47件で検証、`tools/crosscheck.mjs`が`serde_jcs` (Rust)と`canonicalize` (npm)に対して同一bytesを確認します。

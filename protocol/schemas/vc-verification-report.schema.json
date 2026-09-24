@@ -33,6 +33,12 @@
         "registry": { "enum": ["consistent", "inconsistent", "unavailable", "not-checked"] }
       }
     },
+    "policyEntry": {
+      "type": "object",
+      "description": "The issuer policy entry the proving key belongs to, when there is one.",
+      "required": ["name", "kind"],
+      "properties": { "name": { "type": "string" }, "kind": { "type": ["string", "null"] } }
+    },
     "reasons": {
       "type": "array",
       "items": {

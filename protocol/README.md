@@ -39,6 +39,11 @@
 - `test-vectors/vc/eddsa-jcs-2022.json`: W3C Data Integrity EdDSA Cryptosuites v1.0 Appendix B.3のvector
 - `schemas/vc-verification-report.schema.json`: VC検証レポート
 - `examples/vc/`: membership / delegation / review credential、status list、issuer policy
+- `AI_ATTESTATION.md`: AI tool/model attestation (evidence level、sealed prompt、replay防止、threat model)
+- `tools/ai-attestation.mjs`: `AIGenerationAttestation` / `AIUsageReviewCredential`、sealed prompt、`evaluateAiEvidence`、CLI
+- `tools/ai-attestation.test.mjs`: AI attestationのoffline test
+- `schemas/ai-attestation.schema.json`: attestation credential
+- `examples/ai-attestation/`: manifest、provider attestation、studio review、policy、auditor向けsealed prompt disclosure
 
 ## Commands
 
@@ -53,6 +58,7 @@ node protocol/tools/provenance-cli.mjs commitment \
 node protocol/tools/provenance-cli.test.mjs
 node protocol/tools/c2pa.test.mjs
 node protocol/tools/vc.test.mjs
+node protocol/tools/ai-attestation.test.mjs
 node protocol/tools/vc.mjs verify protocol/examples/vc/membership.json \
   --policy protocol/examples/vc/policy.json \
   --status-list https://studio.example/status/1=protocol/examples/vc/status-list.json
@@ -111,3 +117,7 @@ writer/validatorはc2patool 0.27.22と双方向に照合済みです (example cr
 principalは鍵の保持を示すだけで、組織のmemberであること、creatorの代理で登録できること、reviewerが記録を検証したことは示しません。それらは第三者の主張なので、W3C VC 2.0 credentialとして`eddsa-jcs-2022` (RFC 8785 + Ed25519) で署名し、検証します。W3C Recommendation自身のtest vectorを署名bytesまで再現します。
 
 unknown issuerは**warningであって成功ではありません** (verdict `unknown-issuer`、exit 2)。expired / revoked / suspendedはreject、status listが取得できなければfail closedです。issuerの鍵rotationはpolicy上の履歴として表現し (#7と同じ考え方)、`compromised`の鍵は過去の`created`も信用しません。registry adapterを渡すと、delegation credentialはon-chain delegationより多くを主張できません。chain側でrevoke・expire・key rotationが起きれば、credentialを変えずに検証結果がrejectになります。詳細は`VERIFIABLE_CREDENTIALS.md`。
+
+## AI attestation
+
+manifestの`ai` blockはcreator自身の申告 (`self-asserted`) です。生成したtool/providerが署名した`AIGenerationAttestation`があれば`tool-signed`、organizationのreviewがあれば`organization-reviewed`になり、verifierはこの3段階を区別して報告します。attestationは出力のSHA-256に束縛されるので別のartifactへ流用 (replay) できず、promptは`icp-ai-prompt:v1`のsalt付きcommitmentとしてのみ扱われ、公開の場には出ません。modelはaliasではなく解決済みversionを必須にし、model名などへの制御文字・bidi override (prompt injection) は署名が正しくても拒否します。詳細は`AI_ATTESTATION.md`。

@@ -19,12 +19,12 @@ run() {
   echo
 }
 
-echo "[1/10] Shell syntax"
+echo "[1/11] Shell syntax"
 for script in "$ROOT"/scripts/*.sh; do
   run bash -n "$script"
 done
 
-echo "[2/10] Python source compilation without bytecode output"
+echo "[2/11] Python source compilation without bytecode output"
 ROOT_FOR_PY="$ROOT" python3 - <<'PY'
 import os
 from pathlib import Path
@@ -37,27 +37,30 @@ print(f"compiled: {len(files)} Python files")
 PY
 echo
 
-echo "[3/10] Node syntax"
+echo "[3/11] Node syntax"
 for module in "$ROOT"/protocol/tools/*.mjs; do
   run node --check "$module"
 done
 
-echo "[4/10] Provenance protocol tests"
+echo "[4/11] Provenance protocol tests"
 run node "$ROOT/protocol/tools/provenance-cli.test.mjs"
 run node "$ROOT/protocol/tools/merkle.test.mjs"
 
-echo "[5/10] C2PA bridge tests"
+echo "[5/11] C2PA bridge tests"
 run node "$ROOT/protocol/tools/c2pa.test.mjs"
 
-echo "[6/10] Verifiable credential tests"
+echo "[6/11] Verifiable credential tests"
 run node "$ROOT/protocol/tools/vc.test.mjs"
 
-echo "[7/10] Motoko/Candid API surface"
+echo "[7/11] AI attestation tests"
+run node "$ROOT/protocol/tools/ai-attestation.test.mjs"
+
+echo "[8/11] Motoko/Candid API surface"
 run python3 "$ROOT/scripts/check_api_surface.py" "$ROOT" \
   --json-report "$VALIDATION_DIR/api-surface.json" \
   --markdown-report "$VALIDATION_DIR/API_SURFACE.md"
 
-echo "[8/10] GitHub automation dry-runs"
+echo "[9/11] GitHub automation dry-runs"
 labels_output="$(mktemp)"
 issues_output="$(mktemp)"
 trap 'rm -f "$labels_output" "$issues_output"' EXIT
@@ -67,11 +70,11 @@ echo "label commands: $(grep -c '^gh label create' "$labels_output")"
 echo "issue dry-run output lines: $(wc -l < "$issues_output" | tr -d ' ')"
 echo
 
-echo "[9/10] Structural validation"
+echo "[10/11] Structural validation"
 run python3 "$ROOT/scripts/validate_kit.py" "$ROOT" \
   --json-report "$VALIDATION_DIR/structural-validation.json"
 
-echo "[10/10] Workspace hygiene"
+echo "[11/11] Workspace hygiene"
 find "$ROOT" -type d -name __pycache__ -prune -exec rm -rf {} +
 
 # What matters is that no generated directory can be packaged, not that none

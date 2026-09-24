@@ -1,0 +1,56 @@
+{
+  "statusFailure": "reject",
+  "issuers": [
+    {
+      "name": "Example AI Provider",
+      "kind": "provider",
+      "types": [
+        "AIGenerationAttestation"
+      ],
+      "keys": [
+        {
+          "verificationMethod": "did:key:z6Mkf6AiSLks4njFaLuMoKnKJJt5HLcAb7UUdk9AWpY992dZ#z6Mkf6AiSLks4njFaLuMoKnKJJt5HLcAb7UUdk9AWpY992dZ",
+          "activeFrom": "2025-01-01T00:00:00Z",
+          "retiredAt": "2026-06-01T00:00:00Z",
+          "status": "superseded"
+        },
+        {
+          "verificationMethod": "did:key:z6Mkr4f8uW7gStxjKK6yYev1RxwLAnhaK9NimpX6qz8tvjEZ#z6Mkr4f8uW7gStxjKK6yYev1RxwLAnhaK9NimpX6qz8tvjEZ",
+          "activeFrom": "2026-06-01T00:00:00Z",
+          "retiredAt": null,
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "name": "Example Studio workstation 7",
+      "kind": "local-tool",
+      "types": [
+        "AIGenerationAttestation"
+      ],
+      "keys": [
+        {
+          "verificationMethod": "did:key:z6Mkuhm3EzxgXSzXETQjzAiDcxDr81ZNU6HhQfTAxvknX5wD#z6Mkuhm3EzxgXSzXETQjzAiDcxDr81ZNU6HhQfTAxvknX5wD",
+          "activeFrom": "2026-01-01T00:00:00Z",
+          "retiredAt": null,
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "name": "Example Studio",
+      "kind": "organization",
+      "types": [
+        "AIUsageReviewCredential"
+      ],
+      "keys": [
+        {
+          "verificationMethod": "did:key:z6Mkw73uBjXe2kDhohij7nXKsFVfDQrLAKjX7JitXjG1wt6r#z6Mkw73uBjXe2kDhohij7nXKsFVfDQrLAKjX7JitXjG1wt6r",
+          "activeFrom": "2026-01-01T00:00:00Z",
+          "retiredAt": null,
+          "status": "active"
+        }
+      ]
+    }
+  ]
+}

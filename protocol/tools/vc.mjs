@@ -495,6 +495,9 @@ export async function verifyCredential(credential, { policy, statusLists = async
     warnings.push(`issuer ${issuerId(credential.issuer)} is not in the policy: the signature is valid, and says nothing about the issuer's authority`);
   } else {
     const { entry, key } = found;
+    // Which policy entry vouched, so a caller weighing the credential (the AI
+    // evidence levels in ai-attestation.mjs) can tell a provider from a reviewer.
+    report.policyEntry = { name: entry.name, kind: entry.kind ?? null };
     const created = new Date(credential.proof.created);
     const allowedTypes = entry.types ?? [];
     if (!types.some((t) => allowedTypes.includes(t))) {
