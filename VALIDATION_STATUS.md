@@ -536,6 +536,24 @@
   挙動の変更: periodの開始が「境界後最初のevent」からplan境界に揃います (quotaのreset位置のみ)
 
 詳細は`apps/05_usage_metered_saas/docs/BILLING.md`。
+## 2026-09-25に追加で実行済み (labs/migration-chain, issue #16)
+
+- moc 1.11.1の`--enhanced-migration`で、V1 → V2 (eager) → V3 (lazy) のmigration chainを
+  3つの版としてbuild。stable変数は初期化子を持たず、値はmigration chainのみが決めます
+- pocket-ic 14.0.0上のrehearsal (`labs/migration-chain/test/migration-chain.test.mjs`、
+  **40 check**): empty state、30,001件のlarge map、revoked variant、中断したrollout
+  (trapするmigration 3はrollbackされV2がそのまま稼働、修正版で再適用)、V1からV3への
+  fast-forward、同一版の再deployがno-opであること。各段階でsampleしたrecordがfixture規則と
+  完全一致することを確認
+- data size: eager step (V1→V2) は0件で42,092、1,000件で1,029,357、10,000件で9,983,954、
+  30,001件で29,870,466 instructions (約1,000/record、線形)。lazy step (V2→V3) は
+  件数によらず約40.9k instructions
+- gate: 型検査は通るがchainに説明のない変更はcompile時に**M0170**で拒否。
+  `moc --stable-compatible`はV1→V2・V2→V3・V1→V3でpass、V3→V2・V2→V1はM0169でfail。
+  replicaはV3→V2・V3→V1のdowngradeを`Memory-incompatible program upgrade`で拒否し、
+  V3とdataはそのまま残ります
+
+詳細は`labs/migration-chain/README.md`。
 
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
@@ -573,6 +591,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | JSON Schema/test vectors | locally validated |
 | RFC 8785 canonicalization | official vectors passed; byte-identical to serde_jcs 0.2.0 and canonicalize 3.0.0 |
 | Commitment layout v1 | frozen; 39 conformance vectors reproduced by independent Rust and TypeScript implementations |
+| Enhanced multi-migration chain (labs) | V1→V2→V3 rehearsed on pocket-ic 14.0.0, 40 checks; incompatible edit fails with M0170; downgrade refused |
 | AI tool/model attestation | 51 offline checks; three evidence levels, replay, sealed prompts, rotation/revocation, prompt injection |
 | Verifiable Credentials (eddsa-jcs-2022) | W3C Recommendation vector reproduced byte for byte; 80 offline checks + 20 on pocket-ic 14.0.0 against app 01 identity |
 | C2PA bridge (PNG) | 116 offline checks + 22 on pocket-ic 14.0.0; credentials read as Trusted by c2patool 0.27.22 and c2patool credentials validated here |

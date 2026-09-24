@@ -7,7 +7,7 @@
 3. persistent actor
 4. caller authorization
 5. async/inter-canister state machine
-6. upgrade migration
+6. upgrade migration (実例: `migration-chain/`)
 7. certified data design
 8. ICRC adapter design
 9. property/model testing

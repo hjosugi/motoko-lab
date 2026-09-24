@@ -30,6 +30,10 @@ read/write時にitemを新versionへ変換。complexityは上がるがlarge data
 
 old/new indexを併存し、backfill後にcutover。検索schema変更向け。
 
+## Worked example
+
+[labs/migration-chain](../labs/migration-chain/README.md)がadditive・eager・lazy・multi-stepを`--enhanced-migration` (moc 1.11.1) で実装し、実replicaでrehearseしています。eager stepのupgrade costはrecord数に比例 (約1,000 instructions/record) し、lazy stepは件数によらず約41k instructionsでした。downgradeはcompile時 (`--stable-compatible`でM0169) とreplica (`Memory-incompatible program upgrade`) の両方で拒否されます。
+
 ## Rehearsal checklist
 
 - old Wasm deploy

@@ -1,0 +1,13 @@
+[package]
+name = "migration-chain-lab"
+version = "0.1.0"
+description = "Enhanced multi-migration fixtures: V1 -> V2 -> V3 with eager, lazy and additive steps"
+repository = "https://github.com/hjosugi/motoko-lab/tree/main/labs/migration-chain"
+keywords = ["internet-computer", "motoko", "migration"]
+license = "Apache-2.0"
+
+[dependencies]
+core = "2.6.0"
+
+[toolchain]
+moc = "1.11.1"

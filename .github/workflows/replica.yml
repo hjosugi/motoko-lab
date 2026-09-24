@@ -62,3 +62,12 @@ jobs:
           source ./scripts/toolchain_env.sh
           motoko_add_toolchain_to_path
           node tools/pocket-ic/vc.test.mjs
+      # The migration chain (#16): V1 -> V2 -> V3 under `--enhanced-migration`,
+      # the compile-time gate an incompatible edit must fail, and the replica
+      # rehearsal (large map, interrupted rollout, fast-forward, downgrade).
+      - name: Rehearse the migration chain
+        run: |
+          source ./scripts/toolchain_env.sh
+          motoko_add_toolchain_to_path
+          ( cd labs/migration-chain && ( mops install || "$GITHUB_WORKSPACE/scripts/vendor_core_offline.sh" "$PWD" ) )
+          node labs/migration-chain/test/migration-chain.test.mjs
