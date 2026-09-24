@@ -28,6 +28,34 @@ type BountyResult = variant { ok : Bounty; err : Error };
 type SubmissionResult = variant { ok : Submission; err : Error };
 type AwardResult = variant { ok : Award; err : Error };
 type Stats = record { bounties : nat; submissions : nat; awards : nat };
+// ICRC-2 escrow (#13), docs/ESCROW.md.
+type Account = record { owner : principal; subaccount : opt blob };
+type TokenInfo = record { ledger : principal; symbol : text; decimals : nat8; fee : nat; registeredAt : nat };
+type PlatformConfig = record { account : Account; feeBps : nat; updatedAt : nat };
+type OpKind = variant { fund; payWinner; payPlatform; refund };
+type OpStatus = variant {
+  pending;
+  done : record { block : opt nat; at : nat };
+  failed : record { reason : text; at : nat };
+};
+type Op = record {
+  kind : OpKind; from : Account; to : Account; amount : nat; fee : nat;
+  memo : blob; createdAtTime : nat64; attempts : nat; status : OpStatus;
+};
+type State = variant { awaitingFunds; funded; releasing; released; refunding; refunded; closedUnfunded };
+type Escrow = record {
+  bountyId : nat; ledger : principal; funder : principal; subaccount : blob;
+  reward : nat; platformFee : nat; platform : opt Account; fee : nat; deposit : nat;
+  state : State; ops : vec Op;
+};
+type EscrowError = variant {
+  anonymousNotAllowed; unauthorized; notFound; invalidInput : text; conflict : text;
+  refused : text; feeChanged : record { fee : nat; deposit : nat; approval : nat };
+  ledgerUnavailable : text;
+};
+type TokenResult = variant { ok : TokenInfo; err : EscrowError };
+type PlatformResult = variant { ok : PlatformConfig; err : EscrowError };
+type EscrowResult = variant { ok : Escrow; err : EscrowError };
 service : {
   createBounty : (BountyInput) -> (BountyResult);
   submit : (SubmissionInput) -> (SubmissionResult);
@@ -38,4 +66,11 @@ service : {
   getAward : (nat) -> (opt Award) query;
   listBounties : (nat, nat) -> (vec Bounty) query;
   stats : () -> (Stats) query;
+  registerLedger : (principal) -> (TokenResult);
+  setPlatform : (Account, nat) -> (PlatformResult);
+  fundEscrow : (nat) -> (EscrowResult);
+  settleEscrow : (nat) -> (EscrowResult);
+  getEscrow : (nat) -> (opt Escrow) query;
+  getLedger : (principal) -> (opt TokenInfo) query;
+  getPlatform : () -> (opt PlatformConfig) query;
 };

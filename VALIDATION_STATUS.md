@@ -478,6 +478,39 @@
 
 詳細は`apps/05_usage_metered_saas/docs/RECEIPTS.md`。
 
+## 2026-09-25に追加で実行済み (apps/04_bounty_board, issue #13)
+
+- ICRC-2 escrow。controllerが`registerLedger`したledgerのbountyはescrow必須で、ownerが
+  `icrc2_approve`したdepositを`fundEscrow`がbounty専用subaccount (bounty idのbig-endian 32 byte)
+  へ`icrc2_transfer_from`で引き込むまで、`submit`・`award`は拒否されます。`award`はwinnerへ
+  reward、platformへcut (bounty作成時にsnapshotしたrate) を送金、funded後の`cancelBounty`は返金
+- ledger呼び出しは`backend/src/Ledger.mo`に隔離し、応答を executed (`Ok`/`Duplicate`)・refused・
+  bad fee・unknown (reject/trap/timeout)・stale (`TooOld`) の5つに還元。全transferは金額・fee・
+  memo・`created_at_time`を最初の試行前に確定し、**結果不明なら同一引数で再試行**して
+  ledgerのdeduplicationで`Duplicate`として解決します。引数を変えるのは確定的なrefusalの後だけ
+  (結果不明のまま引数を変えると別取引として二重払いになるため)。dedup窓 (24時間) を過ぎた
+  `TooOld`はescrow subaccountの残高で判定します (そのbountyの送金しか残高を動かさないため)
+- `award`はお金を動かす前にawardを確定し、送金はledgerが落ちていれば`settleEscrow`
+  (誰でも呼べ、固定済みの宛先にしか送金しない) が後で完了させます
+- fee変更: funding前は`#feeChanged`で新しいdeposit/approvalを返し、funding後はwinnerを満額で
+  払ってplatformが差額を吸収。`BadFee`を見るとregistryのfeeも更新し、以後のbountyは実際のfeeで
+  価格付けされます
+- 会計不変条件 `winner + platform + 実行した送金のfee + dust = deposit, dust <= fee` を
+  `test/Escrow.test.mo`で576組合せ (reward 6 × rate 4 × funding時fee 4 × payout時fee 6) 検査
+- replica suite (pocket-ic 14.0.0、`test/fixtures/MockLedger.mo`はfee上乗せ・期限付きallowance・
+  dedup優先・24時間後の`TooOld`を参照実装どおりに実装し、送金を実行してから**replyを落とす**
+  controlを持つ): app 04 は **39 → 123 checks**。test planの allowance expires・fee changes
+  (funding前/payout時)・insufficient funds・duplicate callback (pullとwinner payoutの両方で
+  replyを落とし、ownerは1回だけ課金、winnerは1回だけ受領) に加え、approvalなしのfunding、
+  award時のledger停止と復旧後のsettle、funded bountyの返金、pull結果不明のままのcancel
+  (pullを解決してから返金)、未fundのclose、`TooOld`の残高による解決、再settleで何も動かない
+  こと、upgrade越しの保存。**全8 escrowでledger上のsubaccount残高がop logから計算した帳簿と一致**
+- Candid: 7 methodと型の追加のみ。`award`・`cancelBounty`のsignatureと既存`Error`は不変。
+  stable dataはside tableの追加のみで`Bounty`・`Award`は不変、migration不要
+- 未実施: mainnet ledger、複数winner・部分award、award自体のdispute
+
+詳細は`apps/04_bounty_board/docs/ESCROW.md`。
+
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、
@@ -521,7 +554,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | Motoko/Candid API surface | offline mechanically cross-checked |
 | Motoko compile/test/Wasm/Candid | passed for all 6 applications |
 | Nix toolchain bootstrap | passed with read-only global npm prefix |
-| PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 586 + 55 assertions |
+| PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 670 + 55 assertions |
 | local replica (`icp deploy`) | passed for app 06 (icp-cli 1.2.0 / launcher 15.0.0) |
 | upgrade rehearsal | passed for all 6 applications; across a breaking Candid change, untried |
 | documentation site | 128 pages built strict, 0 warnings; published from `main` |

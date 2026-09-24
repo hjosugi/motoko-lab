@@ -141,6 +141,7 @@ nav:
           - アップグレード計画: apps/03_license_marketplace/docs/UPGRADE_PLAN.md
       - 04 Bounty Board:
           - 概要: apps/04_bounty_board/README.md
+          - エスクロー (ICRC-2): apps/04_bounty_board/docs/ESCROW.md
           - 脅威モデル: apps/04_bounty_board/docs/THREAT_MODEL.md
           - アップグレード計画: apps/04_bounty_board/docs/UPGRADE_PLAN.md
       - 05 Usage-Metered SaaS:
