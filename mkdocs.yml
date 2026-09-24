@@ -121,6 +121,7 @@ nav:
       - コストとキャパシティ: docs/25_COST_AND_CAPACITY_MODEL.md
       - ガバナンスとSNS判断記録: docs/26_GOVERNANCE_DECISION_RECORD.md
       - テナントシャーディング設計: docs/27_TENANT_SHARDING_DESIGN.md
+      - 依存関係の来歴と再現可能ビルド: docs/28_SUPPLY_CHAIN.md
       - データモデルとAPI: docs/23_DATA_MODEL_AND_API.md
 
   - アプリケーション:

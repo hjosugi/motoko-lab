@@ -28,8 +28,15 @@ jobs:
       # power nobody decided about. The self-test proves the detector bites.
       - name: Check the privileged-action inventory
         run: python3 ./scripts/check_privileged_actions.py . --self-test
+      # Every dependency, toolchain pin and action against the reviewed
+      # inventory in supply-chain/dependencies.json (#29).
+      - name: Check dependency provenance
+        run: python3 ./scripts/check_supply_chain.py . --self-test --sbom sbom.cdx.json
       - name: Check all Motoko apps
         run: ./scripts/check_all_apps.sh
+      # Two clean builds at different paths must produce identical Wasm (#29).
+      - name: Check reproducible builds
+        run: ./scripts/check_reproducible_build.sh
       - name: Check Candid drift and release compatibility
         # After check_all_apps.sh, because that is what populates each app's
         # .mops/, which `moc --idl` needs on the package path.

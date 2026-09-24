@@ -590,6 +590,19 @@
   (到達不能はretryable refusalで、未検証のまま受理しない) を確認
 - 未実施: shard / router canister本体、#19のexport形式、#30の測定値による閾値、pocket-ic上の実移動rehearsal
 
+## 2026-09-25に追加で実行済み (supply chain, issue #29)
+
+- `supply-chain/dependencies.json`: Mops package 18件 (直接・推移的)、toolchain 6、npm 3、Python 2、
+  GitHub Actions 5について、exact version・license・source・maintainer・用途を記録。
+  `scripts/check_supply_chain.py`がCIで木と一覧の不一致 (未reviewのpackage、versionの変更、
+  rangeでのpin、未登録のaction、allowlist外のlicense) を拒否。self-testは5種の変更が全て検出されることを確認。
+  `--sbom`でCycloneDX 1.5のSBOMを出力 (Mops packageごとにlockのfile hashからSHA-256)
+- `bootstrap_toolchain.sh`のnpm CLI 3つと`tools/pocket-ic/package.json`をexact pinに変更 (従来はlatest / caret range)
+- `scripts/check_reproducible_build.sh`: git管理下のfileだけを異なるpathの2つのclean directoryへ
+  copyし、それぞれlockから`mops install`して`mops build`。全11 canisterのWasmがbyte単位で一致
+- lockの1 fileのhashを改ざんすると`mops install`がexit 1で拒否することを確認 (compromised package)
+- 未実施: `icp deploy`のrecipe buildの再現とdeployed module hashの照合 (#28で扱う)
+
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、

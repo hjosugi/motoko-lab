@@ -1,0 +1,266 @@
+{
+  "reviewed": "2026-09-25",
+  "allowedLicenses": [
+    "Apache-2.0",
+    "MIT",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC"
+  ],
+  "mops": [
+    {
+      "name": "asn1",
+      "version": "3.1.0",
+      "license": "MIT",
+      "source": "https://github.com/edjcase/motoko_asn1",
+      "maintainer": "edjCase",
+      "use": "transitive via ecdsa"
+    },
+    {
+      "name": "base-x-encoder",
+      "version": "2.1.0",
+      "license": "MIT",
+      "source": "https://github.com/edjcase/motoko_base_x",
+      "maintainer": "edjCase",
+      "use": "transitive via ecdsa"
+    },
+    {
+      "name": "base",
+      "version": "0.14.14",
+      "license": "Apache-2.0",
+      "source": "https://github.com/dfinity/motoko-base",
+      "maintainer": "DFINITY Foundation",
+      "use": "transitive via ic-certification"
+    },
+    {
+      "name": "base",
+      "version": "0.16.0",
+      "license": "Apache-2.0",
+      "source": "https://github.com/dfinity/motoko-base",
+      "maintainer": "DFINITY Foundation",
+      "use": "transitive via ic-certification and ecdsa"
+    },
+    {
+      "name": "bench",
+      "version": "2.0.1",
+      "license": "MIT",
+      "source": "https://github.com/caffeinelabs/mops-bench",
+      "maintainer": "Caffeine Labs",
+      "use": "dev-dependency, mops bench only"
+    },
+    {
+      "name": "buffer",
+      "version": "0.1.0",
+      "license": "MIT",
+      "source": "https://github.com/edjcase/motoko_buffer",
+      "maintainer": "edjCase",
+      "use": "transitive via ic-certification and ecdsa"
+    },
+    {
+      "name": "cbor",
+      "version": "4.1.0",
+      "license": "MIT",
+      "source": "https://github.com/edjcase/motoko_cbor",
+      "maintainer": "edjCase",
+      "use": "transitive via ic-certification"
+    },
+    {
+      "name": "core",
+      "version": "1.0.0",
+      "license": "Apache-2.0",
+      "source": "https://github.com/dfinity/motoko-core",
+      "maintainer": "DFINITY Foundation",
+      "use": "transitive via ic-certification and ecdsa's dependencies"
+    },
+    {
+      "name": "core",
+      "version": "2.5.0",
+      "license": "Apache-2.0",
+      "source": "https://github.com/caffeinelabs/motoko-core",
+      "maintainer": "Caffeine Labs",
+      "use": "transitive via ecdsa"
+    },
+    {
+      "name": "core",
+      "version": "2.6.0",
+      "license": "Apache-2.0",
+      "source": "https://github.com/caffeinelabs/motoko-core",
+      "maintainer": "Caffeine Labs",
+      "use": "direct, every app"
+    },
+    {
+      "name": "ecdsa",
+      "version": "8.0.1",
+      "license": "Apache-2.0",
+      "source": "https://github.com/edjCase/motoko_ecdsa",
+      "maintainer": "edjCase (fork of herumi/ecdsa-motoko)",
+      "use": "direct, app 05 receipts (#15)"
+    },
+    {
+      "name": "ic-certification",
+      "version": "1.1.0",
+      "license": "Apache-2.0",
+      "source": "https://github.com/nomeata/ic-certification",
+      "maintainer": "Joachim Breitner",
+      "use": "direct, app 01 certified queries (#6)"
+    },
+    {
+      "name": "sha2",
+      "version": "0.1.14",
+      "license": "Apache-2.0",
+      "source": "https://github.com/research-ag/sha2",
+      "maintainer": "research-ag",
+      "use": "transitive via ecdsa"
+    },
+    {
+      "name": "sha2",
+      "version": "0.1.6",
+      "license": "Apache-2.0",
+      "source": "https://github.com/research-ag/sha2",
+      "maintainer": "research-ag",
+      "use": "transitive via ic-certification"
+    },
+    {
+      "name": "sha2",
+      "version": "0.2.5",
+      "license": "Apache-2.0",
+      "source": "https://github.com/research-ag/sha2",
+      "maintainer": "research-ag",
+      "use": "direct, apps 01, 02, 03, 05"
+    },
+    {
+      "name": "xtended-iter",
+      "version": "1.1.0",
+      "license": "MIT",
+      "source": "https://github.com/edjCase/motoko_iter",
+      "maintainer": "edjCase",
+      "use": "transitive via ecdsa"
+    },
+    {
+      "name": "xtended-numbers",
+      "version": "2.1.0",
+      "license": "MIT",
+      "source": "https://github.com/edjCase/motoko_numbers",
+      "maintainer": "edjCase",
+      "use": "transitive via ic-certification"
+    },
+    {
+      "name": "xtended-numbers",
+      "version": "2.3.0",
+      "license": "MIT",
+      "source": "https://github.com/edjCase/motoko_numbers",
+      "maintainer": "edjCase",
+      "use": "transitive via ecdsa"
+    }
+  ],
+  "toolchain": [
+    {
+      "name": "moc",
+      "version": "1.11.1",
+      "license": "Apache-2.0",
+      "source": "https://github.com/caffeinelabs/motoko",
+      "pinnedIn": "apps/*/mops.toml [toolchain]"
+    },
+    {
+      "name": "pocket-ic",
+      "version": "14.0.0",
+      "license": "Apache-2.0",
+      "source": "https://github.com/dfinity/pocketic",
+      "pinnedIn": "tools/pocket-ic/setup.mjs, apps/*/mops.toml [toolchain]"
+    },
+    {
+      "name": "didc",
+      "version": "2024-07-29",
+      "license": "Apache-2.0",
+      "source": "https://github.com/dfinity/candid",
+      "pinnedIn": "tools/pocket-ic/setup.mjs, scripts/install_didc.sh"
+    },
+    {
+      "name": "ic-mops",
+      "version": "2.20.0",
+      "license": "MIT",
+      "source": "https://github.com/caffeinelabs/mops",
+      "pinnedIn": "scripts/bootstrap_toolchain.sh"
+    },
+    {
+      "name": "@icp-sdk/icp-cli",
+      "version": "1.2.0",
+      "license": "Apache-2.0",
+      "source": "https://github.com/dfinity/icp-cli",
+      "pinnedIn": "scripts/bootstrap_toolchain.sh"
+    },
+    {
+      "name": "@icp-sdk/ic-wasm",
+      "version": "0.11.1",
+      "license": "Apache-2.0",
+      "source": "https://github.com/dfinity/ic-wasm",
+      "pinnedIn": "scripts/bootstrap_toolchain.sh"
+    }
+  ],
+  "npm": [
+    {
+      "name": "@dfinity/pic",
+      "version": "0.22.0",
+      "license": "Apache-2.0",
+      "source": "https://github.com/dfinity/pic-js",
+      "pinnedIn": "tools/pocket-ic/package.json"
+    },
+    {
+      "name": "@dfinity/agent",
+      "version": "3.4.3",
+      "license": "Apache-2.0",
+      "source": "https://github.com/dfinity/agent-js",
+      "pinnedIn": "tools/pocket-ic/package.json"
+    },
+    {
+      "name": "@dfinity/candid",
+      "version": "3.4.3",
+      "license": "Apache-2.0",
+      "source": "https://github.com/dfinity/agent-js",
+      "pinnedIn": "tools/pocket-ic/package.json"
+    }
+  ],
+  "python": [
+    {
+      "name": "mkdocs",
+      "version": "1.6.1",
+      "license": "BSD-2-Clause",
+      "source": "https://github.com/mkdocs/mkdocs",
+      "pinnedIn": "requirements-docs.txt"
+    },
+    {
+      "name": "mkdocs-material",
+      "version": "9.7.7",
+      "license": "MIT",
+      "source": "https://github.com/squidfunk/mkdocs-material",
+      "pinnedIn": "requirements-docs.txt"
+    }
+  ],
+  "actions": [
+    {
+      "name": "actions/checkout",
+      "ref": "v7",
+      "license": "MIT"
+    },
+    {
+      "name": "actions/setup-node",
+      "ref": "v7",
+      "license": "MIT"
+    },
+    {
+      "name": "actions/setup-python",
+      "ref": "v6",
+      "license": "MIT"
+    },
+    {
+      "name": "actions/upload-pages-artifact",
+      "ref": "v4",
+      "license": "MIT"
+    },
+    {
+      "name": "actions/deploy-pages",
+      "ref": "v4",
+      "license": "MIT"
+    }
+  ]
+}

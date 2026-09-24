@@ -15,7 +15,15 @@ if (( node_major < 22 )); then
   exit 1
 fi
 
-packages=("@icp-sdk/icp-cli" "@icp-sdk/ic-wasm" "ic-mops")
+# Exact versions, recorded in supply-chain/dependencies.json and checked by
+# scripts/check_supply_chain.py. An unpinned install takes whatever npm serves
+# today, which makes a CI runner a different builder from yesterday's (#29).
+# Override deliberately, e.g. ICP_CLI_VERSION=1.3.0, when reviewing an update.
+packages=(
+  "@icp-sdk/icp-cli@${ICP_CLI_VERSION:-1.2.0}"
+  "@icp-sdk/ic-wasm@${IC_WASM_VERSION:-0.11.1}"
+  "ic-mops@${MOPS_CLI_VERSION:-2.20.0}"
+)
 global_prefix="$(npm prefix -g)"
 install_prefix=""
 
