@@ -4,10 +4,10 @@
   "artifact": {
     "name": "gradient.png",
     "mediaType": "image/png",
-    "sizeBytes": 463,
+    "sizeBytes": 852,
     "digest": {
       "algorithm": "sha256",
-      "hex": "bc9854f99dbe38c18f0ae3d55ad8fc7583c03b645fdc7be1ee68524a2888871e"
+      "hex": "24e1e1535ebee3ea4470cf3503cd5c02a936bf94d58f2cc9815e423fcbcc392e"
     },
     "storageUri": "https://hjosugi.github.io/motoko-lab/examples/gradient.png",
     "normalization": {

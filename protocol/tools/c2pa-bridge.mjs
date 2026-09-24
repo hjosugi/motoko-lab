@@ -457,9 +457,10 @@ export const EXAMPLE_DIR = resolve(here, '../examples/c2pa');
 export async function buildExample() {
   const { testPki, pem, spkiSha256 } = await import('./x509.mjs');
   const { pngChunk } = await import('./c2pa.mjs');
-  const { deflateSync } = await import('node:zlib');
-
-  // A 16x16 gradient, compressed at a fixed level so the bytes are stable.
+  // A 16x16 gradient in a *stored* (uncompressed) zlib stream. Compressed
+  // output is not portable: zlib and zlib-ng, which different Node releases
+  // link, produce different bytes for the same input at the same level, and
+  // the example has to be byte-identical wherever the suite runs.
   const width = 16;
   const ihdr = Buffer.alloc(13);
   ihdr.writeUInt32BE(width, 0);
@@ -478,7 +479,7 @@ export async function buildExample() {
   const png = Buffer.concat([
     Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
     pngChunk('IHDR', ihdr),
-    pngChunk('IDAT', deflateSync(raw, { level: 9 })),
+    pngChunk('IDAT', storedZlib(raw)),
     pngChunk('IEND', Buffer.alloc(0)),
   ]);
 
@@ -586,6 +587,21 @@ export async function buildExample() {
     canisterId,
     manifestText,
   };
+}
+
+/// RFC 1950 zlib around one RFC 1951 stored block: deterministic by definition.
+function storedZlib(raw) {
+  if (raw.length > 0xffff) throw new Error('a single stored block holds at most 65535 bytes');
+  let a = 1;
+  let b = 0;
+  for (const byte of raw) {
+    a = (a + byte) % 65521;
+    b = (b + a) % 65521;
+  }
+  const header = Buffer.from([0x78, 0x01, 0x01, raw.length & 0xff, raw.length >> 8, ~raw.length & 0xff, (~raw.length >> 8) & 0xff]);
+  const adler = Buffer.alloc(4);
+  adler.writeUInt32BE(((b << 16) | a) >>> 0, 0);
+  return Buffer.concat([header, raw, adler]);
 }
 
 // ----------------------------------------------------------------------- CLI
