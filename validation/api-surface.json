@@ -4,12 +4,27 @@
   "limitation": "This does not replace compiler-generated Candid or compatibility checking.",
   "status": "pass",
   "application_count": 6,
-  "method_count": 79,
+  "method_count": 125,
   "applications": [
     {
       "app": "01_creator_proof_registry",
       "motoko_methods": [
         {
+          "name": "addDisputeAuthority",
+          "mode": "update",
+          "argument_count": 3
+        },
+        {
+          "name": "addDisputeEvidence",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "appealDispute",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
           "name": "attribution",
           "mode": "query",
           "argument_count": 1
@@ -60,6 +75,31 @@
           "argument_count": 2
         },
         {
+          "name": "determineDispute",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "disputeEvents",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "disputeSummary",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "exportDispute",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "fileDispute",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
           "name": "getByArtifactHash",
           "mode": "query",
           "argument_count": 1
@@ -85,6 +125,11 @@
           "argument_count": 1
         },
         {
+          "name": "getDispute",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
           "name": "getRecord",
           "mode": "query",
           "argument_count": 1
@@ -100,6 +145,16 @@
           "argument_count": 1
         },
         {
+          "name": "listDisputeAuthorities",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
+          "name": "listDisputes",
+          "mode": "query",
+          "argument_count": 3
+        },
+        {
           "name": "listRecords",
           "mode": "query",
           "argument_count": 2
@@ -108,6 +163,16 @@
           "name": "registerCreator",
           "mode": "update",
           "argument_count": 0
+        },
+        {
+          "name": "respondToDispute",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "retireDisputeAuthority",
+          "mode": "update",
+          "argument_count": 1
         },
         {
           "name": "reveal",
@@ -133,10 +198,30 @@
           "name": "stats",
           "mode": "query",
           "argument_count": 0
+        },
+        {
+          "name": "withdrawDispute",
+          "mode": "update",
+          "argument_count": 2
         }
       ],
       "candid_methods": [
         {
+          "name": "addDisputeAuthority",
+          "mode": "update",
+          "argument_count": 3
+        },
+        {
+          "name": "addDisputeEvidence",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "appealDispute",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
           "name": "attribution",
           "mode": "query",
           "argument_count": 1
@@ -187,6 +272,31 @@
           "argument_count": 2
         },
         {
+          "name": "determineDispute",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "disputeEvents",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "disputeSummary",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "exportDispute",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "fileDispute",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
           "name": "getByArtifactHash",
           "mode": "query",
           "argument_count": 1
@@ -212,6 +322,11 @@
           "argument_count": 1
         },
         {
+          "name": "getDispute",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
           "name": "getRecord",
           "mode": "query",
           "argument_count": 1
@@ -227,6 +342,16 @@
           "argument_count": 1
         },
         {
+          "name": "listDisputeAuthorities",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
+          "name": "listDisputes",
+          "mode": "query",
+          "argument_count": 3
+        },
+        {
           "name": "listRecords",
           "mode": "query",
           "argument_count": 2
@@ -235,6 +360,16 @@
           "name": "registerCreator",
           "mode": "update",
           "argument_count": 0
+        },
+        {
+          "name": "respondToDispute",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "retireDisputeAuthority",
+          "mode": "update",
+          "argument_count": 1
         },
         {
           "name": "reveal",
@@ -260,6 +395,11 @@
           "name": "stats",
           "mode": "query",
           "argument_count": 0
+        },
+        {
+          "name": "withdrawDispute",
+          "mode": "update",
+          "argument_count": 2
         }
       ],
       "missing_in_candid": [],
@@ -292,6 +432,11 @@
           "argument_count": 2
         },
         {
+          "name": "merkleSpec",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
           "name": "revoke",
           "mode": "update",
           "argument_count": 2
@@ -300,6 +445,16 @@
           "name": "stats",
           "mode": "query",
           "argument_count": 0
+        },
+        {
+          "name": "verifyMultiproof",
+          "mode": "query",
+          "argument_count": 2
+        },
+        {
+          "name": "verifyProof",
+          "mode": "query",
+          "argument_count": 2
         }
       ],
       "candid_methods": [
@@ -324,6 +479,11 @@
           "argument_count": 2
         },
         {
+          "name": "merkleSpec",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
           "name": "revoke",
           "mode": "update",
           "argument_count": 2
@@ -332,6 +492,16 @@
           "name": "stats",
           "mode": "query",
           "argument_count": 0
+        },
+        {
+          "name": "verifyMultiproof",
+          "mode": "query",
+          "argument_count": 2
+        },
+        {
+          "name": "verifyProof",
+          "mode": "query",
+          "argument_count": 2
         }
       ],
       "missing_in_candid": [],
@@ -349,12 +519,32 @@
           "argument_count": 1
         },
         {
+          "name": "confirmPayment",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
           "name": "createListing",
           "mode": "update",
           "argument_count": 1
         },
         {
           "name": "getGrant",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getGrantPayment",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getIntent",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getLedger",
           "mode": "query",
           "argument_count": 1
         },
@@ -369,9 +559,24 @@
           "argument_count": 1
         },
         {
+          "name": "getPaymentMode",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
           "name": "listListings",
           "mode": "query",
           "argument_count": 2
+        },
+        {
+          "name": "openPurchase",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "registerLedger",
+          "mode": "update",
+          "argument_count": 1
         },
         {
           "name": "rejectPurchase",
@@ -401,12 +606,32 @@
           "argument_count": 1
         },
         {
+          "name": "confirmPayment",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
           "name": "createListing",
           "mode": "update",
           "argument_count": 1
         },
         {
           "name": "getGrant",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getGrantPayment",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getIntent",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getLedger",
           "mode": "query",
           "argument_count": 1
         },
@@ -421,9 +646,24 @@
           "argument_count": 1
         },
         {
+          "name": "getPaymentMode",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
           "name": "listListings",
           "mode": "query",
           "argument_count": 2
+        },
+        {
+          "name": "openPurchase",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "registerLedger",
+          "mode": "update",
+          "argument_count": 1
         },
         {
           "name": "rejectPurchase",
@@ -471,6 +711,11 @@
           "argument_count": 1
         },
         {
+          "name": "fundEscrow",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
           "name": "getAward",
           "mode": "query",
           "argument_count": 1
@@ -481,6 +726,21 @@
           "argument_count": 1
         },
         {
+          "name": "getEscrow",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getLedger",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getPlatform",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
           "name": "getSubmission",
           "mode": "query",
           "argument_count": 1
@@ -489,6 +749,21 @@
           "name": "listBounties",
           "mode": "query",
           "argument_count": 2
+        },
+        {
+          "name": "registerLedger",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "setPlatform",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "settleEscrow",
+          "mode": "update",
+          "argument_count": 1
         },
         {
           "name": "stats",
@@ -518,6 +793,11 @@
           "argument_count": 1
         },
         {
+          "name": "fundEscrow",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
           "name": "getAward",
           "mode": "query",
           "argument_count": 1
@@ -528,6 +808,21 @@
           "argument_count": 1
         },
         {
+          "name": "getEscrow",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getLedger",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getPlatform",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
           "name": "getSubmission",
           "mode": "query",
           "argument_count": 1
@@ -536,6 +831,21 @@
           "name": "listBounties",
           "mode": "query",
           "argument_count": 2
+        },
+        {
+          "name": "registerLedger",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "setPlatform",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "settleEscrow",
+          "mode": "update",
+          "argument_count": 1
         },
         {
           "name": "stats",
@@ -558,12 +868,42 @@
       "app": "05_usage_metered_saas",
       "motoko_methods": [
         {
+          "name": "addReporterKey",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "adjustInvoice",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "closePeriod",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
           "name": "createTenant",
           "mode": "update",
           "argument_count": 1
         },
         {
+          "name": "exportUsageAudit",
+          "mode": "query",
+          "argument_count": 2
+        },
+        {
           "name": "getApiKey",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getInvoice",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getReporter",
           "mode": "query",
           "argument_count": 1
         },
@@ -578,9 +918,34 @@
           "argument_count": 1
         },
         {
+          "name": "invoiceJson",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "listInvoices",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
           "name": "listUsageEvents",
           "mode": "query",
           "argument_count": 2
+        },
+        {
+          "name": "markReporterKeyCompromised",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "payInvoice",
+          "mode": "update",
+          "argument_count": 3
+        },
+        {
+          "name": "receiptSpec",
+          "mode": "query",
+          "argument_count": 0
         },
         {
           "name": "recordUsage",
@@ -593,12 +958,27 @@
           "argument_count": 3
         },
         {
+          "name": "registerBillingLedger",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "retireReporterKey",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
           "name": "revokeApiKeyHash",
           "mode": "update",
           "argument_count": 1
         },
         {
           "name": "setReporter",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "setReporterPolicy",
           "mode": "update",
           "argument_count": 2
         },
@@ -616,16 +996,51 @@
           "name": "stats",
           "mode": "query",
           "argument_count": 0
+        },
+        {
+          "name": "submitReceipts",
+          "mode": "update",
+          "argument_count": 1
         }
       ],
       "candid_methods": [
         {
+          "name": "addReporterKey",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "adjustInvoice",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "closePeriod",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
           "name": "createTenant",
           "mode": "update",
           "argument_count": 1
         },
         {
+          "name": "exportUsageAudit",
+          "mode": "query",
+          "argument_count": 2
+        },
+        {
           "name": "getApiKey",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getInvoice",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "getReporter",
           "mode": "query",
           "argument_count": 1
         },
@@ -640,9 +1055,34 @@
           "argument_count": 1
         },
         {
+          "name": "invoiceJson",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "listInvoices",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
           "name": "listUsageEvents",
           "mode": "query",
           "argument_count": 2
+        },
+        {
+          "name": "markReporterKeyCompromised",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "payInvoice",
+          "mode": "update",
+          "argument_count": 3
+        },
+        {
+          "name": "receiptSpec",
+          "mode": "query",
+          "argument_count": 0
         },
         {
           "name": "recordUsage",
@@ -655,12 +1095,27 @@
           "argument_count": 3
         },
         {
+          "name": "registerBillingLedger",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "retireReporterKey",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
           "name": "revokeApiKeyHash",
           "mode": "update",
           "argument_count": 1
         },
         {
           "name": "setReporter",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "setReporterPolicy",
           "mode": "update",
           "argument_count": 2
         },
@@ -678,6 +1133,11 @@
           "name": "stats",
           "mode": "query",
           "argument_count": 0
+        },
+        {
+          "name": "submitReceipts",
+          "mode": "update",
+          "argument_count": 1
         }
       ],
       "missing_in_candid": [],

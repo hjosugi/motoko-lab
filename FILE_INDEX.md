@@ -3,7 +3,7 @@
 このファイルはpathだけを列挙するため、各ファイルのsize/hashが変わってもindex構造は安定します。
 完全性確認には`MANIFEST.sha256`を使用してください。
 
-Indexed files: **343**
+Indexed files: **433**
 
 ## Root
 
@@ -51,6 +51,8 @@ Indexed files: **343**
 - `apps/01_creator_proof_registry/backend/candid/backend.did`
 - `apps/01_creator_proof_registry/backend/canister.yaml`
 - `apps/01_creator_proof_registry/backend/src/Commitment.mo`
+- `apps/01_creator_proof_registry/backend/src/Dispute.mo`
+- `apps/01_creator_proof_registry/backend/src/DisputeLog.mo`
 - `apps/01_creator_proof_registry/backend/src/Identity.mo`
 - `apps/01_creator_proof_registry/backend/src/RecordDigest.mo`
 - `apps/01_creator_proof_registry/backend/src/Validation.mo`
@@ -59,6 +61,7 @@ Indexed files: **343**
 - `apps/01_creator_proof_registry/bench/commitment.bench.mo`
 - `apps/01_creator_proof_registry/docs/CERTIFIED_QUERIES.md`
 - `apps/01_creator_proof_registry/docs/COMMITMENT_V1.md`
+- `apps/01_creator_proof_registry/docs/DISPUTES.md`
 - `apps/01_creator_proof_registry/docs/IDENTITY.md`
 - `apps/01_creator_proof_registry/docs/THREAT_MODEL.md`
 - `apps/01_creator_proof_registry/docs/UPGRADE_PLAN.md`
@@ -66,9 +69,11 @@ Indexed files: **343**
 - `apps/01_creator_proof_registry/mops.lock`
 - `apps/01_creator_proof_registry/mops.toml`
 - `apps/01_creator_proof_registry/test/Commitment.test.mo`
+- `apps/01_creator_proof_registry/test/Dispute.test.mo`
 - `apps/01_creator_proof_registry/test/Identity.test.mo`
 - `apps/01_creator_proof_registry/test/RecordDigest.test.mo`
 - `apps/01_creator_proof_registry/test/Validation.test.mo`
+- `apps/01_creator_proof_registry/test/dispute-log.mjs`
 - `apps/01_creator_proof_registry/test/record-digest.mjs`
 - `apps/01_creator_proof_registry/test/replica.test.mjs`
 - `apps/02_merkle_anchor/.gitignore`
@@ -76,13 +81,17 @@ Indexed files: **343**
 - `apps/02_merkle_anchor/README.md`
 - `apps/02_merkle_anchor/backend/candid/backend.did`
 - `apps/02_merkle_anchor/backend/canister.yaml`
+- `apps/02_merkle_anchor/backend/src/Merkle.mo`
 - `apps/02_merkle_anchor/backend/src/Validation.mo`
 - `apps/02_merkle_anchor/backend/src/main.mo`
+- `apps/02_merkle_anchor/bench/merkle.bench.mo`
 - `apps/02_merkle_anchor/docs/THREAT_MODEL.md`
 - `apps/02_merkle_anchor/docs/UPGRADE_PLAN.md`
 - `apps/02_merkle_anchor/icp.yaml`
 - `apps/02_merkle_anchor/mops.lock`
 - `apps/02_merkle_anchor/mops.toml`
+- `apps/02_merkle_anchor/test/Merkle.test.mo`
+- `apps/02_merkle_anchor/test/MerkleVectors.mo`
 - `apps/02_merkle_anchor/test/Validation.test.mo`
 - `apps/02_merkle_anchor/test/replica.test.mjs`
 - `apps/03_license_marketplace/.gitignore`
@@ -90,42 +99,64 @@ Indexed files: **343**
 - `apps/03_license_marketplace/README.md`
 - `apps/03_license_marketplace/backend/candid/backend.did`
 - `apps/03_license_marketplace/backend/canister.yaml`
+- `apps/03_license_marketplace/backend/src/Icrc3.mo`
+- `apps/03_license_marketplace/backend/src/Payment.mo`
 - `apps/03_license_marketplace/backend/src/Validation.mo`
 - `apps/03_license_marketplace/backend/src/main.mo`
+- `apps/03_license_marketplace/docs/PAYMENTS.md`
 - `apps/03_license_marketplace/docs/THREAT_MODEL.md`
 - `apps/03_license_marketplace/docs/UPGRADE_PLAN.md`
 - `apps/03_license_marketplace/icp.yaml`
 - `apps/03_license_marketplace/mops.lock`
 - `apps/03_license_marketplace/mops.toml`
+- `apps/03_license_marketplace/test/Payment.test.mo`
 - `apps/03_license_marketplace/test/Validation.test.mo`
+- `apps/03_license_marketplace/test/fixtures/MockLedger.mo`
+- `apps/03_license_marketplace/test/fixtures/mock_ledger.did`
 - `apps/03_license_marketplace/test/replica.test.mjs`
 - `apps/04_bounty_board/.gitignore`
 - `apps/04_bounty_board/Makefile`
 - `apps/04_bounty_board/README.md`
 - `apps/04_bounty_board/backend/candid/backend.did`
 - `apps/04_bounty_board/backend/canister.yaml`
+- `apps/04_bounty_board/backend/src/Escrow.mo`
+- `apps/04_bounty_board/backend/src/Ledger.mo`
 - `apps/04_bounty_board/backend/src/Validation.mo`
 - `apps/04_bounty_board/backend/src/main.mo`
+- `apps/04_bounty_board/docs/ESCROW.md`
 - `apps/04_bounty_board/docs/THREAT_MODEL.md`
 - `apps/04_bounty_board/docs/UPGRADE_PLAN.md`
 - `apps/04_bounty_board/icp.yaml`
 - `apps/04_bounty_board/mops.lock`
 - `apps/04_bounty_board/mops.toml`
+- `apps/04_bounty_board/test/Escrow.test.mo`
 - `apps/04_bounty_board/test/Validation.test.mo`
+- `apps/04_bounty_board/test/fixtures/MockLedger.mo`
+- `apps/04_bounty_board/test/fixtures/mock_ledger.did`
 - `apps/04_bounty_board/test/replica.test.mjs`
 - `apps/05_usage_metered_saas/.gitignore`
 - `apps/05_usage_metered_saas/Makefile`
 - `apps/05_usage_metered_saas/README.md`
 - `apps/05_usage_metered_saas/backend/candid/backend.did`
 - `apps/05_usage_metered_saas/backend/canister.yaml`
+- `apps/05_usage_metered_saas/backend/src/Billing.mo`
+- `apps/05_usage_metered_saas/backend/src/Icrc3.mo`
+- `apps/05_usage_metered_saas/backend/src/Receipt.mo`
 - `apps/05_usage_metered_saas/backend/src/Validation.mo`
 - `apps/05_usage_metered_saas/backend/src/main.mo`
+- `apps/05_usage_metered_saas/docs/BILLING.md`
+- `apps/05_usage_metered_saas/docs/RECEIPTS.md`
 - `apps/05_usage_metered_saas/docs/THREAT_MODEL.md`
 - `apps/05_usage_metered_saas/docs/UPGRADE_PLAN.md`
 - `apps/05_usage_metered_saas/icp.yaml`
 - `apps/05_usage_metered_saas/mops.lock`
 - `apps/05_usage_metered_saas/mops.toml`
+- `apps/05_usage_metered_saas/test/Billing.test.mo`
+- `apps/05_usage_metered_saas/test/Receipt.test.mo`
 - `apps/05_usage_metered_saas/test/Validation.test.mo`
+- `apps/05_usage_metered_saas/test/fixtures/MockLedger.mo`
+- `apps/05_usage_metered_saas/test/fixtures/mock_ledger.did`
+- `apps/05_usage_metered_saas/test/receipt.mjs`
 - `apps/05_usage_metered_saas/test/replica.test.mjs`
 - `apps/06_distributed_llm/.gitignore`
 - `apps/06_distributed_llm/Makefile`
@@ -223,6 +254,7 @@ Indexed files: **343**
 - `docs/23_DATA_MODEL_AND_API.md`
 - `docs/24_UPGRADE_MIGRATION_STRATEGY.md`
 - `docs/25_COST_AND_CAPACITY_MODEL.md`
+- `docs/26_GOVERNANCE_DECISION_RECORD.md`
 
 ## `github/`
 
@@ -297,6 +329,18 @@ Indexed files: **343**
 - `labs/09_property_testing.md`
 - `labs/10_compiler_trace.md`
 - `labs/README.md`
+- `labs/migration-chain/README.md`
+- `labs/migration-chain/fixtures/trapping-migration/20261001_000000_LicenseLazy.mo`
+- `labs/migration-chain/migrations/20260901_000000_Init.mo`
+- `labs/migration-chain/migrations/20260915_000000_RevocationTime.mo`
+- `labs/migration-chain/migrations/20261001_000000_LicenseLazy.mo`
+- `labs/migration-chain/mops.lock`
+- `labs/migration-chain/mops.toml`
+- `labs/migration-chain/src/Fixture.mo`
+- `labs/migration-chain/src/V1.mo`
+- `labs/migration-chain/src/V2.mo`
+- `labs/migration-chain/src/V3.mo`
+- `labs/migration-chain/test/migration-chain.test.mjs`
 
 ## `notes/`
 
@@ -304,16 +348,38 @@ Indexed files: **343**
 
 ## `protocol/`
 
+- `protocol/AI_ATTESTATION.md`
+- `protocol/C2PA_BRIDGE.md`
 - `protocol/CANONICALIZATION.md`
 - `protocol/COMMITMENT_V1.md`
 - `protocol/INTEROPERABILITY.md`
+- `protocol/MERKLE_V1.md`
 - `protocol/README.md`
+- `protocol/VERIFIABLE_CREDENTIALS.md`
 - `protocol/artifacts/ai-assisted-note.txt`
 - `protocol/artifacts/human-note.txt`
 - `protocol/examples/ai-assisted.json`
+- `protocol/examples/ai-attestation/manifest.json`
+- `protocol/examples/ai-attestation/policy.json`
+- `protocol/examples/ai-attestation/provider-attestation.json`
+- `protocol/examples/ai-attestation/sealed-prompt-disclosure.json`
+- `protocol/examples/ai-attestation/studio-review.json`
+- `protocol/examples/c2pa/gradient.c2pa.png`
+- `protocol/examples/c2pa/gradient.png`
+- `protocol/examples/c2pa/manifest.json`
+- `protocol/examples/c2pa/record-bundle.json`
+- `protocol/examples/c2pa/test-root-ca.pem`
 - `protocol/examples/human-only.json`
+- `protocol/examples/vc/delegation.json`
+- `protocol/examples/vc/membership.json`
+- `protocol/examples/vc/policy.json`
+- `protocol/examples/vc/review.json`
+- `protocol/examples/vc/status-list.json`
 - `protocol/package.json`
+- `protocol/schemas/ai-attestation.schema.json`
+- `protocol/schemas/c2pa-verification-report.schema.json`
 - `protocol/schemas/provenance-manifest.schema.json`
+- `protocol/schemas/vc-verification-report.schema.json`
 - `protocol/schemas/verification-report.schema.json`
 - `protocol/test-vectors/commitment/vectors.json`
 - `protocol/test-vectors/jcs/edge-cases.json`
@@ -329,17 +395,37 @@ Indexed files: **343**
 - `protocol/test-vectors/jcs/output/unicode.json`
 - `protocol/test-vectors/jcs/output/values.json`
 - `protocol/test-vectors/jcs/output/weird.json`
+- `protocol/test-vectors/merkle/rfc9162-inclusion.json`
+- `protocol/test-vectors/merkle/vectors.json`
 - `protocol/test-vectors/test-vectors.json`
+- `protocol/test-vectors/vc/eddsa-jcs-2022.json`
+- `protocol/tools/ai-attestation.mjs`
+- `protocol/tools/ai-attestation.test.mjs`
+- `protocol/tools/c2pa-bridge.mjs`
+- `protocol/tools/c2pa-crosscheck.mjs`
+- `protocol/tools/c2pa.mjs`
+- `protocol/tools/c2pa.test.mjs`
+- `protocol/tools/cbor.mjs`
 - `protocol/tools/commitment.mjs`
+- `protocol/tools/cose.mjs`
 - `protocol/tools/crosscheck.mjs`
 - `protocol/tools/crosscheck/commitment-runner.ts`
 - `protocol/tools/crosscheck/commitment.rs`
 - `protocol/tools/crosscheck/commitment.ts`
 - `protocol/tools/crosscheck/jcs.rs`
 - `protocol/tools/jcs.mjs`
+- `protocol/tools/jumbf.mjs`
+- `protocol/tools/merkle-vectors.mjs`
+- `protocol/tools/merkle.mjs`
+- `protocol/tools/merkle.test.mjs`
+- `protocol/tools/multikey.mjs`
 - `protocol/tools/principal.mjs`
 - `protocol/tools/provenance-cli.mjs`
 - `protocol/tools/provenance-cli.test.mjs`
+- `protocol/tools/vc-example.mjs`
+- `protocol/tools/vc.mjs`
+- `protocol/tools/vc.test.mjs`
+- `protocol/tools/x509.mjs`
 
 ## `scripts/`
 
@@ -348,6 +434,7 @@ Indexed files: **343**
 - `scripts/check_all_apps.sh`
 - `scripts/check_api_surface.py`
 - `scripts/check_candid_compat.py`
+- `scripts/check_privileged_actions.py`
 - `scripts/create_issues.sh`
 - `scripts/create_labels.sh`
 - `scripts/deploy_app.sh`
@@ -364,11 +451,14 @@ Indexed files: **343**
 
 ## `tools/`
 
+- `tools/pocket-ic/c2pa-bridge.test.mjs`
 - `tools/pocket-ic/certificate.mjs`
+- `tools/pocket-ic/certified-record.mjs`
 - `tools/pocket-ic/harness.mjs`
 - `tools/pocket-ic/package.json`
 - `tools/pocket-ic/run.mjs`
 - `tools/pocket-ic/setup.mjs`
+- `tools/pocket-ic/vc.test.mjs`
 
 ## `validation/`
 

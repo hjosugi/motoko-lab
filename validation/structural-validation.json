@@ -1,39 +1,43 @@
 {
-  "root": "/var/tmp/hsugi/tmp/claude-1000/-home-hsugi/3c6e4195-a761-4c7e-a3be-93825d3f2204/scratchpad/repos/motoko-lab",
+  "root": "/var/tmp/hsugi/tmp/claude-1000/-mnt-data-repos-github-com/06a7429a-4bdd-4854-8a27-c4f2e18310f5/scratchpad/motoko-a/rel/motoko-lab",
   "status": "pass",
   "stats": {
-    "file_count": 343,
-    "directory_count": 79,
-    "total_bytes": 1206437,
-    "total_lines": 28158,
+    "file_count": 433,
+    "directory_count": 94,
+    "total_bytes": 2560562,
+    "total_lines": 54104,
     "application_count": 6,
-    "numbered_doc_count": 26,
+    "numbered_doc_count": 27,
     "issue_count": 45,
     "issue_label_count": 38,
     "milestone_count": 6,
-    "public_api_method_count": 79
+    "public_api_method_count": 125
   },
   "passed": {
     "app_required_files": 72,
-    "candid_structure": 18,
+    "candid_structure": 21,
     "issue_front_matter": 45,
-    "json_parse": 33,
+    "json_parse": 52,
     "metadata_consistency": 1,
-    "motoko_candid_api_surface": 79,
-    "motoko_delimiters": 51,
-    "motoko_imports": 93,
+    "motoko_candid_api_surface": 125,
+    "motoko_delimiters": 80,
+    "motoko_imports": 125,
     "protocol_required_files": 10,
-    "relative_links": 40,
-    "script_shebang": 18,
-    "toml_parse": 6,
-    "utf8_lf": 330,
+    "protocol_schema_examples": 4,
+    "relative_links": 48,
+    "script_shebang": 19,
+    "toml_parse": 7,
+    "utf8_lf": 417,
     "yaml_parse": 26
   },
   "warnings": [
     "apps/01_creator_proof_registry/mops.lock does not end with LF",
+    "apps/02_merkle_anchor/mops.lock does not end with LF",
+    "apps/03_license_marketplace/mops.lock does not end with LF",
+    "apps/05_usage_metered_saas/mops.lock does not end with LF",
     "apps/06_distributed_llm/llm_shim/src/main.mo has no Map-backed state; verify persistence design",
     "apps/06_distributed_llm/worker/src/main.mo has no Map-backed state; verify persistence design",
-    "jsonschema is unavailable; protocol example validation skipped"
+    "labs/migration-chain/mops.lock does not end with LF"
   ],
   "errors": []
 }

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v2026.09.25
 
 - Added the governance and SNS-readiness decision record (#40), `docs/26_GOVERNANCE_DECISION_RECORD.md`: a single controller only while nothing of value depends on the canisters; before mainnet, k-of-n threshold controllers, announced module hashes checked against the reproducible build, a public log of every privileged call, and parameter changes behind a delay; emergency powers that only withhold service, need a smaller threshold, and expire in 72 hours unless ratified; and SNS go/no-go criteria that make "no" the default until the audit, reproducible releases, legal and privacy reviews and a year of operations exist.
 - The record separates what may be governed from what never may: rewriting, deleting or re-attributing a record, dispute event, receipt, invoice or payment is enforced by the absence of a method, not by a policy.
@@ -75,6 +75,7 @@
 - Fees are explicit and their changes are handled: the deposit carries one ledger fee per payout, a fee change before funding returns `#feeChanged` with the new approval, and after funding the winner is paid in full while the platform's share absorbs the difference. A `BadFee` also updates the registered fee, so later bounties are priced at what the ledger actually charges.
 - The accounting invariant — winner + platform + fees paid + dust = deposit, dust ≤ one fee — is checked for 576 combinations of reward, rate, funding fee and payout fee in the interpreter, and against the ledger in the replica suite, where every escrow's subaccount balance equals what its op log says after every scenario. `test/fixtures/MockLedger.mo` implements ICRC-2 the way the reference ledger does and can execute a transfer and drop its reply. App 04's suite goes from 39 to 123 checks, covering the test plan: allowance expiry, fee changes, insufficient funds, and duplicate callbacks on both the pull and the payout.
 - Candid is additive, `award` and `cancelBounty` keep their signatures, and stable data gains side tables only. Bounties on unregistered ledgers, and every bounty posted before this, behave exactly as before.
+- Regenerated `FILE_INDEX.md`, `MANIFEST.sha256` and the validation reports from a clean checkout: 433 entries, 125 public canister methods. The structural validation ran with `jsonschema` installed, so the provenance, C2PA and AI-attestation example manifests were validated against their schemas rather than skipped.
 
 ## v2026.09.22
 
