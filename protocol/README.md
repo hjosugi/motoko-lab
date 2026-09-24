@@ -9,9 +9,15 @@
 - `test-vectors/test-vectors.json`: deterministic hash/commitment values
 - `test-vectors/jcs/`: RFC 8785 conformance vectors (公式vector + edge/reject vector)
 - `test-vectors/commitment/vectors.json`: commitment v1 conformance vectors (accept 17 / reject 22)
+- `test-vectors/merkle/vectors.json`: `icp-merkle:v1` conformance vectors (tree 15 / multiproof 7 / reject 21)
+- `test-vectors/merkle/rfc9162-inclusion.json`: transparency-dev/merkleのRFC 9162 inclusion probe 98件 (Apache-2.0)
 - `tools/jcs.mjs`: RFC 8785 canonicalization
 - `tools/commitment.mjs`: commitment v1 layout
 - `tools/principal.mjs`: principal textual formのdecode/validate
+- `tools/merkle.mjs`: `icp-merkle:v1` Merkle treeのbuilder / prover / verifier (single proof + multiproof)
+- `tools/merkle-vectors.mjs`: Merkle vectorと`apps/02_merkle_anchor/test/MerkleVectors.mo`の生成・鮮度検査
+- `tools/merkle.test.mjs`: Merkle test (offline checksで実行)
+- `MERKLE_V1.md`: Merkle tree rulesの凍結仕様
 - `tools/crosscheck/`: Rust・TypeScriptの独立実装 (`crosscheck.mjs`から実行)
 - `COMMITMENT_V1.md`: commitment layoutの凍結仕様
 - `tools/provenance-cli.mjs`: dependency-free CLI
@@ -43,6 +49,10 @@ node protocol/tools/c2pa-bridge.mjs verify protocol/examples/c2pa/gradient.c2pa.
   --bundle protocol/examples/c2pa/record-bundle.json \
   --trust-anchors protocol/examples/c2pa/test-root-ca.pem \
   --manifest protocol/examples/c2pa/manifest.json
+node protocol/tools/provenance-cli.mjs merkle-root leaves.txt
+node protocol/tools/provenance-cli.mjs merkle-prove leaves.txt --index 2 > proof.json
+node protocol/tools/provenance-cli.mjs merkle-verify proof.json --root <hex> --leaf-count 7
+node protocol/tools/merkle.test.mjs
 ```
 
 ## Canonicalization

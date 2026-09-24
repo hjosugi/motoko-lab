@@ -11,6 +11,7 @@ check-apps:
 
 protocol-test:
 	node protocol/tools/provenance-cli.test.mjs
+	node protocol/tools/merkle.test.mjs
 
 issues-dry-run:
 	./scripts/create_issues.sh

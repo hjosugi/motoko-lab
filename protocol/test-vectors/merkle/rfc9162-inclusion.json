@@ -1,0 +1,1259 @@
+{
+  "description": "RFC 6962/9162 inclusion-proof probes from transparency-dev/merkle, the Go implementation used by Certificate Transparency and the transparency-dev ecosystem. Each probe is one file under testdata/inclusion/ upstream, consolidated here with base64 converted to hex and nothing else changed. `wantErr` true means a conforming verifier must refuse the probe.",
+  "source": {
+    "repository": "https://github.com/transparency-dev/merkle",
+    "commit": "fbbcd741c3d1c69d8498487baa8edc9e5824847c",
+    "path": "testdata/inclusion",
+    "license": "Apache-2.0"
+  },
+  "probes": [
+    {
+      "file": "0/empty-root.json",
+      "desc": "empty root",
+      "leafIdx": 0,
+      "treeSize": 1,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [],
+      "rootHex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "wantErr": true
+    },
+    {
+      "file": "0/happy-path.json",
+      "desc": "happy path",
+      "leafIdx": 0,
+      "treeSize": 1,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [],
+      "rootHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "wantErr": false
+    },
+    {
+      "file": "0/leafIdx-XOR-@2.json",
+      "desc": "leafIdx XOR @2",
+      "leafIdx": 2,
+      "treeSize": 1,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [],
+      "rootHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "wantErr": true
+    },
+    {
+      "file": "0/leafIdx-plus-@1.json",
+      "desc": "leafIdx plus @1",
+      "leafIdx": 1,
+      "treeSize": 1,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [],
+      "rootHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "wantErr": true
+    },
+    {
+      "file": "0/leafIdx-sub-@1.json",
+      "desc": "leafIdx sub @1",
+      "leafIdx": 18446744073709551615,
+      "treeSize": 1,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [],
+      "rootHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "wantErr": true
+    },
+    {
+      "file": "0/preceding-garbage.json",
+      "desc": "preceding garbage",
+      "leafIdx": 0,
+      "treeSize": 1,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        ""
+      ],
+      "rootHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "wantErr": true
+    },
+    {
+      "file": "0/preceding-root.json",
+      "desc": "preceding root",
+      "leafIdx": 0,
+      "treeSize": 1,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+      ],
+      "rootHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "wantErr": true
+    },
+    {
+      "file": "0/random-root.json",
+      "desc": "random root",
+      "leafIdx": 0,
+      "treeSize": 1,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [],
+      "rootHex": "abacaba000000000000000000000000000000000000000000060061e00123456",
+      "wantErr": true
+    },
+    {
+      "file": "0/trailing-garbage.json",
+      "desc": "trailing garbage",
+      "leafIdx": 0,
+      "treeSize": 1,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        ""
+      ],
+      "rootHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "wantErr": true
+    },
+    {
+      "file": "0/trailing-root.json",
+      "desc": "trailing root",
+      "leafIdx": 0,
+      "treeSize": 1,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+      ],
+      "rootHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "wantErr": true
+    },
+    {
+      "file": "0/treeSize-div-@2.json",
+      "desc": "treeSize div @2",
+      "leafIdx": 0,
+      "treeSize": 0,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [],
+      "rootHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "wantErr": true
+    },
+    {
+      "file": "0/treeSize-mul-@2.json",
+      "desc": "treeSize mul @2",
+      "leafIdx": 0,
+      "treeSize": 2,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [],
+      "rootHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "wantErr": true
+    },
+    {
+      "file": "0/wrong-leaf.json",
+      "desc": "wrong leaf",
+      "leafIdx": 0,
+      "treeSize": 1,
+      "leafHashHex": "57726f6e674c656166",
+      "proofHex": [],
+      "rootHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "wantErr": true
+    },
+    {
+      "file": "1/empty-root.json",
+      "desc": "empty root",
+      "leafIdx": 0,
+      "treeSize": 8,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+      ],
+      "rootHex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "wantErr": true
+    },
+    {
+      "file": "1/happy-path.json",
+      "desc": "happy path",
+      "leafIdx": 0,
+      "treeSize": 8,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": false
+    },
+    {
+      "file": "1/inserted-component.json",
+      "desc": "inserted component",
+      "leafIdx": 0,
+      "treeSize": 8,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "abacaba000000000000000000000000000000000000000000060061e00123456",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "1/leafIdx-XOR-@2.json",
+      "desc": "leafIdx XOR @2",
+      "leafIdx": 2,
+      "treeSize": 8,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "1/leafIdx-plus-@1.json",
+      "desc": "leafIdx plus @1",
+      "leafIdx": 1,
+      "treeSize": 8,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "1/leafIdx-sub-@1.json",
+      "desc": "leafIdx sub @1",
+      "leafIdx": 18446744073709551615,
+      "treeSize": 8,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "1/modified-proof[0]-bit-@3.json",
+      "desc": "modified proof[0] bit @3",
+      "leafIdx": 0,
+      "treeSize": 8,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "9ea296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "1/modified-proof[1]-bit-@3.json",
+      "desc": "modified proof[1] bit @3",
+      "leafIdx": 0,
+      "treeSize": 8,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "57083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "1/modified-proof[2]-bit-@3.json",
+      "desc": "modified proof[2] bit @3",
+      "leafIdx": 0,
+      "treeSize": 8,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "6347aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "1/preceding-garbage.json",
+      "desc": "preceding garbage",
+      "leafIdx": 0,
+      "treeSize": 8,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "",
+        "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "1/preceding-root.json",
+      "desc": "preceding root",
+      "leafIdx": 0,
+      "treeSize": 8,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+        "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "1/random-root.json",
+      "desc": "random root",
+      "leafIdx": 0,
+      "treeSize": 8,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+      ],
+      "rootHex": "abacaba000000000000000000000000000000000000000000060061e00123456",
+      "wantErr": true
+    },
+    {
+      "file": "1/removed-component.json",
+      "desc": "removed component",
+      "leafIdx": 0,
+      "treeSize": 8,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "1/trailing-garbage.json",
+      "desc": "trailing garbage",
+      "leafIdx": 0,
+      "treeSize": 8,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4",
+        ""
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "1/trailing-root.json",
+      "desc": "trailing root",
+      "leafIdx": 0,
+      "treeSize": 8,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4",
+        "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "1/treeSize-div-@2.json",
+      "desc": "treeSize div @2",
+      "leafIdx": 0,
+      "treeSize": 4,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "1/treeSize-mul-@2.json",
+      "desc": "treeSize mul @2",
+      "leafIdx": 0,
+      "treeSize": 16,
+      "leafHashHex": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "proofHex": [
+        "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "1/wrong-leaf.json",
+      "desc": "wrong leaf",
+      "leafIdx": 0,
+      "treeSize": 8,
+      "leafHashHex": "57726f6e674c656166",
+      "proofHex": [
+        "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "6b47aaf29ee3c2af9af889bc1fb9254dabd31177f16232dd6aab035ca39bf6e4"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "2/empty-root.json",
+      "desc": "empty root",
+      "leafIdx": 5,
+      "treeSize": 8,
+      "leafHashHex": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+      "proofHex": [
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+        "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+      ],
+      "rootHex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "wantErr": true
+    },
+    {
+      "file": "2/happy-path.json",
+      "desc": "happy path",
+      "leafIdx": 5,
+      "treeSize": 8,
+      "leafHashHex": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+      "proofHex": [
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+        "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": false
+    },
+    {
+      "file": "2/inserted-component.json",
+      "desc": "inserted component",
+      "leafIdx": 5,
+      "treeSize": 8,
+      "leafHashHex": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+      "proofHex": [
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "abacaba000000000000000000000000000000000000000000060061e00123456",
+        "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+        "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "2/leafIdx-XOR-@2.json",
+      "desc": "leafIdx XOR @2",
+      "leafIdx": 7,
+      "treeSize": 8,
+      "leafHashHex": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+      "proofHex": [
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+        "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "2/leafIdx-plus-@1.json",
+      "desc": "leafIdx plus @1",
+      "leafIdx": 6,
+      "treeSize": 8,
+      "leafHashHex": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+      "proofHex": [
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+        "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "2/leafIdx-sub-@1.json",
+      "desc": "leafIdx sub @1",
+      "leafIdx": 4,
+      "treeSize": 8,
+      "leafHashHex": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+      "proofHex": [
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+        "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "2/modified-proof[0]-bit-@3.json",
+      "desc": "modified proof[0] bit @3",
+      "leafIdx": 5,
+      "treeSize": 8,
+      "leafHashHex": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+      "proofHex": [
+        "b41a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+        "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "2/modified-proof[1]-bit-@3.json",
+      "desc": "modified proof[1] bit @3",
+      "leafIdx": 5,
+      "treeSize": 8,
+      "leafHashHex": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+      "proofHex": [
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "c2854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+        "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "2/modified-proof[2]-bit-@3.json",
+      "desc": "modified proof[2] bit @3",
+      "leafIdx": 5,
+      "treeSize": 8,
+      "leafHashHex": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+      "proofHex": [
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+        "db7ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "2/preceding-garbage.json",
+      "desc": "preceding garbage",
+      "leafIdx": 5,
+      "treeSize": 8,
+      "leafHashHex": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+      "proofHex": [
+        "",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+        "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "2/preceding-root.json",
+      "desc": "preceding root",
+      "leafIdx": 5,
+      "treeSize": 8,
+      "leafHashHex": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+      "proofHex": [
+        "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+        "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "2/random-root.json",
+      "desc": "random root",
+      "leafIdx": 5,
+      "treeSize": 8,
+      "leafHashHex": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+      "proofHex": [
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+        "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+      ],
+      "rootHex": "abacaba000000000000000000000000000000000000000000060061e00123456",
+      "wantErr": true
+    },
+    {
+      "file": "2/removed-component.json",
+      "desc": "removed component",
+      "leafIdx": 5,
+      "treeSize": 8,
+      "leafHashHex": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+      "proofHex": [
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "2/trailing-garbage.json",
+      "desc": "trailing garbage",
+      "leafIdx": 5,
+      "treeSize": 8,
+      "leafHashHex": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+      "proofHex": [
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+        "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7",
+        ""
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "2/trailing-root.json",
+      "desc": "trailing root",
+      "leafIdx": 5,
+      "treeSize": 8,
+      "leafHashHex": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+      "proofHex": [
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+        "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7",
+        "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "2/treeSize-div-@2.json",
+      "desc": "treeSize div @2",
+      "leafIdx": 5,
+      "treeSize": 4,
+      "leafHashHex": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+      "proofHex": [
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+        "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "2/treeSize-mul-@2.json",
+      "desc": "treeSize mul @2",
+      "leafIdx": 5,
+      "treeSize": 16,
+      "leafHashHex": "4271a26be0d8a84f0bd54c8c302e7cb3a3b5d1fa6780a40bcce2873477dab658",
+      "proofHex": [
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+        "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "2/wrong-leaf.json",
+      "desc": "wrong leaf",
+      "leafIdx": 5,
+      "treeSize": 8,
+      "leafHashHex": "57726f6e674c656166",
+      "proofHex": [
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "ca854ea128ed050b41b35ffc1b87b8eb2bde461e9e3b5596ece6b9d5975a0ae0",
+        "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7"
+      ],
+      "rootHex": "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328",
+      "wantErr": true
+    },
+    {
+      "file": "3/empty-root.json",
+      "desc": "empty root",
+      "leafIdx": 2,
+      "treeSize": 3,
+      "leafHashHex": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+      "proofHex": [
+        "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+      ],
+      "rootHex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "wantErr": true
+    },
+    {
+      "file": "3/happy-path.json",
+      "desc": "happy path",
+      "leafIdx": 2,
+      "treeSize": 3,
+      "leafHashHex": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+      "proofHex": [
+        "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+      ],
+      "rootHex": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+      "wantErr": false
+    },
+    {
+      "file": "3/leafIdx-XOR-@2.json",
+      "desc": "leafIdx XOR @2",
+      "leafIdx": 0,
+      "treeSize": 3,
+      "leafHashHex": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+      "proofHex": [
+        "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+      ],
+      "rootHex": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+      "wantErr": true
+    },
+    {
+      "file": "3/leafIdx-plus-@1.json",
+      "desc": "leafIdx plus @1",
+      "leafIdx": 3,
+      "treeSize": 3,
+      "leafHashHex": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+      "proofHex": [
+        "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+      ],
+      "rootHex": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+      "wantErr": true
+    },
+    {
+      "file": "3/leafIdx-sub-@1.json",
+      "desc": "leafIdx sub @1",
+      "leafIdx": 1,
+      "treeSize": 3,
+      "leafHashHex": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+      "proofHex": [
+        "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+      ],
+      "rootHex": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+      "wantErr": true
+    },
+    {
+      "file": "3/modified-proof[0]-bit-@3.json",
+      "desc": "modified proof[0] bit @3",
+      "leafIdx": 2,
+      "treeSize": 3,
+      "leafHashHex": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+      "proofHex": [
+        "f2c54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+      ],
+      "rootHex": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+      "wantErr": true
+    },
+    {
+      "file": "3/preceding-garbage.json",
+      "desc": "preceding garbage",
+      "leafIdx": 2,
+      "treeSize": 3,
+      "leafHashHex": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+      "proofHex": [
+        "",
+        "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+      ],
+      "rootHex": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+      "wantErr": true
+    },
+    {
+      "file": "3/preceding-root.json",
+      "desc": "preceding root",
+      "leafIdx": 2,
+      "treeSize": 3,
+      "leafHashHex": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+      "proofHex": [
+        "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+        "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+      ],
+      "rootHex": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+      "wantErr": true
+    },
+    {
+      "file": "3/random-root.json",
+      "desc": "random root",
+      "leafIdx": 2,
+      "treeSize": 3,
+      "leafHashHex": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+      "proofHex": [
+        "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+      ],
+      "rootHex": "abacaba000000000000000000000000000000000000000000060061e00123456",
+      "wantErr": true
+    },
+    {
+      "file": "3/removed-component.json",
+      "desc": "removed component",
+      "leafIdx": 2,
+      "treeSize": 3,
+      "leafHashHex": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+      "proofHex": [],
+      "rootHex": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+      "wantErr": true
+    },
+    {
+      "file": "3/trailing-garbage.json",
+      "desc": "trailing garbage",
+      "leafIdx": 2,
+      "treeSize": 3,
+      "leafHashHex": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+      "proofHex": [
+        "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+        ""
+      ],
+      "rootHex": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+      "wantErr": true
+    },
+    {
+      "file": "3/trailing-root.json",
+      "desc": "trailing root",
+      "leafIdx": 2,
+      "treeSize": 3,
+      "leafHashHex": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+      "proofHex": [
+        "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+        "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77"
+      ],
+      "rootHex": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+      "wantErr": true
+    },
+    {
+      "file": "3/treeSize-div-@2.json",
+      "desc": "treeSize div @2",
+      "leafIdx": 2,
+      "treeSize": 1,
+      "leafHashHex": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+      "proofHex": [
+        "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+      ],
+      "rootHex": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+      "wantErr": true
+    },
+    {
+      "file": "3/treeSize-mul-@2.json",
+      "desc": "treeSize mul @2",
+      "leafIdx": 2,
+      "treeSize": 6,
+      "leafHashHex": "0298d122906dcfc10892cb53a73992fc5b9f493ea4c9badb27b791b4127a7fe7",
+      "proofHex": [
+        "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+      ],
+      "rootHex": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+      "wantErr": true
+    },
+    {
+      "file": "3/wrong-leaf.json",
+      "desc": "wrong leaf",
+      "leafIdx": 2,
+      "treeSize": 3,
+      "leafHashHex": "57726f6e674c656166",
+      "proofHex": [
+        "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125"
+      ],
+      "rootHex": "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+      "wantErr": true
+    },
+    {
+      "file": "4/empty-root.json",
+      "desc": "empty root",
+      "leafIdx": 1,
+      "treeSize": 5,
+      "leafHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "proofHex": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+      ],
+      "rootHex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "wantErr": true
+    },
+    {
+      "file": "4/happy-path.json",
+      "desc": "happy path",
+      "leafIdx": 1,
+      "treeSize": 5,
+      "leafHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "proofHex": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+      ],
+      "rootHex": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+      "wantErr": false
+    },
+    {
+      "file": "4/inserted-component.json",
+      "desc": "inserted component",
+      "leafIdx": 1,
+      "treeSize": 5,
+      "leafHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "proofHex": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "abacaba000000000000000000000000000000000000000000060061e00123456",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+      ],
+      "rootHex": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+      "wantErr": true
+    },
+    {
+      "file": "4/leafIdx-XOR-@2.json",
+      "desc": "leafIdx XOR @2",
+      "leafIdx": 3,
+      "treeSize": 5,
+      "leafHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "proofHex": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+      ],
+      "rootHex": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+      "wantErr": true
+    },
+    {
+      "file": "4/leafIdx-plus-@1.json",
+      "desc": "leafIdx plus @1",
+      "leafIdx": 2,
+      "treeSize": 5,
+      "leafHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "proofHex": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+      ],
+      "rootHex": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+      "wantErr": true
+    },
+    {
+      "file": "4/leafIdx-sub-@1.json",
+      "desc": "leafIdx sub @1",
+      "leafIdx": 0,
+      "treeSize": 5,
+      "leafHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "proofHex": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+      ],
+      "rootHex": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+      "wantErr": true
+    },
+    {
+      "file": "4/modified-proof[0]-bit-@3.json",
+      "desc": "modified proof[0] bit @3",
+      "leafIdx": 1,
+      "treeSize": 5,
+      "leafHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "proofHex": [
+        "66340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+      ],
+      "rootHex": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+      "wantErr": true
+    },
+    {
+      "file": "4/modified-proof[1]-bit-@3.json",
+      "desc": "modified proof[1] bit @3",
+      "leafIdx": 1,
+      "treeSize": 5,
+      "leafHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "proofHex": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "57083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+      ],
+      "rootHex": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+      "wantErr": true
+    },
+    {
+      "file": "4/modified-proof[2]-bit-@3.json",
+      "desc": "modified proof[2] bit @3",
+      "leafIdx": 1,
+      "treeSize": 5,
+      "leafHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "proofHex": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "b41a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+      ],
+      "rootHex": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+      "wantErr": true
+    },
+    {
+      "file": "4/preceding-garbage.json",
+      "desc": "preceding garbage",
+      "leafIdx": 1,
+      "treeSize": 5,
+      "leafHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "proofHex": [
+        "",
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+      ],
+      "rootHex": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+      "wantErr": true
+    },
+    {
+      "file": "4/preceding-root.json",
+      "desc": "preceding root",
+      "leafIdx": 1,
+      "treeSize": 5,
+      "leafHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "proofHex": [
+        "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+      ],
+      "rootHex": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+      "wantErr": true
+    },
+    {
+      "file": "4/random-root.json",
+      "desc": "random root",
+      "leafIdx": 1,
+      "treeSize": 5,
+      "leafHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "proofHex": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+      ],
+      "rootHex": "abacaba000000000000000000000000000000000000000000060061e00123456",
+      "wantErr": true
+    },
+    {
+      "file": "4/removed-component.json",
+      "desc": "removed component",
+      "leafIdx": 1,
+      "treeSize": 5,
+      "leafHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "proofHex": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e"
+      ],
+      "rootHex": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+      "wantErr": true
+    },
+    {
+      "file": "4/trailing-garbage.json",
+      "desc": "trailing garbage",
+      "leafIdx": 1,
+      "treeSize": 5,
+      "leafHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "proofHex": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        ""
+      ],
+      "rootHex": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+      "wantErr": true
+    },
+    {
+      "file": "4/trailing-root.json",
+      "desc": "trailing root",
+      "leafIdx": 1,
+      "treeSize": 5,
+      "leafHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "proofHex": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b",
+        "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4"
+      ],
+      "rootHex": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+      "wantErr": true
+    },
+    {
+      "file": "4/treeSize-div-@2.json",
+      "desc": "treeSize div @2",
+      "leafIdx": 1,
+      "treeSize": 2,
+      "leafHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "proofHex": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+      ],
+      "rootHex": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+      "wantErr": true
+    },
+    {
+      "file": "4/treeSize-mul-@2.json",
+      "desc": "treeSize mul @2",
+      "leafIdx": 1,
+      "treeSize": 10,
+      "leafHashHex": "96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7",
+      "proofHex": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+      ],
+      "rootHex": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+      "wantErr": true
+    },
+    {
+      "file": "4/wrong-leaf.json",
+      "desc": "wrong leaf",
+      "leafIdx": 1,
+      "treeSize": 5,
+      "leafHashHex": "57726f6e674c656166",
+      "proofHex": [
+        "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+        "5f083f0a1a33ca076a95279832580db3e0ef4584bdff1f54c8a360f50de3031e",
+        "bc1a0643b12e4d2d7c77918f44e0f4f79a838b6cf9ec5b5c283e1f4d88599e6b"
+      ],
+      "rootHex": "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+      "wantErr": true
+    },
+    {
+      "file": "additional/0/empty-root-and-random-leaf.json",
+      "desc": "empty root and random leaf",
+      "leafIdx": 0,
+      "treeSize": 0,
+      "leafHashHex": "abacaba000000000000000000000000000000000000000000060061e00123456",
+      "proofHex": [],
+      "rootHex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "wantErr": true
+    },
+    {
+      "file": "additional/0/empty-root.json",
+      "desc": "empty root",
+      "leafIdx": 0,
+      "treeSize": 0,
+      "leafHashHex": "",
+      "proofHex": [],
+      "rootHex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "wantErr": true
+    },
+    {
+      "file": "additional/0/random-leaf.json",
+      "desc": "random leaf",
+      "leafIdx": 0,
+      "treeSize": 0,
+      "leafHashHex": "abacaba000000000000000000000000000000000000000000060061e00123456",
+      "proofHex": [],
+      "rootHex": "",
+      "wantErr": true
+    },
+    {
+      "file": "additional/1/empty-root-and-random-leaf.json",
+      "desc": "empty root and random leaf",
+      "leafIdx": 0,
+      "treeSize": 1,
+      "leafHashHex": "abacaba000000000000000000000000000000000000000000060061e00123456",
+      "proofHex": [],
+      "rootHex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "wantErr": true
+    },
+    {
+      "file": "additional/1/empty-root.json",
+      "desc": "empty root",
+      "leafIdx": 0,
+      "treeSize": 1,
+      "leafHashHex": "",
+      "proofHex": [],
+      "rootHex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "wantErr": true
+    },
+    {
+      "file": "additional/1/random-leaf.json",
+      "desc": "random leaf",
+      "leafIdx": 0,
+      "treeSize": 1,
+      "leafHashHex": "abacaba000000000000000000000000000000000000000000060061e00123456",
+      "proofHex": [],
+      "rootHex": "",
+      "wantErr": true
+    },
+    {
+      "file": "additional/2/empty-root-and-random-leaf.json",
+      "desc": "empty root and random leaf",
+      "leafIdx": 1,
+      "treeSize": 0,
+      "leafHashHex": "abacaba000000000000000000000000000000000000000000060061e00123456",
+      "proofHex": [],
+      "rootHex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "wantErr": true
+    },
+    {
+      "file": "additional/2/empty-root.json",
+      "desc": "empty root",
+      "leafIdx": 1,
+      "treeSize": 0,
+      "leafHashHex": "",
+      "proofHex": [],
+      "rootHex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "wantErr": true
+    },
+    {
+      "file": "additional/2/random-leaf.json",
+      "desc": "random leaf",
+      "leafIdx": 1,
+      "treeSize": 0,
+      "leafHashHex": "abacaba000000000000000000000000000000000000000000060061e00123456",
+      "proofHex": [],
+      "rootHex": "",
+      "wantErr": true
+    },
+    {
+      "file": "additional/3/empty-root-and-random-leaf.json",
+      "desc": "empty root and random leaf",
+      "leafIdx": 2,
+      "treeSize": 1,
+      "leafHashHex": "abacaba000000000000000000000000000000000000000000060061e00123456",
+      "proofHex": [],
+      "rootHex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "wantErr": true
+    },
+    {
+      "file": "additional/3/empty-root.json",
+      "desc": "empty root",
+      "leafIdx": 2,
+      "treeSize": 1,
+      "leafHashHex": "",
+      "proofHex": [],
+      "rootHex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "wantErr": true
+    },
+    {
+      "file": "additional/3/random-leaf.json",
+      "desc": "random leaf",
+      "leafIdx": 2,
+      "treeSize": 1,
+      "leafHashHex": "abacaba000000000000000000000000000000000000000000060061e00123456",
+      "proofHex": [],
+      "rootHex": "",
+      "wantErr": true
+    },
+    {
+      "file": "single-entry/empty-leaf.json",
+      "desc": "empty leaf",
+      "leafIdx": 0,
+      "treeSize": 1,
+      "leafHashHex": "",
+      "proofHex": [],
+      "rootHex": "0d3aed023148ffd2a259fbd0cdc7fb3cf975658760d3775b82af6f90aacc2dfc",
+      "wantErr": true
+    },
+    {
+      "file": "single-entry/empty-root-and-leaf.json",
+      "desc": "empty root and leaf",
+      "leafIdx": 0,
+      "treeSize": 1,
+      "leafHashHex": "",
+      "proofHex": [],
+      "rootHex": "",
+      "wantErr": true
+    },
+    {
+      "file": "single-entry/empty-root.json",
+      "desc": "empty root",
+      "leafIdx": 0,
+      "treeSize": 1,
+      "leafHashHex": "0d3aed023148ffd2a259fbd0cdc7fb3cf975658760d3775b82af6f90aacc2dfc",
+      "proofHex": [],
+      "rootHex": "",
+      "wantErr": true
+    },
+    {
+      "file": "single-entry/matching-root-and-leaf.json",
+      "desc": "matching root and leaf",
+      "leafIdx": 0,
+      "treeSize": 1,
+      "leafHashHex": "0d3aed023148ffd2a259fbd0cdc7fb3cf975658760d3775b82af6f90aacc2dfc",
+      "proofHex": [],
+      "rootHex": "0d3aed023148ffd2a259fbd0cdc7fb3cf975658760d3775b82af6f90aacc2dfc",
+      "wantErr": false
+    }
+  ]
+}

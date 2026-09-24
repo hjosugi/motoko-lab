@@ -12,6 +12,20 @@ type AnchorInput = record {
 };
 type BatchResult = variant { ok : Batch; err : Error };
 type Stats = record { batches : nat; active : nat; revoked : nat };
+// icp-merkle:v1, protocol/MERKLE_V1.md.
+type MerkleSpec = record {
+  treeVersion : text; hashAlgorithm : text; leafDomain : text;
+  leafPrefix : nat8; nodePrefix : nat8; digestSize : nat; shape : text;
+  maxLeafCount : nat; maxMultiproofLeaves : nat;
+};
+type InclusionProof = record { leaf : blob; index : nat; path : vec blob };
+type ProvenLeaf = record { index : nat; leaf : blob };
+type Multiproof = record { leaves : vec ProvenLeaf; proof : vec blob };
+type ProofCheck = record {
+  batchId : nat; treeVersion : text; leafCount : nat; root : blob;
+  computedRoot : blob; included : bool; status : Status;
+};
+type ProofCheckResult = variant { ok : ProofCheck; err : Error };
 service : {
   anchor : (AnchorInput) -> (BatchResult);
   revoke : (nat, text) -> (BatchResult);
@@ -19,4 +33,7 @@ service : {
   getByRoot : (blob) -> (opt Batch) query;
   listBatches : (nat, nat) -> (vec Batch) query;
   stats : () -> (Stats) query;
+  merkleSpec : () -> (MerkleSpec) query;
+  verifyProof : (nat, InclusionProof) -> (ProofCheckResult) query;
+  verifyMultiproof : (nat, Multiproof) -> (ProofCheckResult) query;
 };

@@ -157,6 +157,7 @@ nav:
       - プロトコル v0.1: docs/11_CREATOR_PROVENANCE_PROTOCOL.md
       - パッケージ: protocol/README.md
       - コミットメント v1 (凍結): protocol/COMMITMENT_V1.md
+      - Merkle tree v1 (凍結): protocol/MERKLE_V1.md
       - 正規化 (RFC 8785): protocol/CANONICALIZATION.md
       - 相互運用計画: protocol/INTEROPERABILITY.md
       - C2PA bridge: protocol/C2PA_BRIDGE.md

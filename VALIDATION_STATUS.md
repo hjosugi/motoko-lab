@@ -294,6 +294,45 @@
 
 詳細は`protocol/C2PA_BRIDGE.md`。
 
+## 2026-09-24に追加で実行済み (apps/02_merkle_anchor + protocol, issue #9)
+
+- Merkle tree rules `icp-merkle:v1`を`protocol/MERKLE_V1.md`に凍結。leafは32-byte digest、
+  leaf hashは`SHA-256(0x00 || "icp-merkle:v1" || leaf)`、nodeは`SHA-256(0x01 || left || right)`、
+  shapeはRFC 9162。各規則は既知の攻撃 (interior nodeをleafとして提示するsecond preimage、
+  奇数node複製によるCVE-2012-2459型の曖昧性、sortによるindex情報の喪失、proof malleability)
+  に対応し、それぞれvectorがあります
+- reference実装 `protocol/tools/merkle.mjs` と canister実装 `backend/src/Merkle.mo` はコードを
+  共有しません。JavaScript側はtransparency-dev/merkle (commit `fbbcd741`) のRFC 9162
+  inclusion probe **98件すべて**でverdictが一致し、RFC 6962 reference root 8件を再現します。
+  recursive定義とbottom-up builderがsize 1〜130の全proofで一致することも検査しています
+- conformance vector: tree 15件 (size 1〜9・16・17、duplicate leaves、最後のleafの繰り返し、
+  100,000 leaf、上限の1,000,000 leaf = 20-hash path)、multiproof 7件、reject 21件
+  (error message文字列または`included: false`まで固定)。`merkle.test.mjs` 568 checks
+- Motoko側 (`mops test`): 公開vectorを`merkle-vectors.mjs`がMotoko値として生成した
+  `test/MerkleVectors.mo`に対し、全tree rootの再構築、全audit path、全multiproof、全reject、
+  transparency-dev probe 98件を検証。生成物が古ければoffline checksが落ちます
+- **audit pathはtree sizeを認証しない**ことをtestでassert (leaf 2のpathはsize 5〜8で同一)。
+  そのため`verifyProof`はanchor済みの`leafCount`を使い、size引数を持ちません。
+  CLIの`merkle-verify`もanchor由来の`--root`と`--leaf-count`なしでは実行しません
+- replica suite (pocket-ic 14.0.0): app 02 は **31 → 102 checks**。JavaScriptで作ったproofの
+  on-chain検証、leaf/path/rootの改変、wrong index、path長の過不足、multiproofの過不足・
+  順序違反・上限超過、1 leaf、duplicate leaves、100,000 leafと1,000,000 leafのvector、
+  revoked batch。さらに**`v2026.09.22` buildをinstallして`rfc6962` batchをanchorし、現buildへ
+  upgradeして、batchがbyte単位で保存され、root indexに残り、`verifyProof`では`#conflict`で
+  拒否される (v1として読み替えない)** ことを確認。このため`replica.yml`はtagをfetchします
+- `mops bench --replica pocket-ic` (`bench/merkle.bench.mo`): audit pathは1 hashで89,646、
+  20 hash (上限)で1,104,618 instructions。multiproofは1,000,000 leafの木に均等配置で
+  16 leaf 14.8M、64 leaf 52.2M、256 leaf (上限) 180.6M instructions / heap 3.23 MiB。
+  query上限5B instructionsに対し約4%です
+- harness修正: PocketIC serverは60秒間requestがないと終了するため、負荷の高いmachineで
+  compileが60秒を超えると`fetch failed`でsuiteが落ち、さらに`server.stop()`が既に終了した
+  processのexitを待ち続けてNodeがawait途中で終了し、本当のerrorが表示されませんでした。
+  compileを非同期化してheartbeatでserverを維持し、`stop()`に上限を設けました
+- Candid: `merkleSpec`・`verifyProof`・`verifyMultiproof`と付随するrecord型の追加のみ。
+  既存型へのvariant tag追加なし。stable dataは不変 (`treeVersion`は既に全batchに保存済み)
+
+詳細は`protocol/MERKLE_V1.md`。
+
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、
@@ -331,6 +370,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | RFC 8785 canonicalization | official vectors passed; byte-identical to serde_jcs 0.2.0 and canonicalize 3.0.0 |
 | Commitment layout v1 | frozen; 39 conformance vectors reproduced by independent Rust and TypeScript implementations |
 | C2PA bridge (PNG) | 116 offline checks + 22 on pocket-ic 14.0.0; credentials read as Trusted by c2patool 0.27.22 and c2patool credentials validated here |
+| Merkle tree v1 | frozen; 98 transparency-dev RFC 9162 probes, 43 v1 vectors, verified by independent JavaScript and Motoko implementations |
 | Motoko/Candid API surface | offline mechanically cross-checked |
 | Motoko compile/test/Wasm/Candid | passed for all 6 applications |
 | Nix toolchain bootstrap | passed with read-only global npm prefix |

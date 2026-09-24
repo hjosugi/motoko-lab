@@ -44,6 +44,7 @@ done
 
 echo "[4/9] Provenance protocol tests"
 run node "$ROOT/protocol/tools/provenance-cli.test.mjs"
+run node "$ROOT/protocol/tools/merkle.test.mjs"
 
 echo "[5/9] C2PA bridge tests"
 run node "$ROOT/protocol/tools/c2pa.test.mjs"

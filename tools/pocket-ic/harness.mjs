@@ -16,10 +16,11 @@
 //   node tools/pocket-ic/run.mjs       # all suites
 //   node tools/pocket-ic/run.mjs 01    # one
 
-import { execFileSync } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 
 import { didcPath, vendorDir } from './setup.mjs';
 
@@ -68,11 +69,18 @@ export async function buildCanister({ appDir, main, did, name }) {
   await mkdir(out, { recursive: true });
   const compiler = moc(appDir);
 
-  execFileSync(
-    compiler,
-    ['-c', ...packageArgs(appDir), '-o', `${out}/${name}.wasm`, resolve(appDir, main)],
-    { cwd: appDir, stdio: ['ignore', 'inherit', 'pipe'] },
-  );
+  // Asynchronous, unlike the rest of this file: a compile is the one step long
+  // enough to matter, and a synchronous one blocks the event loop and with it
+  // the heartbeat in `withReplica` that keeps the replica alive meanwhile.
+  try {
+    await promisify(execFile)(
+      compiler,
+      ['-c', ...packageArgs(appDir), '-o', `${out}/${name}.wasm`, resolve(appDir, main)],
+      { cwd: appDir, maxBuffer: 64 * 1024 * 1024 },
+    );
+  } catch (error) {
+    throw new Error(`moc failed for ${main}:\n${error.stderr || error.message}`);
+  }
   const js = execFileSync(didcPath, ['bind', resolve(appDir, did), '-t', 'js']).toString();
   await writeFile(`${out}/${name}.idl.mjs`, js);
 
@@ -208,16 +216,28 @@ export async function upgradeCanister({ pic, canisterId, wasm, sender, arg = new
 /// Runs `body` against a fresh replica and shuts it down afterwards, including
 /// when the suite throws. A leaked `pocket-ic` process holds its port and makes
 /// the *next* run fail with something unrelated.
+///
+/// Two things this has to survive that a fast machine never shows. The PocketIC
+/// server exits after 60 seconds without a request, and a suite that compiles a
+/// canister for longer than that — any suite, on a loaded machine — finds the
+/// replica gone: `fetch failed`, and nothing to do with the code under test. A
+/// heartbeat keeps it alive. And `server.stop()` waits for an exit event that a
+/// server which has already exited never sends, so it is bounded: unbounded, it
+/// left the process with nothing to wait on, Node exited mid-`await`, and the
+/// suite's real error was never printed.
 export async function withReplica(body) {
   const { PocketIc, PocketIcServer, createIdentity } = await import('@dfinity/pic');
 
   const server = await PocketIcServer.start();
   let pic;
+  let heartbeat;
   try {
     pic = await PocketIc.create(server.getUrl());
+    heartbeat = setInterval(() => pic.getTime().catch(() => {}), 20_000);
     return await body({ pic, createIdentity });
   } finally {
+    clearInterval(heartbeat);
     if (pic) await pic.tearDown().catch(() => {});
-    await server.stop().catch(() => {});
+    await Promise.race([server.stop().catch(() => {}), new Promise((done) => setTimeout(done, 10_000))]);
   }
 }

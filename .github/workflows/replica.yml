@@ -18,6 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # apps/02_merkle_anchor upgrades from the v2026.09.22 build to check a
+          # batch anchored before tree versions were enforced survives and is
+          # not reinterpreted, and reads that build from the tag.
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version: '22'

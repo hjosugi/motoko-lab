@@ -8,9 +8,20 @@ license = "Apache-2.0"
 
 [dependencies]
 core = "2.6.0"
+# On-chain SHA-256 for Merkle proof verification. The same package and version
+# apps/01_creator_proof_registry uses for its commitment check: Apache-2.0,
+# research-ag/sha2, and `core` is its only dependency.
+sha2 = "0.2.5"
+
+# `mops bench` only, kept out of `[dependencies]` as in apps/01 so the offline
+# vendoring path does not need it.
+[dev-dependencies]
+bench = "2.0.1"
 
 [toolchain]
 moc = "1.11.1"
+# `mops bench` runs on a replica; the same release the replica suites use.
+pocket-ic = "14.0.0"
 
 [canisters.backend]
 main = "backend/src/main.mo"
