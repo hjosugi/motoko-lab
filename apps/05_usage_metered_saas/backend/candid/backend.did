@@ -38,25 +38,148 @@ type Stats =
    tenants: nat;
    usageEvents: nat;
  };
-type Result_3 =
+type SignedReceipt =
+ record {
+   receipt: Receipt;
+   signature: blob;
+ };
+type PrincipalScope =
+ variant {
+   any;
+   only: vec principal;
+ };
+type TextScope =
+ variant {
+   any;
+   only: vec text;
+ };
+type Result_6 =
  variant {
    err: Error;
    ok: UsageEvent;
  };
-type Result_2 =
+type Result_5 =
+ variant {
+   err: Error;
+   ok: ReporterKey;
+ };
+type Result_4 =
  variant {
    err: Error;
    ok: ApiKeyRecord;
  };
-type Result_1 =
+type Result_3 =
  variant {
    err: Error;
    ok: bool;
  };
-type Result =
+type Result_2 =
+ variant {
+   err: Error;
+   ok: ReporterPolicy;
+ };
+type Result_1 =
  variant {
    err: Error;
    ok: Tenant;
+ };
+type Result =
+ variant {
+   err: Error;
+   ok: vec ReceiptOutcome;
+ };
+type ReporterView =
+ record {
+   enabled: bool;
+   health: ReporterHealth;
+   keys: vec ReporterKey;
+   policy: opt ReporterPolicy;
+   reporter: principal;
+ };
+type ReporterPolicy =
+ record {
+   categories: TextScope;
+   maxUnitsPerEvent: nat;
+   maxUnitsPerWindow: nat;
+   requireSignatures: bool;
+   tenants: PrincipalScope;
+   windowSeconds: nat;
+ };
+type ReporterKey =
+ record {
+   addedAt: nat;
+   id: nat;
+   publicKey: blob;
+   reporter: principal;
+   status: KeyStatus;
+ };
+type ReporterHealth =
+ record {
+   accepted: nat;
+   anomalous: bool;
+   badSignatures: nat;
+   lastRejection: opt record {
+                        at: nat;
+                        reason: text;
+                      };
+   outOfScope: nat;
+   rejected: nat;
+   rejectedInWindow: nat;
+   replayed: nat;
+   windowExceeded: nat;
+   windowStart: nat;
+   windowUnits: nat;
+ };
+type ReceiptSpec =
+ record {
+   canister: principal;
+   curve: text;
+   domain: text;
+   maxAgeNanos: nat;
+   maxBatch: nat;
+   maxFutureSkewNanos: nat;
+   signatureEncoding: text;
+ };
+type ReceiptRejection =
+ variant {
+   badSignature;
+   conflict: text;
+   future;
+   invalidReceipt: text;
+   keyNotValid;
+   outOfScope: text;
+   quotaExceeded: record {
+                    quota: nat;
+                    requested: nat;
+                    used: nat;
+                  };
+   stale;
+   tenantUnavailable;
+   unauthorized;
+   unknownKey;
+   windowExceeded: record {
+                     limit: nat;
+                     requested: nat;
+                     used: nat;
+                   };
+   wrongCanister;
+ };
+type ReceiptOutcome =
+ variant {
+   recorded: UsageEvent;
+   rejected: ReceiptRejection;
+   replayed: UsageEvent;
+ };
+type Receipt =
+ record {
+   canister: principal;
+   category: text;
+   idempotencyKey: text;
+   keyId: nat;
+   observedAt: nat;
+   reporter: principal;
+   tenant: principal;
+   units: nat;
  };
 type Plan =
  record {
@@ -65,6 +188,12 @@ type Plan =
    periodSeconds: nat;
    priceMinorUnits: nat;
    quota: nat;
+ };
+type KeyStatus =
+ variant {
+   active;
+   compromised: nat;
+   retired: nat;
  };
 type Error =
  variant {
@@ -80,6 +209,12 @@ type Error =
                   };
    unauthorized;
  };
+type AuditEntry =
+ record {
+   event: UsageEvent;
+   publicKey: opt blob;
+   receipt: opt SignedReceipt;
+ };
 type ApiKeyRecord =
  record {
    createdAt: nat;
@@ -89,17 +224,42 @@ type ApiKeyRecord =
    tenant: principal;
  };
 service : {
-  createTenant: (input: TenantInput) -> (Result);
+  /// Registers a signing key for a reporter. Controllers only: a reporter that
+  /// could add its own keys would let a stolen principal mint one.
+  addReporterKey: (reporter: principal, publicKey: blob) -> (Result_5);
+  createTenant: (input: TenantInput) -> (Result_1);
+  /// Usage events with their receipts and signing keys, for an auditor who
+  /// wants to re-verify billing without trusting this canister.
+  exportUsageAudit: (start: nat, limit: nat) -> (vec AuditEntry) query;
   getApiKey: (hash: blob) -> (opt ApiKeyRecord) query;
+  getReporter: (reporter: principal) -> (opt ReporterView) query;
   getTenant: ("principal": principal) -> (opt Tenant) query;
   getUsageEvent: (id: nat) -> (opt UsageEvent) query;
   listUsageEvents: (start: nat, limit: nat) -> (vec UsageEvent) query;
-  recordUsage: (input: UsageInput) -> (Result_3);
+  /// Declares a key stolen: nothing it signed is accepted any more, whatever
+  /// time the receipt claims. The reporter may do this itself as well as a
+  /// controller — it can only make the key less useful, never more.
+  markReporterKeyCompromised: (keyId: nat) -> (Result_5);
+  /// The rules a signer has to follow, read off the canister rather than
+  /// hardcoded, including the `canister` every receipt must name.
+  receiptSpec: () -> (ReceiptSpec) query;
+  /// The unsigned path. A reporter whose policy requires signatures is refused
+  /// here, so a stolen principal cannot route around them; any other reporter
+  /// with a policy is held to its scope and window on this path too.
+  /// Controllers are operators, not reporters, and are not policy-bound.
+  recordUsage: (input: UsageInput) -> (Result_6);
   registerApiKeyHash: (tenantPrincipal: principal, hash: blob, keyLabel:
-   text) -> (Result_2);
-  revokeApiKeyHash: (hash: blob) -> (Result_2);
-  setReporter: (reporter: principal, enabled: bool) -> (Result_1);
-  setTenantEnabled: (tenantPrincipal: principal, enabled: bool) -> (Result);
-  setTenantPlan: (tenantPrincipal: principal, plan: Plan) -> (Result);
+   text) -> (Result_4);
+  /// Rotates a key out. Receipts it signed before now still verify.
+  retireReporterKey: (keyId: nat) -> (Result_5);
+  revokeApiKeyHash: (hash: blob) -> (Result_4);
+  setReporter: (reporter: principal, enabled: bool) -> (Result_3);
+  setReporterPolicy: (reporter: principal, policy: ReporterPolicy) ->
+   (Result_2);
+  setTenantEnabled: (tenantPrincipal: principal, enabled: bool) -> (Result_1);
+  setTenantPlan: (tenantPrincipal: principal, plan: Plan) -> (Result_1);
   stats: () -> (Stats) query;
+  /// Submits signed receipts — typically an offline batch, signed where the
+  /// usage was observed and relayed later by the reporter.
+  submitReceipts: (batch: vec SignedReceipt) -> (Result);
 }

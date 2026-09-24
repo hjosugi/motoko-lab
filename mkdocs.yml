@@ -145,6 +145,7 @@ nav:
           - アップグレード計画: apps/04_bounty_board/docs/UPGRADE_PLAN.md
       - 05 Usage-Metered SaaS:
           - 概要: apps/05_usage_metered_saas/README.md
+          - 署名付きusage receipt: apps/05_usage_metered_saas/docs/RECEIPTS.md
           - 脅威モデル: apps/05_usage_metered_saas/docs/THREAT_MODEL.md
           - アップグレード計画: apps/05_usage_metered_saas/docs/UPGRADE_PLAN.md
       - 06 Distributed LLM:

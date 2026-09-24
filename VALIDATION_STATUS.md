@@ -442,6 +442,42 @@
 
 詳細は`protocol/AI_ATTESTATION.md`。
 
+## 2026-09-25に追加で実行済み (apps/05_usage_metered_saas, issue #15)
+
+- 署名付きusage receipt。攻撃者が盗むべきものを2つに分けます: receiptを**提出**する
+  reporter principal (callの認証) と、usageを観測した場所でreceiptに**署名**する
+  登録済みdevice鍵 (P-256)。片方だけでは請求を偽造できません。`requireSignatures`の
+  reporterは未署名の`recordUsage`経路も閉じられます
+- receipt layoutは`canister`・reporter・keyId・tenant・units・category・
+  idempotencyKey・observedAtをdomain separator付きで束縛します。`canister`により
+  stagingのreceiptをproductionへ流用できません。署名は`test/receipt.mjs` (node:crypto)
+  で生成し、canisterが受理したreceiptはすべてcross-implementation検査になります
+- **`mo:ecdsa` 8.0.1はhigh-S署名を受理します**。`verify`内のlow-S検査は、
+  `Signature`の構築時に`s`が正規化された後の値しか見ないためです。pinしたhigh-S vector
+  (`test/Receipt.test.mo`) で発見し、受信した値に対してrangeとlow-Sを自前で検査しています
+- replayは元のeventだけを返し何も記録しません (再提出・batch内の重複・upgrade後の
+  再提出)。同じidempotency keyで内容が違うreceiptは`#conflict`
+- 時計: 5分より未来は`#future`、7日より古いものは`#stale`、鍵の登録前は`#keyNotValid`。
+  rotationで退役した鍵は退役前に観測したreceiptだけ有効、compromisedの鍵は
+  `observedAt`に関係なく全て拒否 (時刻は盗んだ側が選べるため)
+- reporter policy: tenant・category scope、1件あたり・tumbling windowあたりの上限。
+  `getReporter`のhealthはwindow内のunits・rejection・理由別counter・anomaly flag
+  (window内3件のrejectionまたはwindow上限の80%) を返します
+- `exportUsageAudit`はeventを署名付きreceiptと公開鍵つきで返し、auditorは
+  node:cryptoだけで請求を再検証できます
+- コスト (pocket-ic 14.0.0で測定): receipt 1件の検証は約**0.7B cycles**
+  (application subnetで約1.8B instructions)、replayは約0.7M cycles。update messageの
+  上限40B instructionsから`maxBatch`を16 (約28B) とし、suiteは最大batchが1 messageに
+  収まることを確認しています
+- app 05 は 48 → 121 checks、全体で **586 assertion、失敗0** (pocket-ic 14.0.0)。
+  #15のtest plan (key rotation / offline batch / future timestamp / reporter compromise)
+  とacceptance criteria (invalid signature / replay / scope / rate anomaly) を全て含み、
+  upgrade後も鍵・policy・health・receipt indexが残ることを確認
+- Candid: 追加のみ (`recordUsage`はpolicyのないreporterに対して従来どおり)。
+  stable data: map追加のみで`UsageEvent`は不変。依存に`mo:ecdsa` 8.0.1 (Apache-2.0) を追加
+
+詳細は`apps/05_usage_metered_saas/docs/RECEIPTS.md`。
+
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、
@@ -485,7 +521,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | Motoko/Candid API surface | offline mechanically cross-checked |
 | Motoko compile/test/Wasm/Candid | passed for all 6 applications |
 | Nix toolchain bootstrap | passed with read-only global npm prefix |
-| PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 513 + 55 assertions |
+| PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 586 + 55 assertions |
 | local replica (`icp deploy`) | passed for app 06 (icp-cli 1.2.0 / launcher 15.0.0) |
 | upgrade rehearsal | passed for all 6 applications; across a breaking Candid change, untried |
 | documentation site | 128 pages built strict, 0 warnings; published from `main` |

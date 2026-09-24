@@ -6,6 +6,7 @@
 - Motoko core: https://github.com/caffeinelabs/motoko-core — repository license参照
 - `mo:ic-certification`: https://github.com/nomeata/ic-certification — Apache-2.0。`apps/01_creator_proof_registry`がcertified query (IC hash tree・witness・CBOR) のために`mops install`時にdependencyとして取得します。
 - `mo:sha2`: https://github.com/research-ag/sha2 — Apache-2.0。`apps/01_creator_proof_registry`がon-chain SHA-256 commitment verificationのために、`apps/02_merkle_anchor`がon-chain Merkle proof verificationのために、`apps/03_license_marketplace`がpayment intent memoのために`mops install`時にdependencyとして取得します（source再配布はしていません）。
+- `mo:ecdsa`: https://github.com/edjCase/motoko_ecdsa — Apache-2.0 (fork of https://github.com/herumi/ecdsa-motoko by MITSUNARI Shigeo)。`apps/05_usage_metered_saas`が署名付きusage receiptのP-256 ECDSA検証のために`mops install`時にdependencyとして取得します（source再配布はしていません）。
 - transparency-dev/merkle: https://github.com/transparency-dev/merkle — Apache-2.0, Copyright 2019 Google LLC。`protocol/test-vectors/merkle/rfc9162-inclusion.json`は同repository commit `fbbcd741c3d1c69d8498487baa8edc9e5824847c`の`testdata/inclusion/`にあるinclusion probe 98件を1 fileに集約し、base64をhexに変換したものです（値の変更はありません）。`protocol/tools/merkle.test.mjs`は同repositoryの`testonly/constants.go`にあるRFC 6962 root hash 8件も参照しています。
 - Certificate Transparency Version 2.0 (Merkle Tree Hash, audit path): https://www.rfc-editor.org/rfc/rfc9162
 - ICP Developer Docs: https://docs.internetcomputer.org/

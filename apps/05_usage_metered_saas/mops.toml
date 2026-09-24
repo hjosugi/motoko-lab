@@ -8,6 +8,12 @@ license = "Apache-2.0"
 
 [dependencies]
 core = "2.6.0"
+# ECDSA verification for signed usage receipts (P-256). Apache-2.0, a fork of
+# herumi/ecdsa-motoko maintained by edjCase (https://github.com/edjCase/motoko_ecdsa).
+# It brings its own `core@2.5.0`, `sha2@0`, `asn1`, `base-x-encoder`,
+# `xtended-numbers` and `xtended-iter`; see docs/RECEIPTS.md for why verifying
+# on-chain was worth them.
+ecdsa = "8.0.1"
 
 [toolchain]
 moc = "1.11.1"
