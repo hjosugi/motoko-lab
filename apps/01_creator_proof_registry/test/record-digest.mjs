@@ -16,22 +16,22 @@ const DOMAIN = 'icp-creator-proof:record:v1';
 
 const MODE_TAGS = { none: 0, assist: 1, generate: 2, transform: 3, other: 4 };
 
-const u64 = (value) => {
+export const u64 = (value) => {
   const out = Buffer.alloc(8);
   out.writeBigUInt64BE(BigInt(value));
   return out;
 };
 
-const u32 = (value) => {
+export const u32 = (value) => {
   const out = Buffer.alloc(4);
   out.writeUInt32BE(Number(value));
   return out;
 };
 
 /// A length prefix of one byte, for fields the canister caps below 256.
-const short = (bytes) => Buffer.concat([Buffer.from([bytes.length]), Buffer.from(bytes)]);
+export const short = (bytes) => Buffer.concat([Buffer.from([bytes.length]), Buffer.from(bytes)]);
 
-const text = (value) => {
+export const text = (value) => {
   const bytes = Buffer.from(value, 'utf8');
   return Buffer.concat([u32(bytes.length), bytes]);
 };

@@ -52,6 +52,14 @@ Candid UI URLは`icp deploy`のoutputに表示されます。
 | `declareRecovery` | creator root | guardianと遅延を事前宣言 |
 | `beginRecovery` / `cancelRecovery` / `confirmRecovery` | guardian / root | 遅延付きrecovery |
 | `attribution` | anyone | recordのcreator・signer・authorityを取得 |
+| `fileDispute` | authenticated (respondent以外) | recordへのcounterclaimを提出 (rate limit付き) |
+| `respondToDispute` | respondent | counterclaimに一度だけ回答 |
+| `addDisputeEvidence` | claimant / respondent | 未解決の間evidenceを追加 |
+| `determineDispute` | 登録済みauthority | roundごとに一度determinationを記録 |
+| `appealDispute` / `withdrawDispute` | 当事者 / claimant | appeal (各側1回) / determination前の取り下げ |
+| `addDisputeAuthority` / `retireDisputeAuthority` | controller | authorityの登録・退任 |
+| `getDispute` / `listDisputes` / `disputeEvents` / `disputeSummary` | anyone | dispute・event log・集計を取得 |
+| `exportDispute` | anyone | record + event log + certificate付きのportable export |
 | `stats` | anyone | count取得 |
 
 ## Commitment
@@ -74,6 +82,10 @@ SHA-256( "icp-creator-proof:v1" || 0x00 || principalText || 0x00 || manifestHash
 
 preimage中のprincipalは常にcallerのものです。requestから来た値ではないので、他人名義でcommitすることはできません。layoutとsalt boundsは`commitmentSpec`で取得できます。詳細・conformance vector・instruction costは`docs/COMMITMENT_V1.md`を参照してください。
 
+## Disputes
+
+第三者はrecordに対してcounterclaimを提出できます (#8)。recordそのものは一切変更されず、status (`#active` / `#revoked`) はownerの操作だけが決めます。authorityのdeterminationは「そのauthorityが自らのpolicyの下でそう判断した」という記録であり、registryは法的な真偽を宣言せず、authority同士が食い違っても勝者を選びません。すべての遷移はhash chainで連結されたevent logに記録され、headは`["dispute", id]`でcertifiedされます。`exportDispute`はrecordとdisputeの両方を1つのcertificateで検証できる自己完結の文書です。privateなevidenceはdigestとcustodianだけをon-chainに置きます。lifecycle、abuse control、privacy rule、byte layoutは`docs/DISPUTES.md`を参照してください。
+
 ## Data limits
 
 - digest: exactly 32 bytes
@@ -86,7 +98,7 @@ preimage中のprincipalは常にcallerのものです。requestから来た値�
 ## Production gaps
 
 - C2PA/W3C VC bridge
-- abuse fee/rate limit
+- abuse fee/rate limit (disputesにはper-principal rate limitとstrikeがある; bondは#12/#22)
 - PocketIC and upgrade tests
 - production frontend
 

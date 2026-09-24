@@ -3,13 +3,17 @@ import Blob "mo:core/Blob";
 import CertTree "mo:ic-certification/CertTree";
 import CertifiedData "mo:core/CertifiedData";
 import Commitment "Commitment";
+import DisputeLog "DisputeLog";
+import Disputes "Dispute";
 import Identity "Identity";
 import Int "mo:core/Int";
 import Iter "mo:core/Iter";
 import Map "mo:core/Map";
 import Nat "mo:core/Nat";
+import Order "mo:core/Order";
 import Principal "mo:core/Principal";
 import RecordDigest "RecordDigest";
+import Runtime "mo:core/Runtime";
 import Time "mo:core/Time";
 import Validation "Validation";
 
@@ -102,6 +106,69 @@ persistent actor CreatorProofRegistry {
     revokedRecords : Nat;
   };
 
+  // ------------------------------------------------------- disputes (#8) --
+  // `Dispute.mo` has the model and the reasoning; these are the names the
+  // interface exposes.
+
+  public type DisputeError = Disputes.Error;
+  public type DisputeResult<T> = Disputes.Result<T>;
+  public type Dispute = Disputes.Dispute;
+  public type DisputeEvent = Disputes.Event;
+  public type DisputeAuthority = Disputes.Authority;
+  public type Evidence = Disputes.Evidence;
+
+  public type FileDisputeInput = {
+    record : Nat;
+    ground : Disputes.Ground;
+    statement : Text;
+    counterRecord : ?Nat;
+    evidence : [Evidence];
+  };
+
+  public type RespondInput = {
+    stance : Disputes.Stance;
+    statement : Text;
+    evidence : [Evidence];
+  };
+
+  public type DetermineInput = {
+    outcome : Disputes.Outcome;
+    summary : Text;
+    decision : ?Evidence;
+  };
+
+  public type AppealInput = {
+    statement : Text;
+    evidence : [Evidence];
+  };
+
+  /// What a verifier shows next to a record. Counts of process states, never
+  /// a verdict: "two unresolved counterclaims" is a fact about the registry,
+  /// "this record is false" is not one the registry can state.
+  public type DisputeSummary = {
+    record : Nat;
+    total : Nat;
+    unresolved : Nat;
+    determined : Nat;
+    withdrawn : Nat;
+    /// Determined disputes whose current round has authorities disagreeing.
+    conflicting : Nat;
+  };
+
+  /// A dispute as a self-contained, verifiable document: the record it is
+  /// about, the full event log, the authorities that determined it, and one
+  /// certificate whose witness reveals both the record digest and the log head.
+  public type DisputeExport = {
+    format : Text;
+    canister : Principal;
+    record : ProofRecord;
+    dispute : Dispute;
+    events : [DisputeEvent];
+    authorities : [DisputeAuthority];
+    certificate : Blob;
+    witness : Blob;
+  };
+
   /// The certified hash tree. `Store` is plain data so it persists; `Ops` is
   /// the class that operates on it and is rebuilt on every upgrade.
   let certified : CertTree.Store = CertTree.newStore();
@@ -130,6 +197,24 @@ persistent actor CreatorProofRegistry {
   /// `ProofRecord`, so records written before identity existed keep their exact
   /// shape and no stable-data migration is needed to introduce this.
   let attributions = Map.empty<Nat, Identity.Attribution>();
+
+  // --------------------------------------------------------------- disputes
+
+  let disputes = Map.empty<Nat, Dispute>();
+  /// Each dispute's event log, append-only. Bounded per dispute by the evidence,
+  /// appeal and authority caps in `Dispute.mo`.
+  let disputeLog = Map.empty<Nat, [DisputeEvent]>();
+  let disputesByRecord = Map.empty<Nat, [Nat]>();
+  let disputeAuthorities = Map.empty<Principal, DisputeAuthority>();
+  /// Filing times still inside the rate window, per claimant. Pruned on every
+  /// filing, so a list never holds more than `maxFilingsPerWindow` entries.
+  let recentFilings = Map.empty<Principal, [Nat]>();
+  /// Times of `#abusive` determinations against each claimant, pruned the same
+  /// way against the strike window.
+  let strikes = Map.empty<Principal, [Nat]>();
+  let unresolvedByClaimant = Map.empty<Principal, Nat>();
+  let unresolvedByRecord = Map.empty<Nat, Nat>();
+  var nextDisputeId : Nat = 1;
 
   var nextCreatorId : Nat = 1;
   var nextCollectionId : Nat = 1;
@@ -906,6 +991,478 @@ persistent actor CreatorProofRegistry {
   /// without guessing from a failed reveal.
   public query func commitmentSpec() : async Commitment.Spec {
     Commitment.spec()
+  };
+
+  // ------------------------------------------------------- disputes (#8) --
+
+  /// Whether `caller` answers for `record`.
+  ///
+  /// Not simply the owner. A record attributed to a creator is answered for by
+  /// that creator's *current* root — the signer may have been a delegate since
+  /// revoked, or a key since rotated away, and neither should be able to speak
+  /// for the identity any more than it can register for it. A record with no
+  /// attribution whose owner later became a creator key follows the same rule
+  /// through `everRoot`. Only a record whose owner never entered an identity is
+  /// answered for by that owner.
+  func isRespondent(record : ProofRecord, caller : Principal) : Bool {
+    let creatorId = switch (Map.get(attributions, Nat.compare, record.id)) {
+      case (?attribution) ?attribution.creator;
+      case null Map.get(everRoot, Principal.compare, record.owner);
+    };
+    switch (creatorId) {
+      case (?id) {
+        switch (Map.get(creators, Nat.compare, id)) {
+          case (?creator) Identity.isCurrentRoot(creator, caller);
+          case null false;
+        }
+      };
+      case null Principal.equal(record.owner, caller);
+    }
+  };
+
+  func partyOf(dispute : Dispute, record : ProofRecord, caller : Principal) : ?Disputes.Party {
+    if (Principal.equal(caller, dispute.claimant)) return ?#claimant;
+    if (isRespondent(record, caller)) return ?#respondent;
+    null
+  };
+
+  func adjust<K>(counts : Map.Map<K, Nat>, compare : (K, K) -> Order.Order, key : K, up : Bool) {
+    let current = switch (Map.get(counts, compare, key)) {
+      case (?value) value;
+      case null 0;
+    };
+    if (up) {
+      Map.add(counts, compare, key, current + 1)
+    } else if (current <= 1) {
+      Map.remove(counts, compare, key)
+    } else {
+      // `current` is at least 2 on this branch, so this cannot underflow.
+      Map.add(counts, compare, key, Nat.sub(current, 1))
+    }
+  };
+
+  func countOf<K>(counts : Map.Map<K, Nat>, compare : (K, K) -> Order.Order, key : K) : Nat {
+    switch (Map.get(counts, compare, key)) {
+      case (?value) value;
+      case null 0;
+    }
+  };
+
+  func timesOf(map : Map.Map<Principal, [Nat]>, key : Principal) : [Nat] {
+    switch (Map.get(map, Principal.compare, key)) {
+      case (?times) times;
+      case null [];
+    }
+  };
+
+  func disputeIdsOf(recordId : Nat) : [Nat] {
+    switch (Map.get(disputesByRecord, Nat.compare, recordId)) {
+      case (?ids) ids;
+      case null [];
+    }
+  };
+
+  /// Keeps the per-claimant and per-record unresolved counts in step with a
+  /// transition. Every endpoint goes through here, so the caps cannot drift
+  /// from the statuses they count.
+  func track(before : ?Dispute, after : Dispute) {
+    let was = switch (before) {
+      case (?dispute) Disputes.unresolved(dispute.status);
+      case null false;
+    };
+    let now = Disputes.unresolved(after.status);
+    if (was == now) return;
+    adjust(unresolvedByClaimant, Principal.compare, after.claimant, now);
+    adjust(unresolvedByRecord, Nat.compare, after.record, now)
+  };
+
+  /// Stores a dispute and its log, and certifies the new head.
+  ///
+  /// The head goes into the same tree as the record digests, under its own
+  /// label, so one certificate can attest a record and every dispute about it.
+  func commitDispute(dispute : Dispute, log : [DisputeEvent]) {
+    Map.add(disputes, Nat.compare, dispute.id, dispute);
+    Map.add(disputeLog, Nat.compare, dispute.id, log);
+    tree.put([DisputeLog.treeLabel, DisputeLog.idKey(dispute.id)], dispute.head);
+    tree.setCertifiedData()
+  };
+
+  /// Appends one event to an existing dispute. `Disputes.apply` is the only way
+  /// a dispute changes, which is what lets a reader rebuild it from the log.
+  func transition(dispute : Dispute, by : Principal, action : Disputes.Action, now : Nat) : Dispute {
+    let log = switch (Map.get(disputeLog, Nat.compare, dispute.id)) {
+      case (?events) events;
+      case null [];
+    };
+    let event = DisputeLog.seal(dispute.id, log.size(), now, by, action, dispute.head);
+    let updated = Disputes.apply(dispute, event);
+    commitDispute(updated, Array.concat(log, [event]));
+    track(?dispute, updated);
+    updated
+  };
+
+  func evidenceProblem(list : [Evidence]) : ?DisputeError {
+    switch (Disputes.checkEvidenceList(list)) {
+      case (?problem) ?#invalidInput(problem);
+      case null null;
+    }
+  };
+
+  /// Registers an authority whose determinations the registry will record.
+  /// Controllers only: which bodies may speak is a policy decision for the
+  /// operator, and `docs/DISPUTES.md` says so rather than pretending otherwise.
+  public shared ({ caller }) func addDisputeAuthority(
+    id : Principal,
+    name : Text,
+    policyUri : Text
+  ) : async DisputeResult<DisputeAuthority> {
+    if (not Principal.isController(caller)) return #err(#unauthorized);
+    if (Principal.isAnonymous(id)) {
+      return #err(#invalidInput("the anonymous principal cannot be an authority"))
+    };
+    if (not Disputes.validName(name)) return #err(#invalidInput("authority name length is invalid"));
+    if (not Disputes.validUri(policyUri)) return #err(#invalidInput("policyUri length is invalid"));
+    switch (Map.get(disputeAuthorities, Principal.compare, id)) {
+      case (?existing) {
+        return switch (existing.retiredAt) {
+          case null #err(#duplicate("the principal is already an authority"));
+          // Reinstating would need `retiredAt` to be unset, and a history in
+          // which an authority was never retired is not one that happened.
+          case (?_) #err(#conflict("a retired authority is not reinstated; register a new principal"));
+        }
+      };
+      case null {};
+    };
+    if (Map.size(disputeAuthorities) >= Disputes.maxAuthorities) {
+      return #err(#conflict("the authority registry is full"))
+    };
+    let authority : DisputeAuthority = { id; name; policyUri; addedAt = nowNanos(); retiredAt = null };
+    Map.add(disputeAuthorities, Principal.compare, id, authority);
+    #ok(authority)
+  };
+
+  /// Stops an authority recording new determinations. The ones it already
+  /// recorded stay, attributed to it: retiring a body does not unsay what it said.
+  public shared ({ caller }) func retireDisputeAuthority(id : Principal) : async DisputeResult<DisputeAuthority> {
+    if (not Principal.isController(caller)) return #err(#unauthorized);
+    let ?existing = Map.get(disputeAuthorities, Principal.compare, id) else return #err(#notFound);
+    if (existing.retiredAt != null) return #err(#conflict("the authority is already retired"));
+    let retired = { existing with retiredAt = ?nowNanos() };
+    Map.add(disputeAuthorities, Principal.compare, id, retired);
+    #ok(retired)
+  };
+
+  public query func listDisputeAuthorities() : async [DisputeAuthority] {
+    Iter.toArray(Map.values(disputeAuthorities))
+  };
+
+  /// Files a counterclaim against a record.
+  ///
+  /// Every check that can refuse runs before anything is written, and the rate
+  /// counters only move on success, so a malformed or refused filing costs the
+  /// claimant nothing and teaches a spammer nothing about the limits beyond
+  /// `retryAt`.
+  public shared ({ caller }) func fileDispute(input : FileDisputeInput) : async DisputeResult<Dispute> {
+    if (Principal.isAnonymous(caller)) return #err(#anonymousNotAllowed);
+    if (not Disputes.validStatement(input.statement)) {
+      return #err(#invalidInput("statement length is invalid"))
+    };
+    switch (evidenceProblem(input.evidence)) {
+      case (?error) return #err(error);
+      case null {};
+    };
+    let ?target = Map.get(records, Nat.compare, input.record) else return #err(#notFound);
+    switch (target.status) {
+      case (#revoked(_)) return #err(#conflict("the record is revoked"));
+      case (#active) {};
+    };
+    switch (input.counterRecord) {
+      case (?counter) {
+        if (counter == input.record) {
+          return #err(#invalidInput("a record cannot be its own counter-record"))
+        };
+        switch (Map.get(records, Nat.compare, counter)) {
+          case null return #err(#invalidInput("counter-record does not exist"));
+          case (?_) {};
+        }
+      };
+      case null {};
+    };
+    // The respondent has `revokeRecord`. Letting it dispute its own record
+    // would let it manufacture a process — and an authority's "rejected" —
+    // about a record nobody else has challenged.
+    if (Principal.equal(caller, target.owner) or isRespondent(target, caller)) {
+      return #err(#conflict("the respondent cannot dispute its own record; revoke it instead"))
+    };
+
+    let now = nowNanos();
+    // Suspension before volume: a claimant with repeated abusive findings is
+    // told when the suspension ends, not that it is filing too fast.
+    let liveStrikes = Disputes.inWindow(timesOf(strikes, caller), now, Disputes.strikeWindowNanos);
+    switch (Disputes.retryAt(liveStrikes, now, Disputes.strikeWindowNanos, Disputes.strikeLimit)) {
+      case (?retry) return #err(#rateLimited({ retryAt = retry }));
+      case null {};
+    };
+    let filings = Disputes.inWindow(timesOf(recentFilings, caller), now, Disputes.filingWindowNanos);
+    switch (Disputes.retryAt(filings, now, Disputes.filingWindowNanos, Disputes.maxFilingsPerWindow)) {
+      case (?retry) return #err(#rateLimited({ retryAt = retry }));
+      case null {};
+    };
+    if (countOf(unresolvedByClaimant, Principal.compare, caller) >= Disputes.maxUnresolvedPerClaimant) {
+      return #err(#conflict("the claimant has too many unresolved disputes"))
+    };
+    if (countOf(unresolvedByRecord, Nat.compare, input.record) >= Disputes.maxUnresolvedPerRecord) {
+      return #err(#conflict("the record has too many unresolved disputes"))
+    };
+    // One unresolved dispute per claimant and record. Further material goes
+    // into the existing one as evidence; a second filing would only split the
+    // claimant's own case and double its weight in the summary.
+    for (existingId in disputeIdsOf(input.record).values()) {
+      switch (Map.get(disputes, Nat.compare, existingId)) {
+        case (?existing) {
+          if (Principal.equal(existing.claimant, caller) and Disputes.unresolved(existing.status)) {
+            return #err(#duplicate("the claimant already has an unresolved dispute on this record"))
+          }
+        };
+        case null {};
+      }
+    };
+
+    let id = nextDisputeId;
+    nextDisputeId += 1;
+    let event = DisputeLog.seal(
+      id,
+      0,
+      now,
+      caller,
+      #filed({
+        record = input.record;
+        ground = input.ground;
+        statement = input.statement;
+        counterRecord = input.counterRecord;
+        evidence = input.evidence;
+      }),
+      DisputeLog.genesisPrev
+    );
+    let ?created = Disputes.genesis(event) else Runtime.trap("a #filed event always opens a dispute");
+    commitDispute(created, [event]);
+    track(null, created);
+    Map.add(recentFilings, Principal.compare, caller, Array.concat(filings, [now]));
+    Map.add(disputesByRecord, Nat.compare, input.record, Array.concat(disputeIdsOf(input.record), [id]));
+    #ok(created)
+  };
+
+  /// The respondent's answer. Once; later material goes in as evidence.
+  public shared ({ caller }) func respondToDispute(id : Nat, input : RespondInput) : async DisputeResult<Dispute> {
+    let ?dispute = Map.get(disputes, Nat.compare, id) else return #err(#notFound);
+    let ?target = Map.get(records, Nat.compare, dispute.record) else return #err(#notFound);
+    switch (Disputes.checkRespond(dispute, isRespondent(target, caller))) {
+      case (?error) return #err(error);
+      case null {};
+    };
+    if (not Disputes.validStatement(input.statement)) {
+      return #err(#invalidInput("statement length is invalid"))
+    };
+    switch (evidenceProblem(input.evidence)) {
+      case (?error) return #err(error);
+      case null {};
+    };
+    if (dispute.evidence.size() + input.evidence.size() > Disputes.maxEvidencePerDispute) {
+      return #err(#invalidInput("the dispute has reached its evidence limit"))
+    };
+    #ok(transition(dispute, caller, #responded({ stance = input.stance; statement = input.statement; evidence = input.evidence }), nowNanos()))
+  };
+
+  public shared ({ caller }) func addDisputeEvidence(id : Nat, evidence : [Evidence]) : async DisputeResult<Dispute> {
+    let ?dispute = Map.get(disputes, Nat.compare, id) else return #err(#notFound);
+    let ?target = Map.get(records, Nat.compare, dispute.record) else return #err(#notFound);
+    let party = partyOf(dispute, target, caller);
+    switch (Disputes.checkAddEvidence(dispute, party, evidence.size())) {
+      case (?error) return #err(error);
+      case null {};
+    };
+    switch (evidenceProblem(evidence)) {
+      case (?error) return #err(error);
+      case null {};
+    };
+    let ?side = party else return #err(#unauthorized);
+    #ok(transition(dispute, caller, #evidenceAdded({ party = side; evidence }), nowNanos()))
+  };
+
+  /// Records what a registered authority concluded. It changes the dispute and
+  /// nothing else: the record's status stays whatever its owner made it.
+  public shared ({ caller }) func determineDispute(id : Nat, input : DetermineInput) : async DisputeResult<Dispute> {
+    let ?dispute = Map.get(disputes, Nat.compare, id) else return #err(#notFound);
+    let ?target = Map.get(records, Nat.compare, dispute.record) else return #err(#notFound);
+    let now = nowNanos();
+    switch (
+      Disputes.checkDetermine(
+        dispute,
+        Map.get(disputeAuthorities, Principal.compare, caller),
+        caller,
+        isRespondent(target, caller),
+        now
+      )
+    ) {
+      case (?error) return #err(error);
+      case null {};
+    };
+    if (not Disputes.validSummary(input.summary)) return #err(#invalidInput("summary length is invalid"));
+    switch (input.decision) {
+      case (?decision) {
+        switch (Disputes.checkEvidence(decision)) {
+          case (?problem) return #err(#invalidInput(problem));
+          case null {};
+        }
+      };
+      case null {};
+    };
+    let action : Disputes.Action = #determined({
+      outcome = input.outcome;
+      summary = input.summary;
+      decision = input.decision;
+      round = dispute.round;
+    });
+    let updated = transition(dispute, caller, action, now);
+    if (Disputes.isStrike(action)) {
+      let live = Disputes.inWindow(timesOf(strikes, dispute.claimant), now, Disputes.strikeWindowNanos);
+      Map.add(strikes, Principal.compare, dispute.claimant, Array.concat(live, [now]))
+    };
+    #ok(updated)
+  };
+
+  /// Either party may ask for another round, once each, within the appeal
+  /// window after the latest determination.
+  public shared ({ caller }) func appealDispute(id : Nat, input : AppealInput) : async DisputeResult<Dispute> {
+    let ?dispute = Map.get(disputes, Nat.compare, id) else return #err(#notFound);
+    let ?target = Map.get(records, Nat.compare, dispute.record) else return #err(#notFound);
+    let party = partyOf(dispute, target, caller);
+    let now = nowNanos();
+    switch (Disputes.checkAppeal(dispute, party, now)) {
+      case (?error) return #err(error);
+      case null {};
+    };
+    if (not Disputes.validStatement(input.statement)) {
+      return #err(#invalidInput("statement length is invalid"))
+    };
+    switch (evidenceProblem(input.evidence)) {
+      case (?error) return #err(error);
+      case null {};
+    };
+    if (dispute.evidence.size() + input.evidence.size() > Disputes.maxEvidencePerDispute) {
+      return #err(#invalidInput("the dispute has reached its evidence limit"))
+    };
+    let ?side = party else return #err(#unauthorized);
+    #ok(
+      transition(
+        dispute,
+        caller,
+        #appealed({ party = side; statement = input.statement; evidence = input.evidence; round = dispute.round + 1 }),
+        now
+      )
+    )
+  };
+
+  /// The claimant may withdraw before any determination. Afterwards the way to
+  /// stop is not to appeal: withdrawing then would present a determined
+  /// dispute as one nobody decided.
+  public shared ({ caller }) func withdrawDispute(id : Nat, reason : Text) : async DisputeResult<Dispute> {
+    let ?dispute = Map.get(disputes, Nat.compare, id) else return #err(#notFound);
+    switch (Disputes.checkWithdraw(dispute, caller)) {
+      case (?error) return #err(error);
+      case null {};
+    };
+    if (not Disputes.validReason(reason)) return #err(#invalidInput("reason length is invalid"));
+    #ok(transition(dispute, caller, #withdrawn({ reason }), nowNanos()))
+  };
+
+  public query func getDispute(id : Nat) : async ?Dispute {
+    Map.get(disputes, Nat.compare, id)
+  };
+
+  /// Disputes about one record, oldest first, `start` counting within that
+  /// record's list.
+  public query func listDisputes(recordId : Nat, start : Nat, limit : Nat) : async [Dispute] {
+    let ids = disputeIdsOf(recordId);
+    let page = Iter.take(Iter.drop(ids.values(), start), Validation.pageLimit(limit));
+    Iter.toArray(
+      Iter.filterMap<Nat, Dispute>(page, func(id : Nat) : ?Dispute { Map.get(disputes, Nat.compare, id) })
+    )
+  };
+
+  public query func disputeEvents(id : Nat) : async [DisputeEvent] {
+    switch (Map.get(disputeLog, Nat.compare, id)) {
+      case (?events) events;
+      case null [];
+    }
+  };
+
+  public query func disputeSummary(recordId : Nat) : async DisputeSummary {
+    var unresolved = 0;
+    var determined = 0;
+    var withdrawn = 0;
+    var conflicting = 0;
+    let ids = disputeIdsOf(recordId);
+    for (id in ids.values()) {
+      switch (Map.get(disputes, Nat.compare, id)) {
+        case (?dispute) {
+          switch (dispute.status) {
+            case (#open or #responded or #appealed) unresolved += 1;
+            case (#determined) {
+              determined += 1;
+              if (Disputes.conflicting(dispute)) conflicting += 1
+            };
+            case (#withdrawn(_)) withdrawn += 1;
+          }
+        };
+        case null {};
+      }
+    };
+    { record = recordId; total = ids.size(); unresolved; determined; withdrawn; conflicting }
+  };
+
+  /// A dispute as a portable, verifiable document.
+  ///
+  /// One witness reveals two leaves — `["record", r]` and `["dispute", d]` — so
+  /// a reader holding only this export and the IC root key can check the
+  /// record, replay the log to its head, and check both against a single
+  /// subnet signature. `null` for an unknown dispute, and, like
+  /// `getRecordCertified`, when no certificate is available (an update call).
+  public query func exportDispute(id : Nat) : async ?DisputeExport {
+    let ?dispute = Map.get(disputes, Nat.compare, id) else return null;
+    let ?target = Map.get(records, Nat.compare, dispute.record) else return null;
+    let ?certificate = CertifiedData.getCertificate() else return null;
+    let events = switch (Map.get(disputeLog, Nat.compare, id)) {
+      case (?log) log;
+      case null [];
+    };
+    // Only the authorities that determined this dispute, so the export names
+    // every policy a reader needs and nothing else.
+    let named = Iter.toArray(
+      Iter.filter<DisputeAuthority>(
+        Map.values(disputeAuthorities),
+        func(authority : DisputeAuthority) : Bool {
+          Array.any<Disputes.Determination>(
+            dispute.determinations,
+            func(determination : Disputes.Determination) : Bool { Principal.equal(determination.authority, authority.id) }
+          )
+        }
+      )
+    );
+    let paths = [
+      [RecordDigest.treeLabel, RecordDigest.idKey(target.id)],
+      [DisputeLog.treeLabel, DisputeLog.idKey(id)],
+    ];
+    ?{
+      format = "icp-creator-proof:dispute-export:v1";
+      canister = Principal.fromActor(CreatorProofRegistry);
+      record = target;
+      dispute;
+      events;
+      authorities = named;
+      certificate;
+      witness = tree.encodeWitness(tree.reveals(paths.values()));
+    }
   };
 
   public query func stats() : async Stats {

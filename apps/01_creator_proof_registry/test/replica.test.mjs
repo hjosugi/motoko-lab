@@ -20,6 +20,7 @@ import { bigintSafe, buildCanister, digest, equalBytes, salt, upgradeCanister } 
 import { CertificateError, verifyCertifiedValue } from '../../../tools/pocket-ic/certificate.mjs';
 import { commitmentHex } from '../../../protocol/tools/commitment.mjs';
 import { recordDigest, recordPath } from './record-digest.mjs';
+import { DISCLAIMER, DisputeLogError, EXPORT_FORMAT, describe, eventHash, render, verifyExport } from './dispute-log.mjs';
 
 export const name = '01_creator_proof_registry';
 
@@ -457,6 +458,348 @@ export async function suite({ appDir, pic, createIdentity, checks: c }) {
   c.ok((await actor.attribution(daveRecord.id))[0].creator === creator.id,
     'records registered before the recovery are still attributable');
 
+  // ---------------------------------------------------- disputes (#8) -----
+  // Counterclaims turn on callers, controllers and a clock — the response and
+  // appeal windows, the filing rate, the strike window — so this is where they
+  // are exercised. `Dispute.test.mo` covers the rules; this covers that the
+  // endpoints apply them, that the record is never touched, and that an export
+  // verifies against the subnet's signature without trusting the canister.
+  const grace = createIdentity('grace');
+  const heidi = createIdentity('heidi');
+  const ivan = createIdentity('ivan');
+  const panel = createIdentity('panel');
+  const court = createIdentity('court');
+  const asGrace = () => actor.setIdentity(grace);
+  const asHeidi = () => actor.setIdentity(heidi);
+  const asIvan = () => actor.setIdentity(ivan);
+  const asPanel = () => actor.setIdentity(panel);
+  const asCourt = () => actor.setIdentity(court);
+  const asFrank = () => actor.setIdentity(frank);
+  const asDeployer = () => actor.setIdentity(deployer);
+
+  const aliceLatest = (await actor.getByArtifactHash(digest(6)))[0];
+  const erinRecord = (await actor.getByArtifactHash(digest(12)))[0];
+  const tagOf = (variant) => Object.keys(variant)[0];
+  const evidenceAt = (seed, uri) => ({ digest: digest(seed), locator: { uri }, description: `exhibit ${seed}` });
+  const sealedAt = (seed, custodian) => ({ digest: digest(seed), locator: { sealed: { custodian } }, description: '' });
+  const filing = (recordId, overrides = {}) => ({
+    record: recordId,
+    ground: { authorship: null },
+    statement: 'I made this before it was registered here.',
+    counterRecord: [],
+    evidence: [],
+    ...overrides,
+  });
+
+  // Who may speak is the operator's decision, so only a controller registers
+  // an authority.
+  asGrace();
+  c.expectErr(await actor.addDisputeAuthority(panel.getPrincipal(), 'Mediation panel', 'https://panel.example/policy'),
+    'unauthorized', 'a non-controller cannot register a dispute authority');
+  asDeployer();
+  const panelAuthority = c.expectOk(
+    await actor.addDisputeAuthority(panel.getPrincipal(), 'Mediation panel', 'https://panel.example/policy'),
+    'a controller registers an authority');
+  c.expectOk(await actor.addDisputeAuthority(court.getPrincipal(), 'Arbitration court', 'https://court.example/rules'),
+    'and a second one');
+  c.expectErr(await actor.addDisputeAuthority(panel.getPrincipal(), 'again', 'https://panel.example/policy'),
+    'duplicate', 'an authority cannot be registered twice');
+  c.ok((await actor.listDisputeAuthorities()).length === 2, 'both authorities are listed with their policies');
+
+  // Grace has a record of her own, which is what "I made it first" points at.
+  asGrace();
+  const graceCommit = c.expectOk(
+    await actor.commit({ commitmentHash: commitmentFor(grace.getPrincipal(), 20), metadataHash: [], expiresAt: [] }),
+    'grace commits her own work');
+  const graceRecord = c.expectOk(await actor.reveal(revealInput(graceCommit.id, 20)), 'and reveals it');
+
+  // -------------------------------------------------- refused before filing
+  asAnonymous();
+  c.expectErr(await actor.fileDispute(filing(parented.id)), 'anonymousNotAllowed',
+    'an anonymous principal cannot file a counterclaim');
+  asGrace();
+  c.expectErr(await actor.fileDispute(filing(4242n)), 'notFound', 'a counterclaim needs a record to be about');
+  c.expectErr(await actor.fileDispute(filing(record.id)), 'conflict',
+    'a revoked record is not disputed: its owner already withdrew it');
+  c.expectErr(await actor.fileDispute(filing(parented.id, { counterRecord: [parented.id] })), 'invalidInput',
+    'a record cannot be its own counter-record');
+  c.expectErr(await actor.fileDispute(filing(parented.id, { statement: '' })), 'invalidInput',
+    'a counterclaim needs a statement');
+  // The privacy rule: a sealed reference names a custodian, and a URI in that
+  // field would publish the pointer the claimant chose to keep private.
+  c.expectErr(
+    await actor.fileDispute(filing(parented.id, { evidence: [sealedAt(30, 'https://vault.example/case/42')] })),
+    'invalidInput', 'sealed evidence cannot smuggle a URI through its custodian field');
+  asAlice();
+  c.expectErr(await actor.fileDispute(filing(parented.id)), 'conflict',
+    'the owner cannot dispute her own record; she can revoke it');
+
+  // ------------------------------------------------------------- filing
+  const certifiedBefore = (await actor.getRecordCertified(parented.id))[0];
+  const digestBefore = recordDigest(certifiedBefore.record);
+
+  asGrace();
+  const graceDispute = c.expectOk(
+    await actor.fileDispute(filing(parented.id, {
+      ground: { priorCreation: null },
+      counterRecord: [graceRecord.id],
+      evidence: [evidenceAt(31, 'https://grace.example/sketches.zip'), sealedAt(32, "Grace's counsel")],
+    })),
+    'grace files a counterclaim with public and sealed evidence');
+  c.ok('open' in graceDispute.status && graceDispute.round === 0n, 'a new counterclaim is open, in round 0');
+  c.ok(graceDispute.respondBy === graceDispute.filedAt + 14n * DAY, 'the respondent has fourteen days to answer');
+  c.ok(graceDispute.counterRecord[0] === graceRecord.id, 'the counter-record is kept as a reference');
+  const sealed = graceDispute.evidence[1].evidence.locator;
+  c.ok('sealed' in sealed && !('uri' in sealed) && sealed.sealed.custodian === "Grace's counsel",
+    'private evidence is on-chain as a digest and a custodian, with no pointer');
+  c.expectErr(await actor.fileDispute(filing(parented.id)), 'duplicate',
+    'one unresolved counterclaim per claimant and record; more material goes in as evidence');
+
+  // ------------------------------------------------------------- response
+  asBob();
+  c.expectErr(await actor.respondToDispute(graceDispute.id, { stance: { contest: null }, statement: 'no', evidence: [] }),
+    'unauthorized', 'a third party cannot answer for the record');
+  asAlice();
+  const answered = c.expectOk(
+    await actor.respondToDispute(graceDispute.id, {
+      stance: { contest: null },
+      statement: 'The sketches post-date my commitment.',
+      evidence: [evidenceAt(33, 'https://alice.example/timeline.pdf')],
+    }),
+    'the owner answers');
+  c.ok('responded' in answered.status && answered.response[0].by.toText() === alicePrincipal.toText(),
+    'the answer is recorded with who gave it');
+  c.expectErr(await actor.respondToDispute(graceDispute.id, { stance: { concede: null }, statement: 'x', evidence: [] }),
+    'duplicate', 'the respondent answers once');
+  asGrace();
+  c.expectOk(await actor.addDisputeEvidence(graceDispute.id, [evidenceAt(34, 'https://grace.example/witness.txt')]),
+    'the claimant adds evidence while the dispute is unresolved');
+  asBob();
+  c.expectErr(await actor.addDisputeEvidence(graceDispute.id, [evidenceAt(35, 'https://bob.example')]),
+    'unauthorized', 'a stranger cannot add evidence');
+
+  // A record attributed to a creator is answered for by the creator's current
+  // root — not by the delegate who signed it, and not by a key rotated away.
+  asGrace();
+  const againstCreator = c.expectOk(await actor.fileDispute(filing(daveRecord.id)),
+    'grace files against a record registered by a delegate');
+  asDave();
+  c.expectErr(await actor.respondToDispute(againstCreator.id, { stance: { contest: null }, statement: 'x', evidence: [] }),
+    'unauthorized', 'the delegate who signed the record does not answer for the identity');
+  asCarol();
+  c.expectErr(await actor.respondToDispute(againstCreator.id, { stance: { contest: null }, statement: 'x', evidence: [] }),
+    'unauthorized', 'nor does a root key that has been rotated away');
+  asFrank();
+  c.expectOk(
+    await actor.respondToDispute(againstCreator.id, { stance: { partial: null }, statement: 'Partly.', evidence: [] }),
+    'the current root answers for the creator');
+
+  // ------------------------------------------------------------ due process
+  asHeidi();
+  const unanswered = c.expectOk(
+    await actor.fileDispute(filing(aliceLatest.id, { ground: { aiDisclosure: null } })),
+    'heidi files a counterclaim nobody answers');
+  asPanel();
+  c.expectErr(
+    await actor.determineDispute(unanswered.id, { outcome: { upheld: null }, summary: 'x', decision: [] }),
+    'conflict', 'nobody determines an unanswered counterclaim inside the response window');
+  asBob();
+  c.expectErr(
+    await actor.determineDispute(graceDispute.id, { outcome: { upheld: null }, summary: 'x', decision: [] }),
+    'unauthorized', 'an unregistered principal records no determination');
+
+  // --------------------------------------------------- conflicting authorities
+  asPanel();
+  const upheld = c.expectOk(
+    await actor.determineDispute(graceDispute.id, {
+      outcome: { upheld: null },
+      summary: 'The earlier sketches were shown.',
+      decision: [sealedAt(36, 'panel case office')],
+    }),
+    'the panel upholds the counterclaim');
+  c.ok('determined' in upheld.status, 'the counterclaim is determined');
+  c.expectErr(
+    await actor.determineDispute(graceDispute.id, { outcome: { rejected: null }, summary: 'changed mind', decision: [] }),
+    'duplicate', 'an authority determines a round once');
+
+  // Upheld is a statement by the panel. It does not revoke, edit or re-certify
+  // the record: the owner's record is exactly what she committed to.
+  const certifiedAfter = (await actor.getRecordCertified(parented.id))[0];
+  c.ok('active' in certifiedAfter.record.status, 'an upheld counterclaim does not change the record status');
+  c.ok(equalBytes(recordDigest(certifiedAfter.record), digestBefore),
+    'the record digest is byte-identical to before the dispute');
+  c.ok(equalBytes(await verify(certifiedAfter, parented.id), digestBefore),
+    'and the subnet still attests that same digest');
+
+  asCourt();
+  c.expectOk(
+    await actor.determineDispute(graceDispute.id, { outcome: { rejected: null }, summary: 'Not persuaded.', decision: [] }),
+    'a second authority reaches the opposite conclusion');
+  const summary = await actor.disputeSummary(parented.id);
+  c.ok(summary.total === 1n && summary.determined === 1n && summary.conflicting === 1n && summary.unresolved === 0n,
+    'the summary reports one determined counterclaim on which the authorities disagree');
+
+  const conflicted = (await actor.exportDispute(graceDispute.id))[0];
+  const conflictReport = describe(conflicted);
+  const conflictText = render(conflictReport);
+  c.ok(conflictReport.conflicting && conflictReport.technicalStatus === 'active',
+    'the verifier reports the disagreement and the unchanged technical status side by side');
+  c.ok(conflictText.includes('Mediation panel recorded "upheld"') && conflictText.includes('Arbitration court recorded "rejected"'),
+    'each determination is attributed to the authority that made it, under its policy');
+  c.ok(conflictText.includes('The registry does not choose between them') && conflictText.includes(DISCLAIMER),
+    'the verifier says in words that the registry declares no winner and no legal truth');
+  c.ok(!/\b(invalid|fraud|false|proven|guilty|infring)/i.test(conflictText),
+    'nothing in the rendering calls the record false or anyone liable');
+
+  // ----------------------------------------------------------------- appeal
+  asAlice();
+  const appealed = c.expectOk(
+    await actor.appealDispute(graceDispute.id, { statement: 'The panel misread the dates.', evidence: [] }),
+    'the respondent appeals');
+  c.ok('appealed' in appealed.status && appealed.round === 1n, 'an appeal opens round 1');
+  c.ok((await actor.disputeSummary(parented.id)).unresolved === 1n, 'an appealed counterclaim is unresolved again');
+  c.expectErr(await actor.appealDispute(graceDispute.id, { statement: 'again', evidence: [] }),
+    'conflict', 'a round that has not been determined cannot be appealed');
+
+  // A retired authority keeps what it already said and says nothing new.
+  asDeployer();
+  c.expectOk(await actor.retireDisputeAuthority(court.getPrincipal()), 'a controller retires the court');
+  asCourt();
+  c.expectErr(
+    await actor.determineDispute(graceDispute.id, { outcome: { upheld: null }, summary: 'x', decision: [] }),
+    'unauthorized', 'a retired authority records no new determination');
+  asDeployer();
+  c.expectErr(await actor.addDisputeAuthority(court.getPrincipal(), 'Arbitration court', 'https://court.example/rules'),
+    'conflict', 'a retired authority is not quietly reinstated');
+
+  asPanel();
+  const reconsidered = c.expectOk(
+    await actor.determineDispute(graceDispute.id, { outcome: { rejected: null }, summary: 'On appeal, not shown.', decision: [] }),
+    'the panel determines round 1');
+  c.ok(reconsidered.determinations.length === 3 && reconsidered.determinations[2].round === 1n,
+    'every earlier determination is kept; the new one belongs to round 1');
+  c.ok((await actor.disputeSummary(parented.id)).conflicting === 0n,
+    'the round-0 disagreement is history, not the current state');
+  asAlice();
+  c.expectErr(await actor.appealDispute(graceDispute.id, { statement: 'once more', evidence: [] }),
+    'conflict', 'each side appeals once');
+
+  // ------------------------------------------------------------ withdrawal
+  asFrank();
+  c.expectErr(await actor.withdrawDispute(againstCreator.id, 'not mine'), 'unauthorized',
+    'only the claimant withdraws');
+  asGrace();
+  const withdrawn = c.expectOk(await actor.withdrawDispute(againstCreator.id, 'Settled privately.'),
+    'the claimant withdraws before any determination');
+  c.ok('withdrawn' in withdrawn.status, 'the counterclaim is withdrawn, and stays in the log');
+  c.expectErr(await actor.withdrawDispute(graceDispute.id, 'too late'), 'conflict',
+    'a determined counterclaim is not withdrawn; the way to stop is not to appeal');
+
+  // ------------------------------------------------------ false report spam
+  // Five filings a day per claimant. Withdrawing does not give one back, so
+  // file-withdraw cycling is counted like anything else.
+  asIvan();
+  for (let i = 0; i < 4; i += 1) {
+    const spam = c.expectOk(await actor.fileDispute(filing(erinRecord.id, { statement: `spam ${i}` })),
+      `ivan files counterclaim ${i + 1} of the day`);
+    c.expectOk(await actor.withdrawDispute(spam.id, 'withdrawn'), `and withdraws it (${i + 1})`);
+  }
+  const fifthFiling = c.expectOk(await actor.fileDispute(filing(daveRecord.id, { statement: 'spam 4' })),
+    'the fifth filing of the day is accepted');
+  const limited = c.expectErr(await actor.fileDispute(filing(aliceLatest.id, { statement: 'spam 5' })),
+    'rateLimited', 'the sixth is refused for volume');
+  // `pic.getTime()` is in milliseconds and the canister's clock in
+  // nanoseconds, so the bound allows the sub-millisecond part it cannot see.
+  const limitedAt = await now();
+  c.ok(limited.retryAt > limitedAt && limited.retryAt < limitedAt + DAY + 1_000_000n,
+    'and says when the oldest filing leaves the window');
+
+  // Move past the response window: this also lets heidi's unanswered
+  // counterclaim be determined without an answer, and the filing window roll.
+  await pic.advanceTime(Number(15n * DAY / 1_000_000n));
+  await pic.tick();
+  asPanel();
+  c.expectOk(
+    await actor.determineDispute(unanswered.id, { outcome: { dismissed: null }, summary: 'No evidence offered.', decision: [] }),
+    'after the response window, silence does not block a determination');
+
+  // Three abusive findings in ninety days suspend filing. `#dismissed` above
+  // did not count: a weak claim is not a bad-faith one.
+  asIvan();
+  const abuse1 = fifthFiling;
+  const abuse2 = c.expectOk(await actor.fileDispute(filing(erinRecord.id, { statement: 'spam 6' })),
+    'ivan can file again once the day has passed');
+  const abuse3 = c.expectOk(await actor.fileDispute(filing(aliceLatest.id, { statement: 'spam 7' })),
+    'and again');
+  await pic.advanceTime(Number(15n * DAY / 1_000_000n));
+  await pic.tick();
+  asPanel();
+  for (const [index, spam] of [abuse1, abuse2, abuse3].entries()) {
+    c.expectOk(
+      await actor.determineDispute(spam.id, { outcome: { abusive: null }, summary: 'Filed in bad faith.', decision: [] }),
+      `the panel finds filing ${index + 1} abusive`);
+  }
+  asIvan();
+  const suspended = c.expectErr(await actor.fileDispute(filing(graceRecord.id, { statement: 'spam 8' })),
+    'rateLimited', 'three abusive findings suspend the claimant');
+  c.ok(suspended.retryAt > (await now()) + 60n * DAY,
+    'for the strike window, not merely the filing window');
+  asHeidi();
+  const goodFaith = c.expectOk(await actor.fileDispute(filing(graceRecord.id, { statement: 'A good-faith claim.' })),
+    'another claimant is unaffected by the suspension');
+
+  // ---------------------------------------------------- appeal window
+  asGrace();
+  c.expectErr(await actor.appealDispute(graceDispute.id, { statement: 'late', evidence: [] }),
+    'expired', 'an appeal after the thirty-day window is refused');
+
+  // --------------------------------------------------- the portable export
+  const bundle = (await actor.exportDispute(graceDispute.id))[0];
+  c.ok(bundle.format === EXPORT_FORMAT && bundle.canister.toText() === fixture.canisterId.toText(),
+    'the export names its format and the canister it came from');
+  c.ok(bundle.authorities.length === 2, 'the export carries the policy of every authority that determined it, retired or not');
+  const verifyValue = (args) => verifyCertifiedValue(args);
+  const head = await verifyExport(bundle, { rootKey, verifyCertifiedValue: verifyValue });
+  c.ok(equalBytes(head, bundle.dispute.head),
+    'the export verifies: the chain replays to the certified head and the record to its certified digest');
+
+  // Every event the canister hashed, rehashed by the reader's implementation.
+  let rehashed = 0;
+  for (let id = 1n; id <= abuse3.id; id += 1n) {
+    for (const event of await actor.disputeEvents(id)) {
+      if (!equalBytes(eventHash(event), event.hash)) throw new Error(`event ${event.seq} of dispute ${id} disagrees`);
+      rehashed += 1;
+    }
+  }
+  c.ok(rehashed >= 25, `the Motoko and JavaScript encodings agree on all ${rehashed} events produced`);
+
+  const tamper = (changes) => ({ ...bundle, ...changes });
+  const editedEvents = bundle.events.map((event, index) =>
+    index === 1 ? { ...event, action: { responded: { ...event.action.responded, stance: { concede: null } } } } : event);
+  await c.expectThrows(() => verifyExport(tamper({ events: editedEvents }), { rootKey, verifyCertifiedValue: verifyValue }),
+    DisputeLogError, 'an export with an edited event is rejected');
+  await c.expectThrows(
+    () => verifyExport(tamper({ events: bundle.events.filter((_, index) => index !== 2) }), { rootKey, verifyCertifiedValue: verifyValue }),
+    DisputeLogError, 'an export with a dropped event is rejected');
+  await c.expectThrows(
+    () => verifyExport(tamper({ dispute: { ...bundle.dispute, status: { open: null } } }), { rootKey, verifyCertifiedValue: verifyValue }),
+    DisputeLogError, 'a served dispute that disagrees with its own log is rejected');
+  await c.expectThrows(
+    () => verifyExport(tamper({ record: { ...bundle.record, title: 'something else' } }), { rootKey, verifyCertifiedValue: verifyValue }),
+    DisputeLogError, 'an export pairing the log with an altered record is rejected');
+
+  // A snapshot taken earlier is still a valid document on its own: the
+  // certificate it carries attests the head it had then. What it cannot do is
+  // pass for the current state. Paired with today's certificate the chain is
+  // intact and consistent, the record digest even matches — only the certified
+  // head catches it, which is the step a reader must not skip.
+  c.ok(equalBytes(await verifyExport(conflicted, { rootKey, verifyCertifiedValue: verifyValue }), conflicted.dispute.head),
+    'an export captured before the appeal still verifies on its own terms');
+  const stale = await c.expectThrows(
+    () => verifyExport(tamper({ dispute: conflicted.dispute, events: conflicted.events }), { rootKey, verifyCertifiedValue: verifyValue }),
+    DisputeLogError, 'an old log presented with the current certificate is rejected');
+  c.ok(stale.message.includes('certified log head'), 'and it is rejected at the certified head, not earlier');
+
   // ---------------------------------------------------------------- upgrade
   // The claim in docs/UPGRADE_PLAN.md that state survives is not observable in
   // the interpreter at all.
@@ -501,4 +844,18 @@ export async function suite({ appDir, pic, createIdentity, checks: c }) {
   const revealedAfterUpgrade = c.expectOk(await actor.reveal(revealInput(afterUpgrade.id, 5)),
     'a reveal still verifies against its commitment after the upgrade');
   c.ok(revealedAfterUpgrade.commitmentId === afterUpgrade.id, 'the post-upgrade record points at its commitment');
+
+  // Disputes live in stable state beside the records, and their heads in the
+  // same certified tree. A lost log would still answer queries — with a head
+  // nobody signed — so this verifies the export rather than reading it.
+  const exportedAfterUpgrade = (await actor.exportDispute(graceDispute.id))[0];
+  c.ok(equalBytes(await verifyExport(exportedAfterUpgrade, { rootKey, verifyCertifiedValue: verifyValue }), head),
+    'a dispute exported after the upgrade verifies to the same certified head');
+  asIvan();
+  c.expectErr(await actor.fileDispute(filing(graceRecord.id, { statement: 'after upgrade' })),
+    'rateLimited', 'a suspension survives the upgrade');
+  asHeidi();
+  const afterUpgradeDispute = c.expectOk(await actor.fileDispute(filing(aliceLatest.id)),
+    'a counterclaim can be filed after the upgrade');
+  c.ok(afterUpgradeDispute.id === goodFaith.id + 1n, 'dispute ids continue past the upgrade rather than restarting');
 }

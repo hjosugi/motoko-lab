@@ -332,6 +332,45 @@
   既存型へのvariant tag追加なし。stable dataは不変 (`treeVersion`は既に全batchに保存済み)
 
 詳細は`protocol/MERKLE_V1.md`。
+||||||| parent of 9c0873a (feat: add counterclaims and a dispute workflow to the registry)
+## 2026-09-24に追加で実行済み (apps/01_creator_proof_registry, issue #8)
+
+- counterclaim / dispute workflow。**recordには一切触れません**。disputeはrecord idを
+  キーとする別構造で、dispute系のどのendpointもrecord・status・certified digestを変更
+  できません。upheldのdetermination後もrecord digestがbyte単位で同一で、subnetが同じ
+  digestをattestし続けることをreplica suiteで確認しています
+- technical status (`#active` / `#revoked`、ownerの操作) とauthorityのoutcomeを分離。
+  determinationは「登録済みauthorityが自らのpolicyの下でそう判断した」という記録で、
+  registryは法的な真偽を宣言せず、authority同士が食い違っても勝者を選びません。
+  verifier向けの文言 (`test/dispute-log.mjs`の`render`) がrecordを「無効」「虚偽」と
+  呼ばないことまでassertしています
+- 全遷移はper-disputeのhash chain (`DisputeLog.mo`) に記録され、headは`["dispute", id]`で
+  certifiedされます。`Dispute`は`Dispute.apply`をevent logにfoldしたものに過ぎず、
+  readerはexportからstateを再構築して照合できます。event encodingは意図的に2実装
+  (`backend/src/DisputeLog.mo` / `test/dispute-log.mjs`) で、suiteはcanisterが生成した
+  全eventをJS側で再hashし、`test/Dispute.test.mo`はJS側が生成したbyte列とhashを固定します
+- `exportDispute`は1つのwitnessで`["record", r]`と`["dispute", d]`の両方を明かします。
+  eventの改変・削除、logと食い違うdispute、改変されたrecord、そして**古いlogを現在の
+  certificateと組み合わせたもの** (chainは健全でrecordも一致し、certified headでしか
+  検出できない) をそれぞれ意図したステップで拒否することを確認
+- abuse control: claimantごとの24時間5件のfiling rate (取り下げても枠は戻らない)、
+  claimant・recordごとの未解決上限、claimant×recordで未解決1件、90日内に`#abusive`
+  3件でfiling停止 (`#dismissed`は数えない)。すべてper-principalなのでSybilには
+  record単位でしか効きません。それに効くbondは#12/#22の範囲です
+- privacy rule: private evidenceは`#sealed { custodian }` — digestとcustodianのみで、
+  URIを残せるfieldが型に存在しません。custodianにURIを入れる抜け道も拒否します
+- respondentはattribution先creatorの**現在の**root。署名したdelegateやrotate済みの鍵は
+  回答できないことをsuiteで確認
+- app 01 は 118 → 214 checks、app 02 (#9) と合わせて全体で **447 assertion、失敗0** (pocket-ic 14.0.0)。
+  #8のtest plan (false report spam / private evidence pointer / appeal / conflicting
+  authorities) を全て含み、upgrade後もexportが同じcertified headに検証されること、
+  suspensionが残ること、dispute idが継続することを確認
+- Candid: 14 methodと関連typeの追加のみ。`check_candid_compat.py`はdrift・subtyping
+  (baseline `v2026.09.22`) ともにpass。stable data: 新しいmapとcounterの追加のみで、
+  certified treeに`record`と並ぶ`dispute` labelが増えるだけなので、既存のrecord witnessは
+  発行時のtreeに対して引き続き検証できます
+
+詳細は`apps/01_creator_proof_registry/docs/DISPUTES.md`。
 
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
@@ -374,7 +413,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | Motoko/Candid API surface | offline mechanically cross-checked |
 | Motoko compile/test/Wasm/Candid | passed for all 6 applications |
 | Nix toolchain bootstrap | passed with read-only global npm prefix |
-| PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 280 + 55 assertions |
+| PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 447 + 55 assertions |
 | local replica (`icp deploy`) | passed for app 06 (icp-cli 1.2.0 / launcher 15.0.0) |
 | upgrade rehearsal | passed for all 6 applications; across a breaking Candid change, untried |
 | documentation site | 128 pages built strict, 0 warnings; published from `main` |

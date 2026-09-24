@@ -165,30 +165,34 @@ module {
     }
   };
 
-  func appendText(out : List.List<Nat8>, value : Text) {
+  // The primitives below are public so `DisputeLog.mo` encodes with the same
+  // byte rules rather than a second copy of them. Changing one changes both
+  // layouts, which `test/RecordDigest.test.mo` and `test/Dispute.test.mo` pin.
+
+  public func appendText(out : List.List<Nat8>, value : Text) {
     let bytes = Text.encodeUtf8(value);
     appendAll(out, u32(bytes.size()));
     appendBlob(out, bytes)
   };
 
-  func appendShort(out : List.List<Nat8>, value : Blob) {
+  public func appendShort(out : List.List<Nat8>, value : Blob) {
     append(out, Nat.toNat8(value.size()));
     appendBlob(out, value)
   };
 
-  func append(out : List.List<Nat8>, byte : Nat8) {
+  public func append(out : List.List<Nat8>, byte : Nat8) {
     List.add(out, byte)
   };
 
-  func appendAll(out : List.List<Nat8>, bytes : [Nat8]) {
+  public func appendAll(out : List.List<Nat8>, bytes : [Nat8]) {
     for (byte in bytes.values()) List.add(out, byte)
   };
 
-  func appendBlob(out : List.List<Nat8>, value : Blob) {
+  public func appendBlob(out : List.List<Nat8>, value : Blob) {
     for (byte in Blob.toArray(value).values()) List.add(out, byte)
   };
 
-  func u64(value : Nat) : [Nat8] {
+  public func u64(value : Nat) : [Nat8] {
     let wide = Nat.toNat64(value);
     Iter.toArray(
       Iter.map<Nat, Nat8>(
@@ -200,7 +204,7 @@ module {
     )
   };
 
-  func u32(value : Nat) : [Nat8] {
+  public func u32(value : Nat) : [Nat8] {
     let wide = Nat.toNat64(value);
     Iter.toArray(
       Iter.map<Nat, Nat8>(

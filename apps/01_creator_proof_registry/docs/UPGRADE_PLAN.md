@@ -11,3 +11,5 @@ V1 uses additive records and stable `Map` values. Before any field rename/type c
 7. verify generated Candid compatibility
 
 Future algorithm agility should add a new digest type through a migration, not reinterpret existing bytes.
+
+Disputes (#8) are additive stable state: new maps, one id counter, and a second label (`dispute`) in the certified tree beside `record`. The replica suite checks that a dispute exported after an upgrade verifies to the same certified head, that a claimant suspension survives, and that dispute ids continue. A future change to the event layout gets a new domain string (`icp-creator-proof:dispute-event:v2`) and applies to new events only; existing logs are never re-hashed, because their heads have already been certified and exported.

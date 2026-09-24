@@ -155,6 +155,152 @@ type Stats = record {
   activeRecords : nat;
   revokedRecords : nat;
 };
+type DisputeId = nat;
+type DisputeError = variant {
+  anonymousNotAllowed;
+  unauthorized;
+  notFound;
+  invalidInput : text;
+  duplicate : text;
+  conflict : text;
+  expired;
+  rateLimited : record { retryAt : nat };
+};
+type Ground = variant {
+  authorship;
+  priorCreation;
+  undisclosedDerivation;
+  aiDisclosure;
+  licensing;
+  other;
+};
+type Locator = variant { uri : text; sealed : record { custodian : text } };
+type Evidence = record { digest : blob; locator : Locator; description : text };
+type Party = variant { claimant; respondent };
+type Stance = variant { contest; concede; partial };
+type Outcome = variant { upheld; rejected; settled; dismissed; abusive };
+type Submission = record {
+  by : principal;
+  party : Party;
+  evidence : Evidence;
+  at : nat;
+};
+type Response = record {
+  by : principal;
+  stance : Stance;
+  statement : text;
+  at : nat;
+};
+type Determination = record {
+  authority : principal;
+  outcome : Outcome;
+  summary : text;
+  decision : opt Evidence;
+  round : nat;
+  at : nat;
+};
+type Appeal = record {
+  by : principal;
+  party : Party;
+  statement : text;
+  round : nat;
+  at : nat;
+};
+type DisputeStatus = variant {
+  open;
+  responded;
+  determined;
+  appealed;
+  withdrawn : record { at : nat; reason : text };
+};
+type Dispute = record {
+  id : DisputeId;
+  "record" : nat;
+  claimant : principal;
+  ground : Ground;
+  statement : text;
+  counterRecord : opt nat;
+  evidence : vec Submission;
+  filedAt : nat;
+  respondBy : nat;
+  response : opt Response;
+  determinations : vec Determination;
+  appeals : vec Appeal;
+  round : nat;
+  status : DisputeStatus;
+  events : nat;
+  head : blob;
+};
+type DisputeAction = variant {
+  filed : record {
+    "record" : nat;
+    ground : Ground;
+    statement : text;
+    counterRecord : opt nat;
+    evidence : vec Evidence;
+  };
+  responded : record { stance : Stance; statement : text; evidence : vec Evidence };
+  evidenceAdded : record { party : Party; evidence : vec Evidence };
+  determined : record {
+    outcome : Outcome;
+    summary : text;
+    decision : opt Evidence;
+    round : nat;
+  };
+  appealed : record {
+    party : Party;
+    statement : text;
+    evidence : vec Evidence;
+    round : nat;
+  };
+  withdrawn : record { reason : text };
+};
+type DisputeEvent = record {
+  dispute : DisputeId;
+  seq : nat;
+  at : nat;
+  by : principal;
+  action : DisputeAction;
+  prev : blob;
+  hash : blob;
+};
+type DisputeAuthority = record {
+  id : principal;
+  name : text;
+  policyUri : text;
+  addedAt : nat;
+  retiredAt : opt nat;
+};
+type FileDisputeInput = record {
+  "record" : nat;
+  ground : Ground;
+  statement : text;
+  counterRecord : opt nat;
+  evidence : vec Evidence;
+};
+type RespondInput = record { stance : Stance; statement : text; evidence : vec Evidence };
+type DetermineInput = record { outcome : Outcome; summary : text; decision : opt Evidence };
+type AppealInput = record { statement : text; evidence : vec Evidence };
+type DisputeSummary = record {
+  "record" : nat;
+  total : nat;
+  unresolved : nat;
+  determined : nat;
+  withdrawn : nat;
+  conflicting : nat;
+};
+type DisputeExport = record {
+  format : text;
+  canister : principal;
+  "record" : ProofRecord;
+  dispute : Dispute;
+  events : vec DisputeEvent;
+  authorities : vec DisputeAuthority;
+  certificate : blob;
+  witness : blob;
+};
+type DisputeResult = variant { ok : Dispute; err : DisputeError };
+type DisputeAuthorityResult = variant { ok : DisputeAuthority; err : DisputeError };
 service : {
   commit : (CommitInput) -> (CommitmentResult);
   cancelCommitment : (nat) -> (CommitmentResult);
@@ -180,5 +326,19 @@ service : {
   getDelegation : (nat) -> (opt Delegation) query;
   getRecovery : (nat) -> (opt Recovery) query;
   attribution : (nat) -> (opt Attribution) query;
+  addDisputeAuthority : (principal, text, text) -> (DisputeAuthorityResult);
+  retireDisputeAuthority : (principal) -> (DisputeAuthorityResult);
+  listDisputeAuthorities : () -> (vec DisputeAuthority) query;
+  fileDispute : (FileDisputeInput) -> (DisputeResult);
+  respondToDispute : (nat, RespondInput) -> (DisputeResult);
+  addDisputeEvidence : (nat, vec Evidence) -> (DisputeResult);
+  determineDispute : (nat, DetermineInput) -> (DisputeResult);
+  appealDispute : (nat, AppealInput) -> (DisputeResult);
+  withdrawDispute : (nat, text) -> (DisputeResult);
+  getDispute : (nat) -> (opt Dispute) query;
+  listDisputes : (nat, nat, nat) -> (vec Dispute) query;
+  disputeEvents : (nat) -> (vec DisputeEvent) query;
+  disputeSummary : (nat) -> (DisputeSummary) query;
+  exportDispute : (nat) -> (opt DisputeExport) query;
   stats : () -> (Stats) query;
 };
