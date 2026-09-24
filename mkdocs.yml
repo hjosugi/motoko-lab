@@ -120,6 +120,7 @@ nav:
       - アップグレードと移行戦略: docs/24_UPGRADE_MIGRATION_STRATEGY.md
       - コストとキャパシティ: docs/25_COST_AND_CAPACITY_MODEL.md
       - ガバナンスとSNS判断記録: docs/26_GOVERNANCE_DECISION_RECORD.md
+      - テナントシャーディング設計: docs/27_TENANT_SHARDING_DESIGN.md
       - データモデルとAPI: docs/23_DATA_MODEL_AND_API.md
 
   - アプリケーション:

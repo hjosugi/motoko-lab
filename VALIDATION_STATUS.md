@@ -576,6 +576,19 @@
   (#3464 OOPS、#3819 IR type error、#4701 `compile_lit_pat`、#2017)、5件は記載どおりには
   再現せず (#3624はcrashが消えたが`--check`と`-c`が不一致、#3993・#3117・#4733・#3855)
 - masterはbuildしていません (docに明記)。upstreamへのcomment・反応は一切行っていません
+## 2026-09-25に追加で実行済み (design, issue #23)
+
+- `docs/27_TENANT_SHARDING_DESIGN.md`とexecutable model `tools/sharding/` (61 checks、offline・依存なし・
+  決定的、`run_offline_checks.sh`の[8/12])。routing keyはtenant (hot tenantはcollectionで分割)、
+  writeはepoch付きで、staleなrouteはredirect 1回で済みます
+- 重複artifact hashはshardが受理し、rebuildableなindexが`(committedAt, shard, commitment)`最小で決定。
+  後の主張は削除せず重複として報告。3者の重複を全6通りの到着順で配送して同じ結果になることを確認
+- indexはshardごとの連番event logだけから構築 (冪等・gap拒否・shard間の順序非依存)。50通りの
+  interleavingと二重配送の結果がlogからのreplayと一致
+- tenant移動は再実行可能な冪等step (freeze・checksum付きcopy・content hashで検証・flip)。
+  中断後の再実行、移動中writeの再試行可能な拒否、cross-shard parentの同期検証
+  (到達不能はretryable refusalで、未検証のまま受理しない) を確認
+- 未実施: shard / router canister本体、#19のexport形式、#30の測定値による閾値、pocket-ic上の実移動rehearsal
 
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
