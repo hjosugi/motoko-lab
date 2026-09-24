@@ -555,6 +555,19 @@
 
 詳細は`labs/migration-chain/README.md`。
 
+## 2026-09-25に追加で実行済み (governance, issue #40)
+
+- `docs/26_GOVERNANCE_DECISION_RECORD.md`: phase 0 (単一controller、価値のあるものが依存しない間のみ)、
+  phase 1 (k-of-n threshold controller、module hashの事前告知と再現buildとの照合、特権呼び出しの公開log、
+  parameter変更の遅延)、緊急権限 (サービスを止めるだけ・小さいthreshold・72時間で失効)、
+  SNSのgo/no-go基準 (#21 / #28 / #29 / #35 / #20 / #24 / #25 / #36が前提で、既定はno)
+- 特権メソッドの一覧を**CIで強制**: `scripts/check_privileged_actions.py`は`isController`・app 06の
+  owner・workerのfirst-caller controllerで保護されたpublic methodを、private helper経由のもの
+  (`isReporter`、`mayRead`) まで含めて検出し、一覧との過不足でCIを落とします。self-testは各検出経路が
+  効くことを確認します。現在36 method
+- 一覧作成で見つかったphase 1のblocker: app 06のorchestratorとworkerは最初の呼び出し者がownerになる
+  (公開環境ではfront-runされうる)、app 05のcontrollerはreporter policyの外で任意のtenantのusageを記録できる
+
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、

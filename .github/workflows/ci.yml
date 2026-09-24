@@ -23,6 +23,11 @@ jobs:
         run: ./scripts/install_didc.sh
       - name: Run offline checks
         run: ./scripts/run_offline_checks.sh
+      # Every privileged method has to be in the governance inventory
+      # (docs/26_GOVERNANCE_DECISION_RECORD.md); a power nobody wrote down is a
+      # power nobody decided about. The self-test proves the detector bites.
+      - name: Check the privileged-action inventory
+        run: python3 ./scripts/check_privileged_actions.py . --self-test
       - name: Check all Motoko apps
         run: ./scripts/check_all_apps.sh
       - name: Check Candid drift and release compatibility
