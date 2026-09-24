@@ -28,6 +28,32 @@ type ListingResult = variant { ok : Listing; err : Error };
 type OrderResult = variant { ok : Order; err : Error };
 type GrantResult = variant { ok : LicenseGrant; err : Error };
 type Stats = record { listings : nat; orders : nat; grants : nat };
+// Ledger-verified payment (#12), docs/PAYMENTS.md.
+type Account = record { owner : principal; subaccount : opt blob };
+type TokenInfo = record { ledger : principal; symbol : text; decimals : nat8; fee : nat; registeredAt : nat };
+type PaymentMode = variant { manual; verified };
+type IntentStatus = variant {
+  awaitingPayment;
+  paid : record { block : nat; orderId : nat; grantId : nat; at : nat };
+  paidSoldOut : record { block : nat; at : nat };
+};
+type PaymentIntent = record {
+  id : nat; listingId : nat; buyer : principal; ledger : principal; payTo : Account;
+  amount : nat; symbol : text; decimals : nat8; fee : nat; memo : blob;
+  createdAt : nat; expiresAt : nat; status : IntentStatus;
+  rejections : vec record { block : nat; reason : text; at : nat };
+};
+type VerifiedPayment = record {
+  intentId : nat; ledger : principal; block : nat; from : Account; to : Account;
+  amount : nat; fee : opt nat; memo : blob; timestamp : nat; verifiedAt : nat;
+};
+type PaymentError = variant {
+  anonymousNotAllowed; unauthorized; notFound; invalidInput : text; duplicate : text;
+  conflict : text; soldOut; rejected : text; ledgerUnavailable : text;
+};
+type TokenResult = variant { ok : TokenInfo; err : PaymentError };
+type IntentResult = variant { ok : PaymentIntent; err : PaymentError };
+type PaidGrantResult = variant { ok : LicenseGrant; err : PaymentError };
 service : {
   createListing : (ListingInput) -> (ListingResult);
   setListingActive : (nat, bool) -> (ListingResult);
@@ -39,4 +65,11 @@ service : {
   getGrant : (nat) -> (opt LicenseGrant) query;
   listListings : (nat, nat) -> (vec Listing) query;
   stats : () -> (Stats) query;
+  registerLedger : (principal) -> (TokenResult);
+  openPurchase : (nat) -> (IntentResult);
+  confirmPayment : (nat, nat) -> (PaidGrantResult);
+  getLedger : (principal) -> (opt TokenInfo) query;
+  getPaymentMode : (nat) -> (opt PaymentMode) query;
+  getIntent : (nat) -> (opt PaymentIntent) query;
+  getGrantPayment : (nat) -> (opt VerifiedPayment) query;
 };

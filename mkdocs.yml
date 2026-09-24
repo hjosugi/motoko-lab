@@ -136,6 +136,7 @@ nav:
           - アップグレード計画: apps/02_merkle_anchor/docs/UPGRADE_PLAN.md
       - 03 License Marketplace:
           - 概要: apps/03_license_marketplace/README.md
+          - 支払い検証 (ICRC-1/ICRC-3): apps/03_license_marketplace/docs/PAYMENTS.md
           - 脅威モデル: apps/03_license_marketplace/docs/THREAT_MODEL.md
           - アップグレード計画: apps/03_license_marketplace/docs/UPGRADE_PLAN.md
       - 04 Bounty Board:

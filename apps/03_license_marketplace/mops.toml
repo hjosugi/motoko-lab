@@ -8,6 +8,9 @@ license = "Apache-2.0"
 
 [dependencies]
 core = "2.6.0"
+# SHA-256 for the payment intent memo. The same package and version apps/01
+# and apps/02 use: Apache-2.0, research-ag/sha2, `core` its only dependency.
+sha2 = "0.2.5"
 
 [toolchain]
 moc = "1.11.1"

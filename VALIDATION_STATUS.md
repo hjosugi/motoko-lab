@@ -332,7 +332,7 @@
   既存型へのvariant tag追加なし。stable dataは不変 (`treeVersion`は既に全batchに保存済み)
 
 詳細は`protocol/MERKLE_V1.md`。
-||||||| parent of 9c0873a (feat: add counterclaims and a dispute workflow to the registry)
+
 ## 2026-09-24に追加で実行済み (apps/01_creator_proof_registry, issue #8)
 
 - counterclaim / dispute workflow。**recordには一切触れません**。disputeはrecord idを
@@ -393,6 +393,36 @@
 - selective disclosureは調査のみ (SD-JWT = RFC 9901、`ecdsa-sd-2023`、`bbs-2023` CRD)
 
 詳細は`protocol/VERIFIABLE_CREDENTIALS.md`。
+## 2026-09-25に追加で実行済み (apps/03_license_marketplace, issue #12)
+
+- ICRC-1 payment verification adapter。`backend/src/Icrc3.mo` (ICRC-1 account・ICRC-3 generic
+  block `Value`のdecode、subaccount正規化) と`backend/src/Payment.mo` (検査規則と、archive
+  callbackを辿る`fetchBlock`)。`Ledger` actor型は標準の4 method (`icrc1_symbol`・
+  `icrc1_decimals`・`icrc1_fee`・`icrc3_get_blocks`) だけで、特定ledger固有のAPIを使いません
+- controllerが`registerLedger`したledgerのlistingは`#verified`になり、buyerは
+  `openPurchase`で得たintent (payTo・base unitsのamount・decimals・上乗せのfee・32-byte memo・
+  24時間の窓) どおりに送金して`confirmPayment(intent, block)`します。grantはledgerが読んだ
+  blockが送金先・送金者・金額 (fee別)・memo・時刻・未使用の全条件を満たしたときだけ発行され、
+  `#verified` listingでは`submitPurchase` (forged receiptがgrantになる経路) が拒否されます
+- memoは`SHA-256("icp-license-intent:v1" || 0x00 || marketplace principal || 0x00 || intent id)`。
+  dedupはcanister単位なので、canisterを含めないと同じ支払いを別のmarketplace deploymentでも
+  主張できます。intent idは予測可能なので、時刻窓で「intentより前の支払い」を拒否します
+- `confirmPayment`はledger呼び出しの**後**でintent状態・`(ledger, block)` index・在庫を
+  読み直し、その読み取りとgrant書き込みの間にawaitを挟みません
+- interpreter (`test/Payment.test.mo`): legacy `tx.op`形式、両レベルのfee、mint・burn・
+  approve・`2xfer`、30-byte principal、短いsubaccount、型違いのfield、全reject理由
+- replica suite (pocket-ic 14.0.0、`test/fixtures/MockLedger.mo`でbuyerが実際に送金):
+  app 03 は **44 → 110 checks**。test planの wrong recipient・underpayment (ちょうどfee分)・
+  duplicate block (別intent、同じledgerのmanual flow、upgrade後)・timeout after success
+  (同じgrantが返り、grant数が増えない) に加え、他人の支払い、memoなし、mint、ICRC-2
+  transfer-from、存在しないblock、intent前の支払い、期限後の支払い、archive経由のblock、
+  ledgerのreject (状態不変で、retryで成功)、支払い後の売り切れ (`#paidSoldOut`、blockは消費)、
+  ledgerでないcanisterの登録
+- Candid: 7 methodと新しい型の追加のみ。既存`Error`にtagを足さず、新設の`PaymentError`を返します。
+  stable dataはside tableの追加のみで`Listing`・`Order`・`LicenseGrant`は不変、migration不要
+- 未実施: refund / escrow (#13)、mainnet ledgerでの実行、ICRC-3 `phash` chain・certificateの検証
+
+詳細は`apps/03_license_marketplace/docs/PAYMENTS.md`。
 
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
@@ -436,7 +466,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | Motoko/Candid API surface | offline mechanically cross-checked |
 | Motoko compile/test/Wasm/Candid | passed for all 6 applications |
 | Nix toolchain bootstrap | passed with read-only global npm prefix |
-| PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 447 + 55 assertions |
+| PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 513 + 55 assertions |
 | local replica (`icp deploy`) | passed for app 06 (icp-cli 1.2.0 / launcher 15.0.0) |
 | upgrade rehearsal | passed for all 6 applications; across a breaking Candid change, untried |
 | documentation site | 128 pages built strict, 0 warnings; published from `main` |
