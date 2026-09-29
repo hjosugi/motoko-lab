@@ -32,6 +32,10 @@ jobs:
       # inventory in supply-chain/dependencies.json (#29).
       - name: Check dependency provenance
         run: python3 ./scripts/check_supply_chain.py . --self-test --sbom sbom.cdx.json
+      # The observability inventory has to agree with docs/29 and every critical
+      # alert has to link to a runbook section that resolves (#24).
+      - name: Check the observability inventory
+        run: python3 ./scripts/check_observability.py . --self-test
       - name: Check all Motoko apps
         run: ./scripts/check_all_apps.sh
       # Two clean builds at different paths must produce identical Wasm (#29).

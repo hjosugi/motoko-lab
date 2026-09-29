@@ -603,6 +603,37 @@
 - lockの1 fileのhashを改ざんすると`mops install`がexit 1で拒否することを確認 (compromised package)
 - 未実施: `icp deploy`のrecipe buildの再現とdeployed module hashの照合 (#28で扱う)
 
+## 2026-09-29に追加で実行済み (observability, issue #24)
+
+- `docs/29_OBSERVABILITY.md`と、review済みアラート目録`observability/alerts.json`、
+  executable model`tools/observability/` (91 checks、offline・依存なし・決定的、
+  `run_offline_checks.sh`の[9/13])。metrics/alerting設計の主張はほぼ時間に関するもの
+  (1サンプルでpageしない、backendが黙ってもhealthyと読まない、多数のalertで大量pageしない)
+  なので、clockを数値としてtestが進め、alertの一生 (pending / firing / coalesced /
+  suppressed / resolved) を厳密に再生します
+- signal: cycle runway (balance÷burn、burn=0なら無限大)、heap / stable memory、record /
+  usage count、failed update rate、pending payment age、index lag、growth deviation、
+  upgrade smoke failure、module hash。各signalはunit・direction・shard横断のaggregateを持ちます。
+  balanceとcountはsum、rateとlagはworst shard (max)、runwayはmin。**rateはsumしません**
+  (3 shardの4%は12%ではない)。**欠測は0ではありません**: 報告しなかったshardはmissingとして
+  返り`shard_silent`を出します (#23のhigh-waterと同じ規則)
+- alertは`for_seconds` (この時間breachが続いて初めてpage)、`clear_seconds` (firing後、
+  短い回復ではresolveしないのでflappingが1件に収まる)、`repeat_seconds` (最後のpageからの
+  再通知) を持ちます。escalationとresolutionは状態変化なのでcoalesceしません。storm guardは
+  上限を超えた個別pageを止め対象をsuppressedとして記録し、all-clearは抑制しません
+- 全critical alertはrunbook anchorを持ち、`scripts/check_observability.py`がanchor未解決や
+  runbook欠落でCIを落とします。modelもcritical ruleにrunbookが無ければmanagerを構築しません。
+  self-testは目録を5通り (runbook欠落、死んだanchor、docと食い違う閾値、alertされないsignal、
+  未定義route) に変更し、全て検出されることを確認
+- scrapeが止まれば沈黙ではなく`telemetry-gap`を出し、未報告のsignalは`ok`になりません。
+  deployment annotationはcanister・version・module hash・時刻・実行者を束縛し、annotationの
+  無いmodule hash変更はfindingになります。metricsはprincipal・tenant・contentを含まず、
+  storeはauthoritativeではなく (canisterから再構築可能) です
+- 未実施: scrape agentとmetrics store本体、dashboard as code、実canisterに対するpocket-ic上の
+  collection path、#30の実測baselineによる閾値の置換、growth baseline job
+
+詳細は`docs/29_OBSERVABILITY.md`。
+
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、
