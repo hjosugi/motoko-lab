@@ -1,0 +1,21 @@
+{
+  "format": "motoko-lab:audit-freeze:v1",
+  "commit": "3e01139a5c0f2395420da24f3fa677aeab5eaea6",
+  "tree": "379d2d463b8fe885f0001dacc80297f38ac7a7d1",
+  "frozenAt": "2026-10-04T03:21:02Z",
+  "canisters": [
+    {"app": "01_creator_proof_registry", "module": "backend.wasm", "moduleSha256": "4165accdce08ffcbc9311c682df2d6b30c3d84c83bd0e9779a6bb196e57ed56e", "candid": "apps/01_creator_proof_registry/backend/candid/backend.did", "candidSha256": "547baddfd5ed158dc0fd2d45174afd500493c172521e16be18b61e627676f845"},
+    {"app": "02_merkle_anchor", "module": "backend.wasm", "moduleSha256": "2ce8bd58451c04d9a795400cdf7362689a9e076505844664085e9e4e68806a14", "candid": "apps/02_merkle_anchor/backend/candid/backend.did", "candidSha256": "8cd8e40f63384a7236237a3ef5ee64bb093c6fd970668fa982268cd6c87fb8b2"},
+    {"app": "03_license_marketplace", "module": "backend.wasm", "moduleSha256": "5c969b9945f27ec27ef78abee6ec3f05279df7c6d0775bd88d22cee918db47e1", "candid": "apps/03_license_marketplace/backend/candid/backend.did", "candidSha256": "fd769ad7d77fe3d3dd8a060018955024ffbda2ca064a5fb68dcb6ab5cda8a013"},
+    {"app": "04_bounty_board", "module": "backend.wasm", "moduleSha256": "20c5c1d17024c93d5526acac848ac8cd0489f055a567626142bdf5146bce4502", "candid": "apps/04_bounty_board/backend/candid/backend.did", "candidSha256": "bcc1cb27b2bdd6d9197531b4fd0635eb5dedd66e9fc1062360eda6186159c3a3"},
+    {"app": "05_usage_metered_saas", "module": "backend.wasm", "moduleSha256": "c48fd1ab5c86a3d415fc8309698d03a3cb16d16e84e735835fdc93fb73d52e51", "candid": "apps/05_usage_metered_saas/backend/candid/backend.did", "candidSha256": "06be9ae77adfc20535c3ee279e5fc92b9c4c72a67dba075ca8006e4a22179b50"},
+    {"app": "06_distributed_llm", "module": "backend.wasm", "moduleSha256": "7a0ffb77aa369ebaa7a7793b0b31231ed9d3bd1e253eda78caacc11ae6d2c3af", "candid": "apps/06_distributed_llm/backend/candid/backend.did", "candidSha256": "ee393830ddc7089587aaef0c2f3a525b66c9b8b89928ec1fa0f8441db5715171"},
+    {"app": "06_distributed_llm", "module": "llm_shim.wasm", "moduleSha256": "c731dd6409389b3881303d29ce4f5f0472f20eca7ba6f16a5175069c7771c17e", "candid": "apps/06_distributed_llm/backend/candid/backend.did", "candidSha256": "ee393830ddc7089587aaef0c2f3a525b66c9b8b89928ec1fa0f8441db5715171"},
+    {"app": "06_distributed_llm", "module": "worker_0.wasm", "moduleSha256": "9e3a3fd2eef8e87b81c2291cd2f64c4ebddcbf4a63a68aee557fca9e98ac704d", "candid": "apps/06_distributed_llm/backend/candid/backend.did", "candidSha256": "ee393830ddc7089587aaef0c2f3a525b66c9b8b89928ec1fa0f8441db5715171"},
+    {"app": "06_distributed_llm", "module": "worker_1.wasm", "moduleSha256": "9e3a3fd2eef8e87b81c2291cd2f64c4ebddcbf4a63a68aee557fca9e98ac704d", "candid": "apps/06_distributed_llm/backend/candid/backend.did", "candidSha256": "ee393830ddc7089587aaef0c2f3a525b66c9b8b89928ec1fa0f8441db5715171"},
+    {"app": "06_distributed_llm", "module": "worker_2.wasm", "moduleSha256": "9e3a3fd2eef8e87b81c2291cd2f64c4ebddcbf4a63a68aee557fca9e98ac704d", "candid": "apps/06_distributed_llm/backend/candid/backend.did", "candidSha256": "ee393830ddc7089587aaef0c2f3a525b66c9b8b89928ec1fa0f8441db5715171"},
+    {"app": "06_distributed_llm", "module": "worker_3.wasm", "moduleSha256": "9e3a3fd2eef8e87b81c2291cd2f64c4ebddcbf4a63a68aee557fca9e98ac704d", "candid": "apps/06_distributed_llm/backend/candid/backend.did", "candidSha256": "ee393830ddc7089587aaef0c2f3a525b66c9b8b89928ec1fa0f8441db5715171"}
+  ],
+  "threatModel": "docs/05_SECURITY_THREAT_MODEL.md",
+  "scope": "docs/33_SECURITY_AUDIT.md"
+}
