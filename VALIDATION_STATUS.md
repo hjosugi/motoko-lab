@@ -657,6 +657,28 @@
 
 詳細は`docs/30_STATE_MACHINE_TESTING.md`。
 
+## 2026-10-04に追加で実行済み (portable export, issue #19)
+
+- app 01にportable export/restoreを追加。`backend/src/Export.mo`がformat v1
+  (versioned domain、per-entry digest、roots、page checksum、policy) を定義し、
+  `exportSummary` / `exportCommitments` / `exportRecords` / `restoreBegin` /
+  `restoreCommitments` / `restoreRecords` / `restoreFinish`を公開
+- reader (`tools/export/format.mjs` + `bundle.mjs` + `cli.mjs`) がpage checksumと
+  rootsを独立実装で再計算。bundleはpage単位で書き込むため、中断したexportは
+  最初の未完了pageから再開します
+- restoreはcontroller専用・空canister限定・id順・同一page再送はbyte-identicalな
+  ときのみ受理。`restoreFinish`がcounts・roots・record/commitmentの相互参照を
+  検証して初めてcloseし、recordはimport時に再certifyされます
+- 検証: app 01 replica suite 240 checks (うちexport/restore節38 checks)、offline
+  export test 22 checks (`run_offline_checks.sh`の[11/15])、`Export.test.mo`は
+  `mops test`で実行。Candid drift/compat PASS、privileged inventory 40/40
+- redaction (`includeStorageUris=false`) はdigest計算の前に適用され、rootsも
+  redacted viewを指します。bundleはpolicyを記録するためfull/redactedを混在できません
+- 未実施: identity/disputeのstate export (disputeは#8のper-dispute exportが担当)、
+  shard間のmerge、mainnetでのrestore rehearsal
+
+詳細は`docs/31_PORTABLE_EXPORT.md`。
+
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、
@@ -703,6 +725,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | Nix toolchain bootstrap | passed with read-only global npm prefix |
 | PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 732 + 55 assertions |
 | State-machine tests | 2,880 replica steps (4 apps × 6 seeds × 120) plus the offline framework's 31 checks; no canister disagreement remains |
+| Portable export/restore (app 01) | format v1 cross-checked live on every page (38 replica checks) + 22 offline checks; restore into a fresh canister rehearsed in CI |
 | local replica (`icp deploy`) | passed for app 06 (icp-cli 1.2.0 / launcher 15.0.0) |
 | upgrade rehearsal | passed for all 6 applications; across a breaking Candid change, untried |
 | documentation site | 128 pages built strict, 0 warnings; published from `main` |

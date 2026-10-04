@@ -139,12 +139,13 @@ at [Telemetry gap](#telemetry-gap).
 
 blockchain上だからbackup不要ではありません。
 
-- portable export format
-- manifest and record count checksum
-- shard/index mapping
-- module hash and Candid version
-- encrypted private evidence backup
-- restore rehearsal
+- portable export format: `apps/01_creator_proof_registry/tools/export/` (format v1、page checksum、roots、policy)。設計は`docs/31_PORTABLE_EXPORT.md`
+- manifest and record count checksum: `bundle.json`のsummaryとroots。`cli.mjs verify <dir>`でpage checksumとrootを再計算
+- restore: controller-only、空canister限定。`restoreFinish`がcountsとrootsをsummaryと照合して初めてcloseします
+- shard/index mapping: v1はcanister単位。shard間の統合は`docs/27_TENANT_SHARDING_DESIGN.md`のper-tenant export
+- module hash and Candid version: `bundle.json`の`source.moduleHash` / `source.candidHash` (収集時にWasmと`.did`から)
+- encrypted private evidence backup: redaction policy (`includeStorageUris=false`)はdigest計算前に適用され、rootもredacted viewを指します
+- restore rehearsal: app 01のreplica suiteの"portable export"節。CIのReplica workflowで毎回実行
 
 ## Key and controller management
 

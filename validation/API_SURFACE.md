@@ -7,7 +7,7 @@ This is an offline guardrail and does not replace compiler-generated Candid or u
 
 | App | Methods | Status |
 |---|---:|---|
-| `01_creator_proof_registry` | 39 | PASS |
+| `01_creator_proof_registry` | 46 | PASS |
 | `02_merkle_anchor` | 9 | PASS |
 | `03_license_marketplace` | 17 | PASS |
 | `04_bounty_board` | 16 | PASS |
@@ -34,7 +34,10 @@ This is an offline guardrail and does not replace compiler-generated Candid or u
 - `determineDispute`: update, 2 argument(s)
 - `disputeEvents`: query, 1 argument(s)
 - `disputeSummary`: query, 1 argument(s)
+- `exportCommitments`: query, 3 argument(s)
 - `exportDispute`: query, 1 argument(s)
+- `exportRecords`: query, 3 argument(s)
+- `exportSummary`: query, 1 argument(s)
 - `fileDispute`: update, 1 argument(s)
 - `getByArtifactHash`: query, 1 argument(s)
 - `getCollection`: query, 1 argument(s)
@@ -50,6 +53,10 @@ This is an offline guardrail and does not replace compiler-generated Candid or u
 - `listRecords`: query, 2 argument(s)
 - `registerCreator`: update, 0 argument(s)
 - `respondToDispute`: update, 2 argument(s)
+- `restoreBegin`: update, 1 argument(s)
+- `restoreCommitments`: update, 1 argument(s)
+- `restoreFinish`: update, 0 argument(s)
+- `restoreRecords`: update, 1 argument(s)
 - `retireDisputeAuthority`: update, 1 argument(s)
 - `reveal`: update, 1 argument(s)
 - `revokeDelegation`: update, 2 argument(s)

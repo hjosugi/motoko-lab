@@ -4,7 +4,7 @@
   "limitation": "This does not replace compiler-generated Candid or compatibility checking.",
   "status": "pass",
   "application_count": 6,
-  "method_count": 125,
+  "method_count": 132,
   "applications": [
     {
       "app": "01_creator_proof_registry",
@@ -90,7 +90,22 @@
           "argument_count": 1
         },
         {
+          "name": "exportCommitments",
+          "mode": "query",
+          "argument_count": 3
+        },
+        {
           "name": "exportDispute",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "exportRecords",
+          "mode": "query",
+          "argument_count": 3
+        },
+        {
+          "name": "exportSummary",
           "mode": "query",
           "argument_count": 1
         },
@@ -168,6 +183,26 @@
           "name": "respondToDispute",
           "mode": "update",
           "argument_count": 2
+        },
+        {
+          "name": "restoreBegin",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "restoreCommitments",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "restoreFinish",
+          "mode": "update",
+          "argument_count": 0
+        },
+        {
+          "name": "restoreRecords",
+          "mode": "update",
+          "argument_count": 1
         },
         {
           "name": "retireDisputeAuthority",
@@ -287,7 +322,22 @@
           "argument_count": 1
         },
         {
+          "name": "exportCommitments",
+          "mode": "query",
+          "argument_count": 3
+        },
+        {
           "name": "exportDispute",
+          "mode": "query",
+          "argument_count": 1
+        },
+        {
+          "name": "exportRecords",
+          "mode": "query",
+          "argument_count": 3
+        },
+        {
+          "name": "exportSummary",
           "mode": "query",
           "argument_count": 1
         },
@@ -365,6 +415,26 @@
           "name": "respondToDispute",
           "mode": "update",
           "argument_count": 2
+        },
+        {
+          "name": "restoreBegin",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "restoreCommitments",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
+          "name": "restoreFinish",
+          "mode": "update",
+          "argument_count": 0
+        },
+        {
+          "name": "restoreRecords",
+          "mode": "update",
+          "argument_count": 1
         },
         {
           "name": "retireDisputeAuthority",

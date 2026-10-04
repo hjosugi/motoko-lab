@@ -4,8 +4,9 @@
 // predicates and the commitment layout in the interpreter. This covers what the
 // interpreter cannot reach: a real `caller` (including the anonymous
 // principal), the commit-reveal state machine across separate messages,
-// duplicate suppression through the hash indexes, and state surviving an
-// upgrade.
+// duplicate suppression through the hash indexes, state surviving an upgrade,
+// and the portable export/restore path (#19), which is exercised against a
+// second canister that starts empty.
 //
 // Since #3 the canister recomputes the commitment, so a commitment here has to
 // be a real one. It is built with `protocol/tools/commitment.mjs` — the
@@ -858,4 +859,176 @@ export async function suite({ appDir, pic, createIdentity, checks: c }) {
   const afterUpgradeDispute = c.expectOk(await actor.fileDispute(filing(aliceLatest.id)),
     'a counterclaim can be filed after the upgrade');
   c.ok(afterUpgradeDispute.id === goodFaith.id + 1n, 'dispute ids continue past the upgrade rather than restarting');
+
+  // ------------------------------------------ portable export (#19) -------
+  // The canister's own state survives a crash because the subnet replicates
+  // it. Leaving is a different property: an export has to be verifiable by a
+  // reader that trusts neither the tool nor the transport, resumable after a
+  // dropped connection, and narrow enough to leave a private pointer out.
+  // Everything below runs the reader's implementation (`tools/export/`) over
+  // pages the canister produced, so each checksum is a cross-implementation
+  // check as well as a format one.
+  const FULL_POLICY = { includeStorageUris: true };
+  const REDACTED_POLICY = { includeStorageUris: false };
+  const { createHash } = await import('node:crypto');
+  const { mkdtemp, readFile, rm, writeFile } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { collect, verify: verifyBundle, restore: restoreBundle } = await import('../tools/export/bundle.mjs');
+  const wasmHash = createHash('sha256').update(await readFile(wasm)).digest('hex');
+  const candidHash = createHash('sha256')
+    .update(await readFile(new URL('../backend/candid/backend.did', import.meta.url)))
+    .digest('hex');
+  const sourceInfo = { canister: fixture.canisterId.toText(), moduleHash: wasmHash, candidHash, schema: 'icp-creator-proof:export:v1' };
+  const directory = await mkdtemp(join(tmpdir(), 'creator-export-'));
+
+  try {
+    const before = await actor.stats();
+    const summary = await actor.exportSummary(FULL_POLICY);
+    c.ok(summary.format === 'icp-creator-proof:export:v1'
+      && summary.canister.toText() === fixture.canisterId.toText(), 'the summary names the format and the canister');
+    c.ok(summary.commitments === before.commitments && summary.records === before.records
+      && summary.activeRecords === before.activeRecords && summary.revokedRecords === before.revokedRecords,
+      'the summary counts equal stats');
+
+    const bundle = await collect({ source: actor, policy: FULL_POLICY, directory, sourceInfo, pageLimit: 3 });
+    c.ok(bundle.entries.records.length === Number(before.records)
+      && bundle.entries.commitments.length === Number(before.commitments),
+      'every record and commitment was exported and every page checksum verified');
+    c.ok(bundle.bundle.summary.recordRoot === Buffer.from(summary.recordRoot).toString('hex')
+      && bundle.bundle.summary.commitmentRoot === Buffer.from(summary.commitmentRoot).toString('hex'),
+      'the bundle carries the roots it verified against');
+
+    // Redaction. The policy is part of what the roots attest, so the redacted
+    // export has different roots and no storage pointer in it, and the reader
+    // can say exactly which policy it holds.
+    const redactedDirectory = await mkdtemp(join(tmpdir(), 'creator-export-redacted-'));
+    const redacted = await collect({ source: actor, policy: REDACTED_POLICY, directory: redactedDirectory,
+      sourceInfo, pageLimit: 3 });
+    c.ok(redacted.entries.records.every((record) => record.storageUri === ''),
+      'the redacted export carries no storage pointer');
+    c.ok(redacted.bundle.summary.recordRoot !== bundle.bundle.summary.recordRoot,
+      'redaction changes the root the summary names');
+    await rm(redactedDirectory, { recursive: true, force: true });
+
+    // Resume. The first attempt dies on the second record page; a second
+    // collector pointed at the same directory must continue, not restart.
+    const resumedDirectory = await mkdtemp(join(tmpdir(), 'creator-export-resume-'));
+    let recordPages = 0;
+    const flaky = {
+      exportSummary: (policy) => actor.exportSummary(policy),
+      exportCommitments: (start, limit, policy) => actor.exportCommitments(start, limit, policy),
+      exportRecords: (start, limit, policy) => {
+        recordPages += 1;
+        if (recordPages === 2) throw new Error('connection dropped');
+        return actor.exportRecords(start, limit, policy);
+      },
+    };
+    let interrupted = null;
+    try {
+      await collect({ source: flaky, policy: FULL_POLICY, directory: resumedDirectory, sourceInfo, pageLimit: 3 });
+    } catch (error) {
+      interrupted = error;
+    }
+    c.ok(interrupted !== null && interrupted.message === 'connection dropped', 'an interrupted export throws');
+    const resumed = await collect({ source: actor, policy: FULL_POLICY, directory: resumedDirectory, sourceInfo, pageLimit: 3 });
+    c.ok(resumed.entries.records.length === Number(before.records),
+      'the resumed export completes with every record');
+    await rm(resumedDirectory, { recursive: true, force: true });
+
+    // A page edited after it was written no longer matches its checksum.
+    const pageFile = join(directory, bundle.bundle.pages.records[0].file);
+    const originalPage = await readFile(pageFile, 'utf-8');
+    const page = JSON.parse(originalPage);
+    page.entries[0].title = 'tampered after the fact';
+    await writeFile(pageFile, JSON.stringify(page), 'utf-8');
+    let tampered = null;
+    try {
+      await verifyBundle(directory);
+    } catch (error) {
+      tampered = error;
+    }
+    c.ok(tampered !== null && tampered.message.includes('checksum'), 'a page edited on disk fails verification');
+    await writeFile(pageFile, originalPage, 'utf-8');
+
+    // Restore into a fresh canister. The same Wasm is installed, so the only
+    // difference between source and target is the state the export carried.
+    const fresh = await pic.setupCanister({ idlFactory, wasm, sender });
+    const freshActor = fresh.actor;
+    freshActor.setIdentity(deployer);
+    const restored = await restoreBundle({ directory, target: freshActor, targetCanister: fresh.canisterId, chunk: 3 });
+    c.ok(restored.commitments === before.commitments && restored.records === before.records,
+      'the restored summary counts equal the exported ones');
+
+    const restoredStats = await freshActor.stats();
+    c.ok(JSON.stringify(restoredStats, bigintSafe) === JSON.stringify(before, bigintSafe),
+      'every counter matches after restore');
+    const restoredSummary = await freshActor.exportSummary(FULL_POLICY);
+    c.ok(equalBytes(restoredSummary.recordRoot, summary.recordRoot)
+      && equalBytes(restoredSummary.commitmentRoot, summary.commitmentRoot),
+      'the restored roots equal the exported roots');
+
+    // Reads rebuild from the indexes: the artifact index and the commitment
+    // hash index are state too, and a restore that forgot them would answer
+    // "not found" for everything.
+    const restoredRecord = (await freshActor.getByArtifactHash(digest(1)))[0];
+    c.ok(restoredRecord !== undefined && restoredRecord.id === record.id, 'the artifact index was rebuilt');
+    c.ok('revoked' in (await freshActor.getRecord(record.id))[0].status,
+      'a revoked record is restored revoked');
+    const existingHash = (await freshActor.getCommitment(first.id))[0].commitmentHash;
+    freshActor.setIdentity(alice);
+    c.expectErr(await freshActor.commit({ commitmentHash: existingHash, metadataHash: [], expiresAt: [] }),
+      'duplicate', 'the commitment hash index was rebuilt');
+    const nextAfterRestore = c.expectOk(
+      await freshActor.commit({ commitmentHash: commitmentFor(alicePrincipal, 30), metadataHash: [], expiresAt: [] }),
+      'the restored canister still accepts new commitments');
+    c.ok(nextAfterRestore.id === before.commitments + 1n, 'ids continue past the restored state');
+
+    // Certified queries work on the restored canister because restoreRecords
+    // re-certifies every record, not merely writes it.
+    const freshSubnet = await pic.getCanisterSubnetId(fresh.canisterId);
+    const freshRootKey = await pic.getPubKey(freshSubnet);
+    const certified = (await freshActor.getRecordCertified(record.id))[0];
+    c.ok(equalBytes(await verifyCertifiedValue({
+      certificate: certified.certificate,
+      witness: certified.witness,
+      canisterId: fresh.canisterId,
+      rootKey: freshRootKey,
+      path: recordPath(record.id),
+    }), recordDigest(certified.record)), 'a restored record is certified by its new subnet');
+
+    // The gate: a restore only exists into an empty canister and only for a
+    // controller. A non-empty target refuses before it can be overwritten.
+    freshActor.setIdentity(deployer);
+    c.expectErr(await freshActor.restoreBegin(summary), 'conflict',
+      'a restored canister refuses a second restore');
+    asDeployer();
+    c.expectErr(await actor.restoreBegin(summary), 'conflict', 'the controller of a non-empty canister is refused too');
+    asAlice();
+    c.expectErr(await actor.restoreBegin(summary), 'unauthorized', 'a non-controller cannot open a restore at all');
+
+    // A restore that imports a tampered entry reaches restoreFinish with a
+    // different root and is refused there: the summary is the specification,
+    // not the tool's word.
+    const tamperedTarget = await pic.setupCanister({ idlFactory, wasm, sender });
+    const verified = await verifyBundle(directory);
+    tamperedTarget.actor.setIdentity(deployer);
+    c.expectOk(await tamperedTarget.actor.restoreBegin(summary), 'a fresh canister opens a restore');
+    c.expectOk(await tamperedTarget.actor.restoreCommitments(verified.entries.commitments), 'its commitments import');
+    const editedRecords = verified.entries.records.map((entry, index) =>
+      index === 0 ? { ...entry, title: 'tampered' } : entry);
+    c.expectOk(await tamperedTarget.actor.restoreRecords(editedRecords), 'its records import');
+    c.expectErr(await tamperedTarget.actor.restoreFinish(), 'conflict',
+      'restoreFinish refuses a state that does not match the summary');
+
+    // The whole rehearsal is a property of the format, so an upgrade of the
+    // restored canister changes nothing.
+    await upgradeCanister({ pic, canisterId: fresh.canisterId, wasm, sender });
+    const afterRestoreUpgrade = await freshActor.exportSummary(FULL_POLICY);
+    c.ok(equalBytes(afterRestoreUpgrade.recordRoot, summary.recordRoot)
+      && afterRestoreUpgrade.records === summary.records,
+      'the restored state survives an upgrade byte for byte');
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 }

@@ -5,6 +5,7 @@ import CertifiedData "mo:core/CertifiedData";
 import Commitment "Commitment";
 import DisputeLog "DisputeLog";
 import Disputes "Dispute";
+import Export "Export";
 import Identity "Identity";
 import Int "mo:core/Int";
 import Iter "mo:core/Iter";
@@ -33,21 +34,12 @@ persistent actor CreatorProofRegistry {
     #err : Error;
   };
 
-  public type CommitmentStatus = {
-    #open;
-    #revealed : Nat;
-    #cancelled : Nat;
-  };
+  // The export format owns these declarations; the actor aliases them so the
+  // Candid interface keeps the names clients already use while the encoding
+  // lives beside the format that hashes it (#19).
+  public type CommitmentStatus = Export.CommitmentStatus;
 
-  public type Commitment = {
-    id : Nat;
-    owner : Principal;
-    commitmentHash : Blob;
-    metadataHash : ?Blob;
-    committedAt : Nat;
-    expiresAt : ?Nat;
-    status : CommitmentStatus;
-  };
+  public type Commitment = Export.Commitment;
 
   // Aliased rather than redeclared: `RecordDigest.encode` covers every field,
   // so a field added here and forgotten there would silently fall outside what
@@ -1463,6 +1455,263 @@ persistent actor CreatorProofRegistry {
       certificate;
       witness = tree.encodeWitness(tree.reveals(paths.values()));
     }
+  };
+
+  // ------------------------------------------------- portable export (#19) --
+
+  /// A restore is open from `restoreBegin` until `restoreFinish` succeeds. It
+  /// is the only path that writes a record without checking a commitment, so
+  /// it is controller-only and only exists into a canister that holds nothing:
+  /// every id is written once, in order, and `restoreFinish` must prove the
+  /// result is exactly the exported snapshot before the canister is usable.
+  /// A controller can already install arbitrary Wasm; this adds no power that
+  /// controller did not have, and it adds no way to edit existing state.
+  var pendingRestore : ?Export.Summary = null;
+
+  func requireRestoreOpen(caller : Principal) : ?Error {
+    if (not Principal.isController(caller)) return ?#unauthorized;
+    if (pendingRestore == null) return ?#conflict("no restore is open");
+    null
+  };
+
+  func canRestore() : Bool {
+    nextCommitmentId == 1 and nextRecordId == 1
+      and Map.size(commitments) == 0 and Map.size(records) == 0
+  };
+
+  func commitmentDigests() : [Blob] {
+    Iter.toArray(
+      Iter.map<(Nat, Commitment), Blob>(
+        Map.entriesFrom(commitments, Nat.compare, 0),
+        func(entry : (Nat, Commitment)) : Blob { Export.commitmentDigest(entry.1) }
+      )
+    )
+  };
+
+  func recordDigests(policy : Export.Policy) : [Blob] {
+    Iter.toArray(
+      Iter.map<(Nat, ProofRecord), Blob>(
+        Map.entriesFrom(records, Nat.compare, 0),
+        func(entry : (Nat, ProofRecord)) : Blob { Export.recordDigest(entry.1, policy) }
+      )
+    )
+  };
+
+  /// The snapshot identity a reader pins: counts and roots over the state in
+  /// id order. The roots are computed from the current state, so an export
+  /// taken while the state changes will not verify and has to be retried.
+  public query func exportSummary(policy : Export.Policy) : async Export.Summary {
+    {
+      format = Export.formatV1;
+      canister = Principal.fromActor(CreatorProofRegistry);
+      policy;
+      commitments = Map.size(commitments);
+      records = Map.size(records);
+      activeRecords = activeRecordCount;
+      revokedRecords = revokedRecordCount;
+      commitmentRoot = Export.commitmentRoot(commitmentDigests());
+      recordRoot = Export.recordRoot(recordDigests(policy));
+    }
+  };
+
+  /// One bounded page, starting at id `start`, in id order. `next` is where a
+  /// resumed export continues; `null` means this page reached the end.
+  public query func exportCommitments(start : Nat, limit : Nat, policy : Export.Policy) : async Export.CommitmentPage {
+    let capped = Validation.pageLimit(limit);
+    let entries = Iter.toArray(
+      Iter.map<(Nat, Commitment), Commitment>(
+        Iter.take(Map.entriesFrom(commitments, Nat.compare, start), capped),
+        func(entry : (Nat, Commitment)) : Commitment { entry.1 }
+      )
+    );
+    let next = if (entries.size() == capped) ?(entries[entries.size() - 1].id + 1) else null;
+    {
+      kind = Export.commitmentKind;
+      start;
+      next;
+      checksum = Export.pageChecksum(Export.commitmentKind, policy, start, next, Array.map<Commitment, Blob>(entries, Export.commitmentDigest));
+      entries;
+    }
+  };
+
+  public query func exportRecords(start : Nat, limit : Nat, policy : Export.Policy) : async Export.RecordPage {
+    let capped = Validation.pageLimit(limit);
+    let entries = Iter.toArray(
+      Iter.map<(Nat, ProofRecord), ProofRecord>(
+        Iter.take(Map.entriesFrom(records, Nat.compare, start), capped),
+        func(entry : (Nat, ProofRecord)) : ProofRecord { Export.redact(entry.1, policy) }
+      )
+    );
+    let next = if (entries.size() == capped) ?(entries[entries.size() - 1].id + 1) else null;
+    {
+      kind = Export.recordKind;
+      start;
+      next;
+      checksum = Export.pageChecksum(
+        Export.recordKind,
+        policy,
+        start,
+        next,
+        Array.map<ProofRecord, Blob>(entries, func(record : ProofRecord) : Blob { Export.recordDigest(record, policy) })
+      );
+      entries;
+    }
+  };
+
+  /// Opens a restore into an empty canister. The summary is kept and compared
+  /// with the state the imports actually produce.
+  public shared ({ caller }) func restoreBegin(summary : Export.Summary) : async Result<Export.Summary> {
+    if (not Principal.isController(caller)) return #err(#unauthorized);
+    if (not canRestore()) {
+      return #err(#conflict("the canister already holds state; a restore requires an empty canister"))
+    };
+    if (summary.format != Export.formatV1) return #err(#invalidInput("unknown export format"));
+    if (pendingRestore != null) return #err(#conflict("a restore is already open"));
+    pendingRestore := ?summary;
+    #ok(summary)
+  };
+
+  /// Imports commitments in id order. Retrying a page whose reply was lost is
+  /// accepted when the entries are byte-identical to what is already stored;
+  /// anything else is refused rather than silently overwriting.
+  public shared ({ caller }) func restoreCommitments(entries : [Commitment]) : async Result<Nat> {
+    switch (requireRestoreOpen(caller)) {
+      case (?error) return #err(error);
+      case null {};
+    };
+    for (entry in entries.values()) {
+      if (entry.id < nextCommitmentId) {
+        switch (Map.get(commitments, Nat.compare, entry.id)) {
+          case (?existing) {
+            if (not Blob.equal(Export.commitmentDigest(existing), Export.commitmentDigest(entry))) {
+              return #err(#conflict("commitment " # Nat.toText(entry.id) # " disagrees with the stored one"))
+            }
+          };
+          case null return #err(#conflict("the commitment index is inconsistent"));
+        }
+      } else if (entry.id > nextCommitmentId) {
+        return #err(#invalidInput("commitments must be restored in id order"))
+      } else {
+        switch (Export.checkCommitment(entry)) {
+          case (?message) return #err(#invalidInput(message));
+          case null {};
+        };
+        Map.add(commitments, Nat.compare, entry.id, entry);
+        Map.add(commitmentHashIndex, Blob.compare, entry.commitmentHash, entry.id);
+        nextCommitmentId += 1
+      }
+    };
+    #ok(nextCommitmentId - 1)
+  };
+
+  /// Imports records in id order, rebuilding the artifact index and certifying
+  /// each record so certified queries work on the restored canister too.
+  public shared ({ caller }) func restoreRecords(entries : [ProofRecord]) : async Result<Nat> {
+    switch (requireRestoreOpen(caller)) {
+      case (?error) return #err(error);
+      case null {};
+    };
+    for (entry in entries.values()) {
+      if (entry.id < nextRecordId) {
+        switch (Map.get(records, Nat.compare, entry.id)) {
+          case (?existing) {
+            if (not Blob.equal(RecordDigest.digest(existing), RecordDigest.digest(entry))) {
+              return #err(#conflict("record " # Nat.toText(entry.id) # " disagrees with the stored one"))
+            }
+          };
+          case null return #err(#conflict("the record index is inconsistent"));
+        }
+      } else if (entry.id > nextRecordId) {
+        return #err(#invalidInput("records must be restored in id order"))
+      } else {
+        switch (Export.checkRecord(entry)) {
+          case (?message) return #err(#invalidInput(message));
+          case null {};
+        };
+        switch (Map.get(artifactHashIndex, Blob.compare, entry.artifactHash)) {
+          case (?_) return #err(#duplicate("artifactHash already has a record"));
+          case null {};
+        };
+        Map.add(records, Nat.compare, entry.id, entry);
+        Map.add(artifactHashIndex, Blob.compare, entry.artifactHash, entry.id);
+        switch (entry.status) {
+          case (#active) activeRecordCount += 1;
+          case (#revoked(_)) revokedRecordCount += 1;
+        };
+        // The tree entry is written now; the root is published once at
+        // `restoreFinish`. Republishing per record would hash the tree on
+        // every import, and nothing should trust this canister's certificates
+        // until the restore has verified anyway.
+        tree.put([RecordDigest.treeLabel, RecordDigest.idKey(entry.id)], RecordDigest.digest(entry));
+        nextRecordId += 1
+      }
+    };
+    #ok(nextRecordId - 1)
+  };
+
+  /// The verification step: the counts and roots must equal the summary the
+  /// restore opened with, and every record must link to its revealed
+  /// commitment and back. Only then does the restore close.
+  public shared ({ caller }) func restoreFinish() : async Result<Export.Summary> {
+    switch (requireRestoreOpen(caller)) {
+      case (?error) return #err(error);
+      case null {};
+    };
+    let ?expected = pendingRestore else return #err(#conflict("no restore is open"));
+    let actual : Export.Summary = {
+      format = Export.formatV1;
+      canister = Principal.fromActor(CreatorProofRegistry);
+      policy = expected.policy;
+      commitments = Map.size(commitments);
+      records = Map.size(records);
+      activeRecords = activeRecordCount;
+      revokedRecords = revokedRecordCount;
+      commitmentRoot = Export.commitmentRoot(commitmentDigests());
+      recordRoot = Export.recordRoot(recordDigests(expected.policy));
+    };
+    if (
+      actual.commitments != expected.commitments or actual.records != expected.records
+      or actual.activeRecords != expected.activeRecords or actual.revokedRecords != expected.revokedRecords
+      or not Blob.equal(actual.commitmentRoot, expected.commitmentRoot)
+      or not Blob.equal(actual.recordRoot, expected.recordRoot)
+    ) {
+      return #err(#conflict("the restored state does not match the exported summary"))
+    };
+    for ((id, record) in Map.entriesFrom(records, Nat.compare, 0)) {
+      switch (Map.get(commitments, Nat.compare, record.commitmentId)) {
+        case (?commitment) {
+          switch (commitment.status) {
+            case (#revealed(recordId)) {
+              if (recordId != id) {
+                return #err(#conflict("commitment " # Nat.toText(commitment.id) # " names a different record"))
+              }
+            };
+            case _ return #err(#conflict("record " # Nat.toText(id) # " is not linked from a revealed commitment"));
+          }
+        };
+        case null return #err(#conflict("record " # Nat.toText(id) # " names a missing commitment"));
+      }
+    };
+    for ((_, commitment) in Map.entriesFrom(commitments, Nat.compare, 0)) {
+      switch (commitment.status) {
+        case (#revealed(recordId)) {
+          switch (Map.get(records, Nat.compare, recordId)) {
+            case (?record) {
+              if (record.commitmentId != commitment.id) {
+                return #err(#conflict("revealed commitment " # Nat.toText(commitment.id) # " names a foreign record"))
+              }
+            };
+            case null return #err(#conflict("revealed commitment " # Nat.toText(commitment.id) # " names a missing record"));
+          }
+        };
+        case _ {};
+      }
+    };
+    pendingRestore := null;
+    // One publication of the root for the whole restore, after every check
+    // above passed.
+    tree.setCertifiedData();
+    #ok(actual)
   };
 
   public query func stats() : async Stats {

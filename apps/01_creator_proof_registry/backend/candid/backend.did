@@ -149,6 +149,34 @@ type DelegationResult = variant { ok : Delegation; err : Error };
 type RecoveryResult = variant { ok : Recovery; err : Error };
 type CommitmentResult = variant { ok : Commitment; err : Error };
 type RecordResult = variant { ok : ProofRecord; err : Error };
+type ExportPolicy = record { includeStorageUris : bool };
+type ExportSummary = record {
+  format : text;
+  canister : principal;
+  policy : ExportPolicy;
+  commitments : nat;
+  records : nat;
+  activeRecords : nat;
+  revokedRecords : nat;
+  commitmentRoot : blob;
+  recordRoot : blob;
+};
+type CommitmentPage = record {
+  kind : nat8;
+  start : nat;
+  next : opt nat;
+  checksum : blob;
+  entries : vec Commitment;
+};
+type RecordPage = record {
+  kind : nat8;
+  start : nat;
+  next : opt nat;
+  checksum : blob;
+  entries : vec ProofRecord;
+};
+type ExportSummaryResult = variant { ok : ExportSummary; err : Error };
+type RestoreCountResult = variant { ok : nat; err : Error };
 type Stats = record {
   commitments : nat;
   records : nat;
@@ -340,5 +368,12 @@ service : {
   disputeEvents : (nat) -> (vec DisputeEvent) query;
   disputeSummary : (nat) -> (DisputeSummary) query;
   exportDispute : (nat) -> (opt DisputeExport) query;
+  exportSummary : (ExportPolicy) -> (ExportSummary) query;
+  exportCommitments : (nat, nat, ExportPolicy) -> (CommitmentPage) query;
+  exportRecords : (nat, nat, ExportPolicy) -> (RecordPage) query;
+  restoreBegin : (ExportSummary) -> (ExportSummaryResult);
+  restoreCommitments : (vec Commitment) -> (RestoreCountResult);
+  restoreRecords : (vec ProofRecord) -> (RestoreCountResult);
+  restoreFinish : () -> (ExportSummaryResult);
   stats : () -> (Stats) query;
 };

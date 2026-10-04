@@ -60,6 +60,8 @@ Candid UI URLは`icp deploy`のoutputに表示されます。
 | `addDisputeAuthority` / `retireDisputeAuthority` | controller | authorityの登録・退任 |
 | `getDispute` / `listDisputes` / `disputeEvents` / `disputeSummary` | anyone | dispute・event log・集計を取得 |
 | `exportDispute` | anyone | record + event log + certificate付きのportable export |
+| `exportSummary` / `exportCommitments` / `exportRecords` | anyone | commitment/recordのpage export、checksum・roots・policy付き (#19) |
+| `restoreBegin` / `restoreCommitments` / `restoreRecords` / `restoreFinish` | controller、空canisterのみ | exportからのrestore。countsとrootsが一致しなければfinishは拒否 (#19) |
 | `stats` | anyone | count取得 |
 
 ## Commitment
@@ -85,6 +87,12 @@ preimage中のprincipalは常にcallerのものです。requestから来た値�
 ## Disputes
 
 第三者はrecordに対してcounterclaimを提出できます (#8)。recordそのものは一切変更されず、status (`#active` / `#revoked`) はownerの操作だけが決めます。authorityのdeterminationは「そのauthorityが自らのpolicyの下でそう判断した」という記録であり、registryは法的な真偽を宣言せず、authority同士が食い違っても勝者を選びません。すべての遷移はhash chainで連結されたevent logに記録され、headは`["dispute", id]`でcertifiedされます。`exportDispute`はrecordとdisputeの両方を1つのcertificateで検証できる自己完結の文書です。privateなevidenceはdigestとcustodianだけをon-chainに置きます。lifecycle、abuse control、privacy rule、byte layoutは`docs/DISPUTES.md`を参照してください。
+
+## Portable export and restore
+
+commitmentとrecord全体を、canisterの外部で検証・保管・復元できる形式で取り出せます (#19)。`exportSummary`がcountsとroots (id順のdigest列へのSHA-256) を返し、`exportCommitments` / `exportRecords`がbounded pageをchecksum付きで返します。reader (`tools/export/format.mjs`) はpage checksumとrootsを独立に再計算し、bundle (`tools/export/bundle.mjs`) は中断したexportをpage単位で再開します。`includeStorageUris=false`のredactionはdigest計算の前に適用されるので、redacted exportのrootsは実際に渡した内容を指します。
+
+restoreはcontroller専用で、何も持たないcanisterにしか開けません。id順にimportし、同じpageの再送はbyte-identicalなときだけ受理され、`restoreFinish`がcounts・roots・record/commitmentの相互参照をすべて検証して初めて閉じます。recordはimport時に再certifyされるため、restored canisterでもcertified queryが使えます。設計、byte layout、限界は`docs/31_PORTABLE_EXPORT.md`を参照してください。
 
 ## Data limits
 

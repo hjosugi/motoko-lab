@@ -43,6 +43,10 @@ about.
 |---|---|---|---|---|
 | `01_creator_proof_registry` | `addDisputeAuthority` | controller | decides which bodies' determinations are recorded (#8) | policy |
 | `01_creator_proof_registry` | `retireDisputeAuthority` | controller | stops an authority recording new determinations | policy, emergency |
+| `01_creator_proof_registry` | `restoreBegin` | controller, on an empty canister | opens a restore: the only path that writes a record without a commitment check (#19) | emergency, operations |
+| `01_creator_proof_registry` | `restoreCommitments` | controller, while a restore is open | imports commitment state verbatim, in id order | emergency, operations |
+| `01_creator_proof_registry` | `restoreRecords` | controller, while a restore is open | imports records verbatim, rebuilds the artifact index and re-certifies | emergency, operations |
+| `01_creator_proof_registry` | `restoreFinish` | controller, while a restore is open | closes the restore only when counts and roots equal the exported summary | emergency, operations |
 | `03_license_marketplace` | `registerLedger` | controller | which token ledgers are trusted to report payments (#12) | policy |
 | `04_bounty_board` | `registerLedger` | controller | which ledgers escrow may use (#13) | policy |
 | `04_bounty_board` | `setPlatform` | controller | the platform fee account and rate taken at settlement (#13) | treasury |
@@ -80,7 +84,10 @@ about.
 
 What is **not** here matters as much. App 01 has no administrator over records:
 revocation is the owner's, rotation and delegation the creator's, and disputes
-are decided by authorities the registry only records (#7, #8). App 02 has no
+are decided by authorities the registry only records (#7, #8). The restore path
+(#19) is controller-only but exists only into a canister that holds nothing and
+must reproduce an exported summary exactly, so it cannot edit, delete or
+re-attribute a record that exists. App 02 has no
 privileged method. Apps 03 and 04 have no method that moves a buyer's or
 hunter's money on a controller's say-so — payments and escrow are verified on
 the ledger (#12, #13).
