@@ -20,7 +20,7 @@
 import { bigintSafe, buildCanister, digest, equalBytes, salt, upgradeCanister } from '../../../tools/pocket-ic/harness.mjs';
 import { CertificateError, verifyCertifiedValue } from '../../../tools/pocket-ic/certificate.mjs';
 import { commitmentHex } from '../../../protocol/tools/commitment.mjs';
-import { recordDigest, recordPath } from './record-digest.mjs';
+import { recordDigest, recordPath, encodeRecord } from './record-digest.mjs';
 import { DISCLAIMER, DisputeLogError, EXPORT_FORMAT, describe, eventHash, render, verifyExport } from './dispute-log.mjs';
 
 export const name = '01_creator_proof_registry';
@@ -1031,4 +1031,139 @@ export async function suite({ appDir, pic, createIdentity, checks: c }) {
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
+
+  // ------------------------------------------------- write quotas (#22) --
+  // A principal with no cost can fill the canister. The policy below is
+  // deliberately tiny so each refusal is reachable in a test; the default is
+  // 100 writes an hour, 50 open commitments and 10 MiB.
+  asDeployer();
+  const policy = {
+    freeWritesPerWindow: 4n,
+    windowSeconds: 3_600n,
+    maxRecordBytes: 1_200n,
+    maxStorageBytes: 2_000n,
+    maxOpenCommitments: 2n,
+  };
+  c.expectErr(await actor.setWritePolicy({ ...policy, windowSeconds: 0n }), 'invalidInput',
+    'a policy with a zero window is refused');
+  c.expectOk(await actor.setWritePolicy(policy), 'the controller sets a small write policy');
+  asAlice();
+  c.expectErr(await actor.setWritePolicy(policy), 'unauthorized', 'a non-controller cannot change the policy');
+  c.ok((await actor.getWritePolicy()).freeWritesPerWindow === 4n, 'the policy is readable');
+
+  // A fresh principal: usage counters exist from the first write under
+  // whichever policy is then in force.
+  const quotauser = createIdentity('quota-user');
+  const quotaPrincipal = quotauser.getPrincipal();
+  actor.setIdentity(quotauser);
+  const commitSeed = async (seed) => c.expectOk(
+    await actor.commit({ commitmentHash: commitmentFor(quotaPrincipal, seed), metadataHash: [], expiresAt: [] }),
+    `quota commit ${seed}`);
+
+  const q1 = await commitSeed(60);
+  const q2 = await commitSeed(61);
+  c.expectErr(
+    await actor.commit({ commitmentHash: commitmentFor(quotaPrincipal, 62), metadataHash: [], expiresAt: [] }),
+    'conflict', 'the third open commitment exceeds maxOpenCommitments');
+  c.ok((await actor.principalUsage(quotaPrincipal)).openCommitments === 2n,
+    'the refusal did not open a third commitment');
+  c.expectOk(await actor.cancelCommitment(q1.id), 'cancelling frees an open-commitment slot');
+  await commitSeed(63);
+  c.expectOk(await actor.cancelCommitment(q2.id), 'and so does the second cancellation');
+  const rejected = c.expectErr(
+    await actor.commit({ commitmentHash: commitmentFor(quotaPrincipal, 64), metadataHash: [], expiresAt: [] }),
+    'conflict', 'the next write attempt is refused by the window allowance');
+  c.ok(rejected.includes('writeQuota'), 'the refusal names the write limit');
+  const usage = await actor.principalUsage(quotaPrincipal);
+  c.ok(usage.writes === 5n && usage.openCommitments === 1n, 'attempts and open commitments are counted separately');
+
+  // An operator-granted batch extends the allowance and records where the
+  // settlement happened. The paid applications verify the money; here the
+  // reference is the operator's proof.
+  asDeployer();
+  const allowance = {
+    extraWrites: 2n,
+    extraStorageBytes: 0n,
+    reference: 'invoice INV-42',
+    expiresAt: (BigInt(await pic.getTime()) + 3_600_000n) * 1_000_000n,
+  };
+  c.expectErr(await actor.setPrincipalAllowance(quotaPrincipal, [{ ...allowance, reference: '' }]),
+    'invalidInput', 'an allowance without a settlement reference is refused');
+  c.expectErr(await actor.setPrincipalAllowance(quotaPrincipal, [{ ...allowance, expiresAt: 1n }]),
+    'invalidInput', 'an already-expired allowance is refused');
+  c.expectOk(await actor.setPrincipalAllowance(quotaPrincipal, [allowance]), 'the controller grants an allowance');
+  asAlice();
+  c.expectErr(await actor.setPrincipalAllowance(quotaPrincipal, [allowance]), 'unauthorized',
+    'a non-controller cannot grant an allowance');
+  actor.setIdentity(quotauser);
+  await commitSeed(64);
+  c.ok((await actor.principalUsage(quotaPrincipal)).extraWrites === 2n,
+    'the allowance is visible in the principal usage');
+
+  // The window rolls; storage does not. A rolled window frees write attempts,
+  // while the bytes already stored stay counted.
+  await pic.advanceTime(3_600_001);
+  await pic.tick();
+  const afterRoll = await actor.principalUsage(quotaPrincipal);
+  c.ok(afterRoll.writes === 0n && afterRoll.windowStart > usage.windowStart,
+    'a new window resets the write counter but not storage');
+
+  // Record size and total storage: a reveal over the per-record cap is refused
+  // before anything is written, and two records cannot together exceed the
+  // per-principal storage cap.
+  const bigUri = 'ipfs://' + 'x'.repeat(1500);
+  const sizeuser = createIdentity('size-user');
+  const sizePrincipal = sizeuser.getPrincipal();
+  actor.setIdentity(sizeuser);
+  const oversized = c.expectOk(
+    await actor.commit({ commitmentHash: commitmentFor(sizePrincipal, 70), metadataHash: [], expiresAt: [] }),
+    'size user commits');
+  const tooBig = c.expectErr(
+    await actor.reveal(revealInput(oversized.id, 70, { storageUri: bigUri })),
+    'conflict', 'a record over maxRecordBytes is refused');
+  c.ok(tooBig.includes('recordTooLarge'), 'the refusal names the record-size limit');
+  c.ok((await actor.principalUsage(sizePrincipal)).storageBytes === 0n,
+    'the refused record stored nothing');
+
+  asDeployer();
+  c.expectOk(await actor.setWritePolicy({ ...policy, maxRecordBytes: 2_000n, freeWritesPerWindow: 8n }),
+    'the operator raises the per-record cap; the change rewrites nothing');
+  actor.setIdentity(sizeuser);
+  const firstBig = c.expectOk(await actor.reveal(revealInput(oversized.id, 70, { storageUri: bigUri })),
+    'the same record is accepted under the raised cap');
+  const secondSize = c.expectOk(
+    await actor.commit({ commitmentHash: commitmentFor(sizePrincipal, 71), metadataHash: [], expiresAt: [] }),
+    'size user commits again');
+  c.expectErr(
+    await actor.reveal(revealInput(secondSize.id, 71, { storageUri: bigUri })),
+    'conflict', 'the second record would exceed the storage cap');
+  const sizeUsage = await actor.principalUsage(sizePrincipal);
+  const firstRecord = (await actor.getRecord(firstBig.id))[0];
+  c.ok(sizeUsage.storageBytes === BigInt(encodeRecord(firstRecord).length),
+    'storage is exactly the encoded size of the accepted record');
+
+  // The metrics are the operator's signal, and the policy change rewrote no
+  // history: the earlier records are still there, unchanged.
+  const metrics = await actor.writeMetrics();
+  const tags = new Map(metrics.rejections.map(([tag, count]) => [tag, count]));
+  c.ok(metrics.allowed > 0n && metrics.rejected >= 3n
+    && (tags.get('tooManyOpen') ?? 0n) >= 1n
+    && (tags.get('writeQuota') ?? 0n) >= 1n
+    && (tags.get('recordTooLarge') ?? 0n) >= 1n
+    && (tags.get('storageQuota') ?? 0n) >= 1n,
+    'every refusal is counted by reason');
+  c.ok((await actor.getRecord(record.id))[0].title === record.title,
+    'changing the policy did not rewrite an existing record');
+
+  // The policy, the counters and the allowance survive an upgrade.
+  const quotaBefore = await actor.principalUsage(quotaPrincipal);
+  const metricsBefore = await actor.writeMetrics();
+  await upgradeCanister({ pic, canisterId: fixture.canisterId, wasm, sender });
+  const quotaAfter = await actor.principalUsage(quotaPrincipal);
+  c.ok(quotaAfter.writes === quotaBefore.writes && quotaAfter.storageBytes === quotaBefore.storageBytes
+    && quotaAfter.extraWrites === quotaBefore.extraWrites,
+    'the quota counters and allowance survive the upgrade');
+  c.ok(JSON.stringify(await actor.writeMetrics(), bigintSafe) === JSON.stringify(metricsBefore, bigintSafe),
+    'the refusal metrics survive the upgrade');
+  c.ok((await actor.getWritePolicy()).maxRecordBytes === 2_000n, 'the policy survives the upgrade');
 }

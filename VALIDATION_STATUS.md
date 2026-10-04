@@ -712,6 +712,26 @@
 
 詳細は`docs/33_SECURITY_AUDIT.md`。
 
+## 2026-10-04に追加で実行済み (write quotas, issue #22)
+
+- app 01の公開write path (`commit`/`reveal`) にper-principalの無料枠と上限を追加
+  (`Quota.mo`): 既定で1時間100 write attempt、open commitment 50、1 record 64 KiB、
+  合計10 MiB。判定は書き込み前に行い、拒否は`#conflict`の`write rejected: <reason> ...`
+  で返し、`writeMetrics`が理由別に集計。`cancelCommitment`/`revokeRecord`は無料
+- `getWritePolicy` / `principalUsage` / `writeMetrics`で透明化。`setWritePolicy`と
+  `setPrincipalAllowance` (settlement reference必須、expiry付き) はcontroller専用で
+  governance inventory 42/42
+- verified settlementはpaid apps (#12/#13/#14) が担い、registryはreferenceを記録
+  (app 01に独自のledger adapterは追加しない)。policy変更は新規writeにのみ適用し、
+  record・id・counterのhistoryを書き換えないことをreplica suiteで検証
+- 検証: app 01 replica suite 275 checks (quota節35 checks)。Candid drift/compat PASS、
+  reproducible build PASS。state-machine modelはdefault policyの範囲内 (seeds 1-6で
+  最大52 attempts / open 6)
+- 未実施: app 01内でのon-chain購入flow (registryに価格がないため)、shard横断の
+  principal単位quota
+
+詳細は`docs/34_WRITE_QUOTAS.md`。
+
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、
@@ -761,6 +781,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | Portable export/restore (app 01) | format v1 cross-checked live on every page (38 replica checks) + 22 offline checks; restore into a fresh canister rehearsed in CI |
 | Privacy field classification | 333 on-chain fields classified; checker self-test proves each rule bites; low-entropy hashes carry mitigations |
 | Security audit | readiness package and findings gate in place; engagement not commissioned, so no audit claim is made |
+| Write quotas (app 01) | policy, caps, allowances and per-reason metrics, 35 replica checks; default limits leave the state-machine models valid |
 | local replica (`icp deploy`) | passed for app 06 (icp-cli 1.2.0 / launcher 15.0.0) |
 | upgrade rehearsal | passed for all 6 applications; across a breaking Candid change, untried |
 | documentation site | 128 pages built strict, 0 warnings; published from `main` |

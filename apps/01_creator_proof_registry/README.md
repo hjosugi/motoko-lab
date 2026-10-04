@@ -62,6 +62,8 @@ Candid UI URLは`icp deploy`のoutputに表示されます。
 | `exportDispute` | anyone | record + event log + certificate付きのportable export |
 | `exportSummary` / `exportCommitments` / `exportRecords` | anyone | commitment/recordのpage export、checksum・roots・policy付き (#19) |
 | `restoreBegin` / `restoreCommitments` / `restoreRecords` / `restoreFinish` | controller、空canisterのみ | exportからのrestore。countsとrootsが一致しなければfinishは拒否 (#19) |
+| `getWritePolicy` / `principalUsage` / `writeMetrics` | anyone | 書き込みquota、利用状況、拒否理由の集計 (#22) |
+| `setWritePolicy` / `setPrincipalAllowance` | controller | 無料枠・storage capの変更と、settlement reference付きallowanceの付与 (#22) |
 | `stats` | anyone | count取得 |
 
 ## Commitment
@@ -93,6 +95,12 @@ preimage中のprincipalは常にcallerのものです。requestから来た値�
 commitmentとrecord全体を、canisterの外部で検証・保管・復元できる形式で取り出せます (#19)。`exportSummary`がcountsとroots (id順のdigest列へのSHA-256) を返し、`exportCommitments` / `exportRecords`がbounded pageをchecksum付きで返します。reader (`tools/export/format.mjs`) はpage checksumとrootsを独立に再計算し、bundle (`tools/export/bundle.mjs`) は中断したexportをpage単位で再開します。`includeStorageUris=false`のredactionはdigest計算の前に適用されるので、redacted exportのrootsは実際に渡した内容を指します。
 
 restoreはcontroller専用で、何も持たないcanisterにしか開けません。id順にimportし、同じpageの再送はbyte-identicalなときだけ受理され、`restoreFinish`がcounts・roots・record/commitmentの相互参照をすべて検証して初めて閉じます。recordはimport時に再certifyされるため、restored canisterでもcertified queryが使えます。設計、byte layout、限界は`docs/31_PORTABLE_EXPORT.md`を参照してください。
+
+## Write quotas
+
+`commit` / `reveal`は無料ですが、1 principalが無制限にstateを増やせるわけではありません (#22)。既定では1時間あたり100 write attempt、open commitment 50、1 record 64 KiB、合計10 MiBまで。拒否は`#conflict`の`write rejected: <reason> limit=...`で返り、`writeMetrics`が理由別に数えます。`cancelCommitment` / `revokeRecord`は無料で、commitmentを閉じるとopen枠が戻ります。storageはwindowでリセットされません。
+
+operatorは`setWritePolicy`で新しいwriteにだけ適用されるlimitを変更でき、既存のrecord・id・counterのhistoryは書き換わりません。`setPrincipalAllowance`はsettlement reference必須の追加枠を付与します。**verified settlement**はkitのpaid apps (#12/#13/#14) が担い、registryはそのreferenceを記録します。設計と限界は`docs/34_WRITE_QUOTAS.md`を参照してください。
 
 ## Data limits
 

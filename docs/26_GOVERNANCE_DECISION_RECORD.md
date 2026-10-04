@@ -47,6 +47,8 @@ about.
 | `01_creator_proof_registry` | `restoreCommitments` | controller, while a restore is open | imports commitment state verbatim, in id order | emergency, operations |
 | `01_creator_proof_registry` | `restoreRecords` | controller, while a restore is open | imports records verbatim, rebuilds the artifact index and re-certifies | emergency, operations |
 | `01_creator_proof_registry` | `restoreFinish` | controller, while a restore is open | closes the restore only when counts and roots equal the exported summary | emergency, operations |
+| `01_creator_proof_registry` | `setWritePolicy` | controller | the free write allowance, storage cap and record-size cap for every principal (#22) | policy |
+| `01_creator_proof_registry` | `setPrincipalAllowance` | controller | grants one principal extra writes and storage, recording the settlement reference | policy, operations |
 | `03_license_marketplace` | `registerLedger` | controller | which token ledgers are trusted to report payments (#12) | policy |
 | `04_bounty_board` | `registerLedger` | controller | which ledgers escrow may use (#13) | policy |
 | `04_bounty_board` | `setPlatform` | controller | the platform fee account and rate taken at settlement (#13) | treasury |

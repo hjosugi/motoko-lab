@@ -177,6 +177,36 @@ type RecordPage = record {
 };
 type ExportSummaryResult = variant { ok : ExportSummary; err : Error };
 type RestoreCountResult = variant { ok : nat; err : Error };
+type QuotaPolicy = record {
+  freeWritesPerWindow : nat;
+  windowSeconds : nat;
+  maxRecordBytes : nat;
+  maxStorageBytes : nat;
+  maxOpenCommitments : nat;
+};
+type QuotaAllowance = record {
+  extraWrites : nat;
+  extraStorageBytes : nat;
+  reference : text;
+  expiresAt : nat;
+};
+type QuotaUsage = record {
+  writes : nat;
+  windowStart : nat;
+  storageBytes : nat;
+  openCommitments : nat;
+  extraWrites : nat;
+  extraStorageBytes : nat;
+};
+type WriteMetrics = record {
+  policy : QuotaPolicy;
+  allowed : nat;
+  rejected : nat;
+  rejections : vec record { text; nat };
+  trackedPrincipals : nat;
+};
+type QuotaPolicyResult = variant { ok : QuotaPolicy; err : Error };
+type AllowanceResult = variant { ok : opt QuotaAllowance; err : Error };
 type Stats = record {
   commitments : nat;
   records : nat;
@@ -375,5 +405,10 @@ service : {
   restoreCommitments : (vec Commitment) -> (RestoreCountResult);
   restoreRecords : (vec ProofRecord) -> (RestoreCountResult);
   restoreFinish : () -> (ExportSummaryResult);
+  getWritePolicy : () -> (QuotaPolicy) query;
+  principalUsage : (principal) -> (QuotaUsage) query;
+  writeMetrics : () -> (WriteMetrics) query;
+  setWritePolicy : (QuotaPolicy) -> (QuotaPolicyResult);
+  setPrincipalAllowance : (principal, opt QuotaAllowance) -> (AllowanceResult);
   stats : () -> (Stats) query;
 };

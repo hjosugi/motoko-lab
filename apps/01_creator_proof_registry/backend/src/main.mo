@@ -13,8 +13,10 @@ import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 import Order "mo:core/Order";
 import Principal "mo:core/Principal";
+import Quota "Quota";
 import RecordDigest "RecordDigest";
 import Runtime "mo:core/Runtime";
+import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Validation "Validation";
 
@@ -221,6 +223,77 @@ persistent actor CreatorProofRegistry {
   var nextRecordId : Nat = 1;
   var activeRecordCount : Nat = 0;
   var revokedRecordCount : Nat = 0;
+
+  // ------------------------------------------------- write quotas (#22) --
+  // Every `commit` and `reveal` counts as a write attempt for its caller.
+  // Storage is counted as the encoded record bytes the principal holds. The
+  // policy is operator-owned; an allowance is the recorded settlement of a
+  // paid batch (the paid apps verify the money; this canister records the
+  // operator's reference).
+  var writePolicy : Quota.Policy = Quota.defaultPolicy();
+  let usageByPrincipal = Map.empty<Principal, Quota.Usage>();
+  let allowanceByPrincipal = Map.empty<Principal, Quota.Allowance>();
+  let rejectionCounts = Map.empty<Text, Nat>();
+  var allowedWriteCount : Nat = 0;
+  var rejectedWriteCount : Nat = 0;
+
+  func usageOf(caller : Principal, now : Nat) : Quota.Usage {
+    let stored = switch (Map.get(usageByPrincipal, Principal.compare, caller)) {
+      case (?usage) usage;
+      case null {
+        {
+          writes = 0;
+          windowStart = now;
+          storageBytes = 0;
+          openCommitments = 0;
+          extraWrites = 0;
+          extraStorageBytes = 0;
+        }
+      };
+    };
+    let rolled = Quota.roll(stored, writePolicy, now);
+    // The live allowance is reported beside the counters, so an operator
+    // reading `principalUsage` sees the limit that is actually in force.
+    switch (Map.get(allowanceByPrincipal, Principal.compare, caller)) {
+      case (?allowance) {
+        if (now <= allowance.expiresAt) {
+          { rolled with extraWrites = allowance.extraWrites; extraStorageBytes = allowance.extraStorageBytes }
+        } else rolled
+      };
+      case null rolled;
+    }
+  };
+
+  func saveUsage(caller : Principal, usage : Quota.Usage) {
+    Map.add(usageByPrincipal, Principal.compare, caller, usage)
+  };
+
+  func noteRejection(tag : Text) {
+    let current = switch (Map.get(rejectionCounts, Text.compare, tag)) { case (?count) count; case null 0 };
+    Map.add(rejectionCounts, Text.compare, tag, current + 1);
+    rejectedWriteCount += 1
+  };
+
+  func quotaMessage(tag : Text, detail : Text) : Text {
+    "write rejected: " # tag # " " # detail
+  };
+
+  func rejectionDetail(rejection : Quota.Rejection) : Text {
+    switch (rejection) {
+      case (#writeQuota(detail)) {
+        "limit=" # Nat.toText(detail.limit) # " used=" # Nat.toText(detail.used) # " retryAt=" # Nat.toText(detail.retryAt)
+      };
+      case (#storageQuota(detail)) {
+        "limit=" # Nat.toText(detail.limit) # " used=" # Nat.toText(detail.used) # " requested=" # Nat.toText(detail.requested)
+      };
+      case (#recordTooLarge(detail)) {
+        "limit=" # Nat.toText(detail.limit) # " requested=" # Nat.toText(detail.requested)
+      };
+      case (#tooManyOpen(detail)) {
+        "limit=" # Nat.toText(detail.limit) # " used=" # Nat.toText(detail.used)
+      };
+    }
+  };
 
   func nowNanos() : Nat { Int.abs(Time.now()) };
 
@@ -721,6 +794,19 @@ persistent actor CreatorProofRegistry {
       case (?error) return #err(error);
       case null {};
     };
+    // The write is counted before it is decided: a script cannot make the
+    // canister do unbounded work by having every call refused. Anonymous
+    // callers are not counted — they have no principal to meter.
+    let now = nowNanos();
+    let usage = usageOf(caller, now);
+    switch (Quota.decideCommit(usage, writePolicy, Map.get(allowanceByPrincipal, Principal.compare, caller), now)) {
+      case (#rejected(rejection)) {
+        noteRejection(Quota.rejectionTag(rejection));
+        saveUsage(caller, { usage with writes = usage.writes + 1 });
+        return #err(#conflict(quotaMessage(Quota.rejectionTag(rejection), rejectionDetail(rejection))))
+      };
+      case (#ok) {};
+    };
     switch (validateCommit(input)) {
       case (?error) return #err(error);
       case null {};
@@ -737,12 +823,14 @@ persistent actor CreatorProofRegistry {
       owner = caller;
       commitmentHash = input.commitmentHash;
       metadataHash = input.metadataHash;
-      committedAt = nowNanos();
+      committedAt = now;
       expiresAt = input.expiresAt;
       status = #open;
     };
     Map.add(commitments, Nat.compare, id, commitment);
     Map.add(commitmentHashIndex, Blob.compare, input.commitmentHash, id);
+    saveUsage(caller, { usage with writes = usage.writes + 1; openCommitments = usage.openCommitments + 1 });
+    allowedWriteCount += 1;
     #ok(commitment)
   };
 
@@ -765,6 +853,9 @@ persistent actor CreatorProofRegistry {
       status = #cancelled(nowNanos());
     };
     Map.add(commitments, Nat.compare, id, updated);
+    // Closing a commitment is free and frees an open-commitment slot.
+    let usage = usageOf(caller, nowNanos());
+    saveUsage(caller, { usage with openCommitments = Nat.sub(usage.openCommitments, 1) });
     #ok(updated)
   };
 
@@ -841,6 +932,7 @@ persistent actor CreatorProofRegistry {
 
     let recordId = nextRecordId;
     nextRecordId += 1;
+    let now = nowNanos();
     let record : ProofRecord = {
       id = recordId;
       commitmentId = input.commitmentId;
@@ -854,8 +946,20 @@ persistent actor CreatorProofRegistry {
       storageUri = input.storageUri;
       parents = input.parents;
       ai = input.ai;
-      createdAt = nowNanos();
+      createdAt = now;
       status = #active;
+    };
+    // The storage the record will occupy, as the certified encoding counts it,
+    // decided before anything is written.
+    let recordBytes = RecordDigest.encode(record).size();
+    let usage = usageOf(caller, now);
+    switch (Quota.decideReveal(usage, writePolicy, Map.get(allowanceByPrincipal, Principal.compare, caller), now, recordBytes)) {
+      case (#rejected(rejection)) {
+        noteRejection(Quota.rejectionTag(rejection));
+        saveUsage(caller, { usage with writes = usage.writes + 1 });
+        return #err(#conflict(quotaMessage(Quota.rejectionTag(rejection), rejectionDetail(rejection))))
+      };
+      case (#ok) {};
     };
     Map.add(records, Nat.compare, recordId, record);
     Map.add(artifactHashIndex, Blob.compare, input.artifactHash, recordId);
@@ -892,6 +996,13 @@ persistent actor CreatorProofRegistry {
       status = #revealed(recordId);
     };
     Map.add(commitments, Nat.compare, commitment.id, updatedCommitment);
+    saveUsage(caller, {
+      usage with
+      writes = usage.writes + 1;
+      openCommitments = Nat.sub(usage.openCommitments, 1);
+      storageBytes = usage.storageBytes + recordBytes;
+    });
+    allowedWriteCount += 1;
     #ok(record)
   };
 
@@ -1598,6 +1709,14 @@ persistent actor CreatorProofRegistry {
         };
         Map.add(commitments, Nat.compare, entry.id, entry);
         Map.add(commitmentHashIndex, Blob.compare, entry.commitmentHash, entry.id);
+        // Rebuild the quota accounting from the imported state: a restored
+        // open commitment occupies a slot, and its owner's storage is
+        // accounted when the records arrive.
+        let usage = usageOf(entry.owner, nowNanos());
+        switch (entry.status) {
+          case (#open) saveUsage(entry.owner, { usage with openCommitments = usage.openCommitments + 1 });
+          case _ {};
+        };
         nextCommitmentId += 1
       }
     };
@@ -1643,6 +1762,8 @@ persistent actor CreatorProofRegistry {
         // every import, and nothing should trust this canister's certificates
         // until the restore has verified anyway.
         tree.put([RecordDigest.treeLabel, RecordDigest.idKey(entry.id)], RecordDigest.digest(entry));
+        let usage = usageOf(entry.owner, nowNanos());
+        saveUsage(entry.owner, { usage with storageBytes = usage.storageBytes + RecordDigest.encode(entry).size() });
         nextRecordId += 1
       }
     };
@@ -1714,8 +1835,84 @@ persistent actor CreatorProofRegistry {
     #ok(actual)
   };
 
-  public query func stats() : async Stats {
+  // ------------------------------------------------- write quotas (#22) --
+
+  /// What one principal is allowed beyond the policy: an operator-granted
+  /// batch whose `reference` records where the settlement happened. The paid
+  /// applications (03, 04, 05) verify payments against a ledger; this canister
+  /// has no price of its own, so a paid batch is recorded here as a reference
+  /// to a settlement the operator has already verified.
+  public type WriteMetrics = {
+    policy : Quota.Policy;
+    allowed : Nat;
+    rejected : Nat;
+    rejections : [(Text, Nat)];
+    trackedPrincipals : Nat;
+  };
+
+  public query func getWritePolicy() : async Quota.Policy { writePolicy };
+
+  /// The caller-visible usage of one principal, with the window rolled to now.
+  public query func principalUsage(principal : Principal) : async Quota.Usage {
+    usageOf(principal, nowNanos())
+  };
+
+  /// Every allowed and refused write, and why the refused ones were refused.
+  /// A rise in `writeQuota` or `tooManyOpen` is the signal a principal is
+  /// probing the free allowance.
+  public query func writeMetrics() : async WriteMetrics {
     {
+      policy = writePolicy;
+      allowed = allowedWriteCount;
+      rejected = rejectedWriteCount;
+      rejections = Iter.toArray(Map.entries(rejectionCounts));
+      trackedPrincipals = Map.size(usageByPrincipal);
+    }
+  };
+
+  /// Operators can change the limits; the change applies to new writes and
+  /// never rewrites a record, an id or a counter's history. A principal who is
+  /// over the new limit is refused until their window rolls or they receive an
+  /// allowance.
+  public shared ({ caller }) func setWritePolicy(policy : Quota.Policy) : async Result<Quota.Policy> {
+    if (not Principal.isController(caller)) return #err(#unauthorized);
+    if (
+      policy.windowSeconds == 0 or policy.maxRecordBytes == 0
+      or policy.maxStorageBytes == 0 or policy.maxOpenCommitments == 0
+    ) {
+      return #err(#invalidInput("policy limits must be greater than zero"))
+    };
+    writePolicy := policy;
+    #ok(policy)
+  };
+
+  /// Grants or clears a principal's allowance. Controller-only, because it is
+  /// the operator's record of a settlement that happened elsewhere; the
+  /// reference is mandatory so an allowance can always be traced back.
+  public shared ({ caller }) func setPrincipalAllowance(
+    principal : Principal,
+    allowance : ?Quota.Allowance
+  ) : async Result<?Quota.Allowance> {
+    if (not Principal.isController(caller)) return #err(#unauthorized);
+    switch (allowance) {
+      case (?value) {
+        if (not Validation.validText(value.reference, 1, 200)) {
+          return #err(#invalidInput("an allowance needs a settlement reference"))
+        };
+        if (value.expiresAt <= nowNanos()) {
+          return #err(#invalidInput("an allowance cannot already be expired"))
+        };
+      };
+      case null {};
+    };
+    switch (allowance) {
+      case (?value) Map.add(allowanceByPrincipal, Principal.compare, principal, value);
+      case null Map.remove(allowanceByPrincipal, Principal.compare, principal);
+    };
+    #ok(allowance)
+  };
+
+  public query func stats() : async Stats {    {
       commitments = Map.size(commitments);
       records = Map.size(records);
       activeRecords = activeRecordCount;

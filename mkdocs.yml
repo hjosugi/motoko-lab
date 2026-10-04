@@ -127,6 +127,7 @@ nav:
       - ポータブルexportとrestore: docs/31_PORTABLE_EXPORT.md
       - プライバシーとデータ保護: docs/32_PRIVACY_AND_DATA_PROTECTION.md
       - セキュリティ監査: docs/33_SECURITY_AUDIT.md
+      - 書き込みquotaとabuse economics: docs/34_WRITE_QUOTAS.md
       - データモデルとAPI: docs/23_DATA_MODEL_AND_API.md
 
   - アプリケーション:
