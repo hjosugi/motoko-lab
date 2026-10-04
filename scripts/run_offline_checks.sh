@@ -19,12 +19,12 @@ run() {
   echo
 }
 
-echo "[1/17] Shell syntax"
+echo "[1/18] Shell syntax"
 for script in "$ROOT"/scripts/*.sh; do
   run bash -n "$script"
 done
 
-echo "[2/17] Python source compilation without bytecode output"
+echo "[2/18] Python source compilation without bytecode output"
 ROOT_FOR_PY="$ROOT" python3 - <<'PY'
 import os
 from pathlib import Path
@@ -37,54 +37,60 @@ print(f"compiled: {len(files)} Python files")
 PY
 echo
 
-echo "[3/17] Node syntax"
+echo "[3/18] Node syntax"
 for module in "$ROOT"/protocol/tools/*.mjs; do
   run node --check "$module"
 done
 
-echo "[4/17] Provenance protocol tests"
+echo "[4/18] Provenance protocol tests"
 run node "$ROOT/protocol/tools/provenance-cli.test.mjs"
 run node "$ROOT/protocol/tools/merkle.test.mjs"
 
-echo "[5/17] C2PA bridge tests"
+echo "[5/18] C2PA bridge tests"
 run node "$ROOT/protocol/tools/c2pa.test.mjs"
 
-echo "[6/17] Verifiable credential tests"
+echo "[6/18] Verifiable credential tests"
 run node "$ROOT/protocol/tools/vc.test.mjs"
 
-echo "[7/17] AI attestation tests"
+echo "[7/18] AI attestation tests"
 run node "$ROOT/protocol/tools/ai-attestation.test.mjs"
 
-echo "[8/17] Tenant sharding model"
+echo "[8/18] Tenant sharding model"
 run node "$ROOT/tools/sharding/model.test.mjs"
 
-echo "[9/17] Observability model"
+echo "[9/18] Observability model"
 run node "$ROOT/tools/observability/model.test.mjs"
 
-echo "[10/17] State-machine framework"
+echo "[10/18] State-machine framework"
 for module in "$ROOT"/tools/state-machine/*.mjs "$ROOT"/tools/state-machine/models/*.mjs; do
   run node --check "$module"
 done
 run node "$ROOT/tools/state-machine/framework.test.mjs"
 
-echo "[11/17] Export format and tooling"
+echo "[11/18] Export format and tooling"
 for module in "$ROOT"/apps/01_creator_proof_registry/tools/export/*.mjs; do
   run node --check "$module"
 done
 run node "$ROOT/apps/01_creator_proof_registry/tools/export/export.test.mjs"
 
-echo "[12/17] Privacy field classification"
+echo "[12/18] Privacy field classification"
 run python3 "$ROOT/scripts/check_privacy.py" "$ROOT" --self-test
 
-echo "[13/17] Security audit register"
+echo "[13/18] Security audit register"
 run python3 "$ROOT/scripts/check_audit_findings.py" "$ROOT" --self-test
 
-echo "[14/17] Motoko/Candid API surface"
+echo "[14/18] Creator frontend client"
+for module in "$ROOT"/apps/01_creator_proof_registry/frontend/*.mjs; do
+  run node --check "$module"
+done
+run node "$ROOT/apps/01_creator_proof_registry/frontend/client.test.mjs"
+
+echo "[15/18] Motoko/Candid API surface"
 run python3 "$ROOT/scripts/check_api_surface.py" "$ROOT" \
   --json-report "$VALIDATION_DIR/api-surface.json" \
   --markdown-report "$VALIDATION_DIR/API_SURFACE.md"
 
-echo "[15/17] GitHub automation dry-runs"
+echo "[16/18] GitHub automation dry-runs"
 labels_output="$(mktemp)"
 issues_output="$(mktemp)"
 trap 'rm -f "$labels_output" "$issues_output"' EXIT
@@ -94,11 +100,11 @@ echo "label commands: $(grep -c '^gh label create' "$labels_output")"
 echo "issue dry-run output lines: $(wc -l < "$issues_output" | tr -d ' ')"
 echo
 
-echo "[16/17] Structural validation"
+echo "[17/18] Structural validation"
 run python3 "$ROOT/scripts/validate_kit.py" "$ROOT" \
   --json-report "$VALIDATION_DIR/structural-validation.json"
 
-echo "[17/17] Workspace hygiene"
+echo "[18/18] Workspace hygiene"
 find "$ROOT" -type d -name __pycache__ -prune -exec rm -rf {} +
 
 # What matters is that no generated directory can be packaged, not that none

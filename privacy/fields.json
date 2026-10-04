@@ -1489,6 +1489,50 @@
     "workers": {
       "class": "public",
       "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "allowed": {
+      "class": "public",
+      "note": "Write-quota policy or counter value; public, operational and non-personal (#22)."
+    },
+    "extraStorageBytes": {
+      "class": "public",
+      "note": "Write-quota policy or counter value; public, operational and non-personal (#22)."
+    },
+    "extraWrites": {
+      "class": "public",
+      "note": "Write-quota policy or counter value; public, operational and non-personal (#22)."
+    },
+    "freeWritesPerWindow": {
+      "class": "public",
+      "note": "Write-quota policy or counter value; public, operational and non-personal (#22)."
+    },
+    "maxOpenCommitments": {
+      "class": "public",
+      "note": "Write-quota policy or counter value; public, operational and non-personal (#22)."
+    },
+    "maxRecordBytes": {
+      "class": "public",
+      "note": "Write-quota policy or counter value; public, operational and non-personal (#22)."
+    },
+    "maxStorageBytes": {
+      "class": "public",
+      "note": "Write-quota policy or counter value; public, operational and non-personal (#22)."
+    },
+    "openCommitments": {
+      "class": "public",
+      "note": "Write-quota policy or counter value; public, operational and non-personal (#22)."
+    },
+    "storageBytes": {
+      "class": "public",
+      "note": "Write-quota policy or counter value; public, operational and non-personal (#22)."
+    },
+    "trackedPrincipals": {
+      "class": "public",
+      "note": "Write-quota policy or counter value; public, operational and non-personal (#22)."
+    },
+    "writes": {
+      "class": "public",
+      "note": "Write-quota policy or counter value; public, operational and non-personal (#22)."
     }
   }
 }

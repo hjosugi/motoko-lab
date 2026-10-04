@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creator proof — reference client</title>
+<!--
+  The reference creator/verifier UI. It is intentionally a static page over
+  `client.mjs`: no framework, no build step, no CDN. The parts that must be
+  correct — hashing, the commitment, the pending reveal, verification against
+  the attested digest, the warnings — are in the module and are tested offline
+  by `client.test.mjs`. Wiring the buttons to a canister needs an agent; see
+  `docs/FRONTEND.md` for the exact calls.
+-->
+<style>
+  :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+  body { margin: 0 auto; max-width: 52rem; padding: 1rem; line-height: 1.5; }
+  h1 { font-size: 1.4rem; }
+  section { border: 1px solid color-mix(in srgb, currentColor 25%, transparent); border-radius: .5rem; padding: 1rem; margin: 1rem 0; }
+  label { display: block; margin: .5rem 0 .25rem; font-weight: 600; }
+  input, textarea, button { font: inherit; width: 100%; box-sizing: border-box; padding: .5rem; }
+  button { margin-top: .75rem; cursor: pointer; }
+  .warning { border-left: .35rem solid #b45309; background: color-mix(in srgb, #b45309 12%, transparent); padding: .75rem; margin: .5rem 0; }
+  .ok { color: #15803d; font-weight: 600; }
+  .bad { color: #b91c1c; font-weight: 600; }
+  code { word-break: break-all; }
+  @media (max-width: 30rem) { body { padding: .5rem; } section { padding: .75rem; } }
+</style>
+</head>
+<body>
+<h1>Creator proof — reference client</h1>
+<p>Everything below runs on this device. The artifact is hashed locally and is never uploaded by this page.</p>
+
+<section aria-labelledby="publish-heading">
+  <h2 id="publish-heading">1. Publish a proof</h2>
+  <label for="artifact">Artifact (hashed locally)</label>
+  <input id="artifact" type="file">
+  <p>Artifact SHA-256: <code id="artifact-hash">—</code></p>
+
+  <label for="title">Title (public and permanent)</label>
+  <input id="title" maxlength="200">
+  <label for="kind">Kind</label>
+  <input id="kind" value="image">
+  <label for="mime">MIME type</label>
+  <input id="mime" value="image/png">
+  <label for="uri">Storage pointer (optional; leave empty for private work)</label>
+  <input id="uri" maxlength="2048">
+  <p id="field-notes"></p>
+
+  <div id="warnings" class="warning" hidden></div>
+  <label><input id="acknowledge" type="checkbox" style="width:auto"> I understand this is irreversible and public.</label>
+  <button id="commit" disabled>Commit (hash only, no artifact)</button>
+  <p id="commit-status"></p>
+</section>
+
+<section aria-labelledby="recover-heading">
+  <h2 id="recover-heading">2. Recover an interrupted reveal</h2>
+  <p>A commit is followed by a reveal in a later visit. The pending state on this device holds the salt and the hashes, never the artifact.</p>
+  <pre id="pending">none</pre>
+  <button id="clear-pending" disabled>Discard the pending reveal</button>
+</section>
+
+<section aria-labelledby="verify-heading">
+  <h2 id="verify-heading">3. Verify a record</h2>
+  <label for="record">Record as served (JSON)</label>
+  <textarea id="record" rows="6" placeholder='{"id":"7","owner":"...","status":{"active":null},...}'></textarea>
+  <label for="attested">Digest the subnet attested (hex, 32 bytes)</label>
+  <input id="attested">
+  <button id="verify">Verify locally</button>
+  <p id="verdict"></p>
+</section>
+
+<script type="module">
+import {
+  FIELD_NOTES, clearPending, loadPending, publicationWarnings,
+  hashArtifactBytes, verificationReport,
+} from './client.mjs';
+
+const $ = (id) => document.getElementById(id);
+
+// The warnings, verbatim, before any write.
+$('warnings').hidden = false;
+$('warnings').innerHTML = publicationWarnings([
+  'irreversible-publication', 'no-personal-data', 'private-evidence-off-chain',
+]).map((warning) => `<strong>${warning.title}</strong><br>${warning.copy}`).join('<hr>');
+$('field-notes').innerHTML = Object.entries(FIELD_NOTES)
+  .map(([field, note]) => `<strong>${field}</strong>: ${note}`).join('<br>');
+
+$('acknowledge').addEventListener('change', (event) => {
+  $('commit').disabled = !event.target.checked;
+});
+
+$('artifact').addEventListener('change', async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  $('artifact-hash').textContent = 'hashing…';
+  $('artifact-hash').textContent = await hashArtifactBytes(new Uint8Array(await file.arrayBuffer()));
+});
+
+function renderPending() {
+  const pending = loadPending(localStorage);
+  $('pending').textContent = pending === null ? 'none' : JSON.stringify(pending, null, 2);
+  $('clear-pending').disabled = pending === null;
+}
+renderPending();
+$('clear-pending').addEventListener('click', () => { clearPending(localStorage); renderPending(); });
+
+$('verify').addEventListener('click', async () => {
+  const verdict = $('verdict');
+  try {
+    const record = JSON.parse($('record').value);
+    // A record from the canister has a Principal object; the JSON form uses
+    // hex bytes, which is what this reference view accepts.
+    record.owner = Uint8Array.from(record.owner.match(/../g).map((byte) => parseInt(byte, 16)));
+    const attested = Uint8Array.from($('attested').value.trim().match(/../g).map((byte) => parseInt(byte, 16)));
+    const report = await verificationReport({ record, attestedDigest: attested });
+    verdict.className = report.matches ? 'ok' : 'bad';
+    verdict.textContent = `${report.summary} ${report.warnings.join(' ')}`;
+  } catch (error) {
+    verdict.className = 'bad';
+    verdict.textContent = `could not verify: ${error.message}`;
+  }
+});
+
+// The commit and reveal buttons call the canister; this page stops at the
+// local half so it can run with no agent and no network. `docs/FRONTEND.md`
+// lists the two calls and the recovery flow they drive.
+$('commit').addEventListener('click', () => {
+  $('commit-status').textContent = 'Local half ready: the artifact hash is above. Wire `actor.commit(...)` as in docs/FRONTEND.md to send only the commitment hash.';
+});
+</script>
+</body>
+</html>

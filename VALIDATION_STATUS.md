@@ -750,6 +750,21 @@
 
 詳細は`docs/35_DISASTER_RECOVERY.md`。
 
+## 2026-10-04に追加で実行済み (creator frontend, issue #26)
+
+- `apps/01_creator_proof_registry/frontend/`にframework/build step/CDN不要のreference frontend。
+  `client.mjs`がlocal hashing (Web Crypto)、RFC 8785 manifest hash、commitment v1、record digest、
+  interrupted revealのpending state (salt+hashのみ、artifactは保存しない)、attested digestとの
+  照合によるtamper検出、`privacy/warnings.json`と同一文言のwarningを実装
+- 各encodingは独立実装とofflineで相互検証: commitmentは`protocol/tools/commitment.mjs`、
+  record digestは`test/record-digest.mjs`、manifestは`protocol/tools/jcs.mjs`。offline hashは
+  `fetch`を無効化して検証、large fileは8 MiBのstreamed digestとin-memory digestの一致を検証
+- `index.html`はstatic・mobile-first・labelledなview。canister呼び出しの配線は
+  `docs/FRONTEND.md`に記載 (asset canister配備、II認証#27、production polishは未実施)
+- 検証: `client.test.mjs` 23 checks (`run_offline_checks.sh`の[14/18]、`make frontend-test`)
+
+詳細は`apps/01_creator_proof_registry/docs/FRONTEND.md`。
+
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、
@@ -801,6 +816,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | Security audit | readiness package and findings gate in place; engagement not commissioned, so no audit claim is made |
 | Write quotas (app 01) | policy, caps, allowances and per-reason metrics, 35 replica checks; default limits leave the state-machine models valid |
 | Restore drill (app 01) | automated end-to-end drill on pocket-ic: 12/12 checks, restore within the RTO; quarterly cron workflow and committed report |
+| Creator frontend (app 01) | 23 offline checks; local hashing, both encodings cross-checked, interrupted-reveal state and tamper detection; static reference UI, deployment/II pending (#26/#27) |
 | local replica (`icp deploy`) | passed for app 06 (icp-cli 1.2.0 / launcher 15.0.0) |
 | upgrade rehearsal | passed for all 6 applications; across a breaking Candid change, untried |
 | documentation site | 128 pages built strict, 0 warnings; published from `main` |

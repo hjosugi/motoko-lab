@@ -7,7 +7,7 @@ This is an offline guardrail and does not replace compiler-generated Candid or u
 
 | App | Methods | Status |
 |---|---:|---|
-| `01_creator_proof_registry` | 46 | PASS |
+| `01_creator_proof_registry` | 51 | PASS |
 | `02_merkle_anchor` | 9 | PASS |
 | `03_license_marketplace` | 17 | PASS |
 | `04_bounty_board` | 16 | PASS |
@@ -48,9 +48,11 @@ This is an offline guardrail and does not replace compiler-generated Candid or u
 - `getRecord`: query, 1 argument(s)
 - `getRecordCertified`: query, 1 argument(s)
 - `getRecovery`: query, 1 argument(s)
+- `getWritePolicy`: query, 0 argument(s)
 - `listDisputeAuthorities`: query, 0 argument(s)
 - `listDisputes`: query, 3 argument(s)
 - `listRecords`: query, 2 argument(s)
+- `principalUsage`: query, 1 argument(s)
 - `registerCreator`: update, 0 argument(s)
 - `respondToDispute`: update, 2 argument(s)
 - `restoreBegin`: update, 1 argument(s)
@@ -62,8 +64,11 @@ This is an offline guardrail and does not replace compiler-generated Candid or u
 - `revokeDelegation`: update, 2 argument(s)
 - `revokeRecord`: update, 2 argument(s)
 - `rotateKey`: update, 2 argument(s)
+- `setPrincipalAllowance`: update, 2 argument(s)
+- `setWritePolicy`: update, 1 argument(s)
 - `stats`: query, 0 argument(s)
 - `withdrawDispute`: update, 2 argument(s)
+- `writeMetrics`: query, 0 argument(s)
 
 ### 02_merkle_anchor
 

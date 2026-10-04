@@ -66,6 +66,10 @@ Candid UI URLは`icp deploy`のoutputに表示されます。
 | `setWritePolicy` / `setPrincipalAllowance` | controller | 無料枠・storage capの変更と、settlement reference付きallowanceの付与 (#22) |
 | `stats` | anyone | count取得 |
 
+## Frontend
+
+`frontend/`にframework不要のreference clientがあります (#26)。artifactはlocalでhashされ、commitではcommitment hashだけが送られます。interrupted revealはsaltとhashのみを端末に保持し、verificationはserved recordのdigestをattested digestと照合して改ざんを検出します。詳細は`docs/FRONTEND.md`を参照してください。
+
 ## Commitment
 
 off-chain CLI:

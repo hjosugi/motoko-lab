@@ -4,7 +4,7 @@
   "limitation": "This does not replace compiler-generated Candid or compatibility checking.",
   "status": "pass",
   "application_count": 6,
-  "method_count": 132,
+  "method_count": 137,
   "applications": [
     {
       "app": "01_creator_proof_registry",
@@ -160,6 +160,11 @@
           "argument_count": 1
         },
         {
+          "name": "getWritePolicy",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
           "name": "listDisputeAuthorities",
           "mode": "query",
           "argument_count": 0
@@ -173,6 +178,11 @@
           "name": "listRecords",
           "mode": "query",
           "argument_count": 2
+        },
+        {
+          "name": "principalUsage",
+          "mode": "query",
+          "argument_count": 1
         },
         {
           "name": "registerCreator",
@@ -230,6 +240,16 @@
           "argument_count": 2
         },
         {
+          "name": "setPrincipalAllowance",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "setWritePolicy",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
           "name": "stats",
           "mode": "query",
           "argument_count": 0
@@ -238,6 +258,11 @@
           "name": "withdrawDispute",
           "mode": "update",
           "argument_count": 2
+        },
+        {
+          "name": "writeMetrics",
+          "mode": "query",
+          "argument_count": 0
         }
       ],
       "candid_methods": [
@@ -392,6 +417,11 @@
           "argument_count": 1
         },
         {
+          "name": "getWritePolicy",
+          "mode": "query",
+          "argument_count": 0
+        },
+        {
           "name": "listDisputeAuthorities",
           "mode": "query",
           "argument_count": 0
@@ -405,6 +435,11 @@
           "name": "listRecords",
           "mode": "query",
           "argument_count": 2
+        },
+        {
+          "name": "principalUsage",
+          "mode": "query",
+          "argument_count": 1
         },
         {
           "name": "registerCreator",
@@ -462,6 +497,16 @@
           "argument_count": 2
         },
         {
+          "name": "setPrincipalAllowance",
+          "mode": "update",
+          "argument_count": 2
+        },
+        {
+          "name": "setWritePolicy",
+          "mode": "update",
+          "argument_count": 1
+        },
+        {
           "name": "stats",
           "mode": "query",
           "argument_count": 0
@@ -470,6 +515,11 @@
           "name": "withdrawDispute",
           "mode": "update",
           "argument_count": 2
+        },
+        {
+          "name": "writeMetrics",
+          "mode": "query",
+          "argument_count": 0
         }
       ],
       "missing_in_candid": [],

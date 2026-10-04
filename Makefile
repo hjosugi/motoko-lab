@@ -1,4 +1,4 @@
-.PHONY: replica-tests docs docs-serve validate api-surface check-apps protocol-test issues-dry-run labels-dry-run offline-checks package state-machine-tests export-test privacy-check audit-check drill
+.PHONY: replica-tests docs docs-serve validate api-surface check-apps protocol-test issues-dry-run labels-dry-run offline-checks package state-machine-tests export-test privacy-check audit-check drill frontend-test
 
 validate:
 	python3 scripts/validate_kit.py
@@ -65,6 +65,12 @@ audit-check:
 # validation/restore-drill.json.
 drill:
 	node scripts/restore_drill.mjs
+
+# The creator/verifier frontend's logic (#26): local hashing, the commitment
+# and record encodings cross-checked against the protocol implementations, the
+# interrupted-reveal state, tamper detection and the warnings.
+frontend-test:
+	node apps/01_creator_proof_registry/frontend/client.test.mjs
 
 # Documentation site. `site-src/` is staged from the repository rather than
 # being a second copy of it; see scripts/build_docs_site.py.
