@@ -1,0 +1,10 @@
+{
+  "format": "motoko-lab:audit-findings:v1",
+  "audit": {
+    "commit": "",
+    "auditor": "",
+    "reportUri": ""
+  },
+  "severities": ["critical", "high", "medium", "low", "info"],
+  "findings": []
+}

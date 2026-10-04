@@ -699,6 +699,19 @@
 
 詳細は`docs/32_PRIVACY_AND_DATA_PROTECTION.md`。
 
+## 2026-10-04に追加で実行済み (security audit readiness, issue #21)
+
+- 監査brief (`docs/33_SECURITY_AUDIT.md`)、severity model、remediation/publication process、
+  acceptance gatesを用意。`scripts/freeze_audit_scope.sh`がclean treeから
+  `security/audit/FROZEN.json` (commit、tree、全canisterのmodule/Candid hash) を作成
+- `security/audit/findings.json`を唯一のregisterとし、`scripts/check_audit_findings.py`が
+  openのcritical/highをCIでblock、accepted riskにはowner・rationale・未来のexpiryを要求、
+  remediatedにはremediationとre-testを要求。self-testはregisterを5通りに改変して検出
+- **未実施 (外部依存)**: 独立auditorの選定・契約・報告。issue #21はこの部分が完了するまで
+  openのままにします
+
+詳細は`docs/33_SECURITY_AUDIT.md`。
+
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、
@@ -747,6 +760,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | State-machine tests | 2,880 replica steps (4 apps × 6 seeds × 120) plus the offline framework's 31 checks; no canister disagreement remains |
 | Portable export/restore (app 01) | format v1 cross-checked live on every page (38 replica checks) + 22 offline checks; restore into a fresh canister rehearsed in CI |
 | Privacy field classification | 333 on-chain fields classified; checker self-test proves each rule bites; low-entropy hashes carry mitigations |
+| Security audit | readiness package and findings gate in place; engagement not commissioned, so no audit claim is made |
 | local replica (`icp deploy`) | passed for app 06 (icp-cli 1.2.0 / launcher 15.0.0) |
 | upgrade rehearsal | passed for all 6 applications; across a breaking Candid change, untried |
 | documentation site | 128 pages built strict, 0 warnings; published from `main` |

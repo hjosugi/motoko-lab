@@ -1,4 +1,4 @@
-.PHONY: replica-tests docs docs-serve validate api-surface check-apps protocol-test issues-dry-run labels-dry-run offline-checks package state-machine-tests export-test privacy-check
+.PHONY: replica-tests docs docs-serve validate api-surface check-apps protocol-test issues-dry-run labels-dry-run offline-checks package state-machine-tests export-test privacy-check audit-check
 
 validate:
 	python3 scripts/validate_kit.py
@@ -54,6 +54,11 @@ export-test:
 # mitigation, user content needs a warning) are enforced.
 privacy-check:
 	python3 scripts/check_privacy.py . --self-test
+
+# The security-audit findings register (#21): no open critical/high finding,
+# accepted risks with owner and unexpired expiry, remediations with re-tests.
+audit-check:
+	python3 scripts/check_audit_findings.py . --self-test
 
 # Documentation site. `site-src/` is staged from the repository rather than
 # being a second copy of it; see scripts/build_docs_site.py.
