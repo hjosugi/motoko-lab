@@ -1,0 +1,1494 @@
+{
+  "format": "motoko-lab:privacy-fields:v1",
+  "note": "Generated coverage is enforced by scripts/check_privacy.py; every field in every committed .did must appear here.",
+  "fields": {
+    "acceptanceRatePercent": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "accepted": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "account": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "action": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "active": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "activeFrom": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "activeRecords": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "addedAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "adjustments": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "ai": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "algorithm": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "amount": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "anomalous": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "apiKeys": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "appeals": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "appliedAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "approval": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "arguments": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "artifactHash": {
+      "class": "hashed",
+      "note": "The artifact may be public or private; the hash itself is user-controlled content.",
+      "preimageEntropy": "user-controlled"
+    },
+    "assisted": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "at": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "attempts": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "authorities": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "authority": {
+      "class": "public",
+      "note": "A principal identifier or authority record."
+    },
+    "awardId": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "awardedAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "awards": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "badSignatures": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "balance": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "batchId": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "batches": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "billedUntil": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "bits": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "block": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "bounties": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "bountyId": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "buyer": {
+      "class": "public",
+      "note": "A principal identifier."
+    },
+    "by": {
+      "class": "public",
+      "note": "A principal identifier; pseudonymous, not a legal identity."
+    },
+    "bytes": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "calls": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "canister": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "categories": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "category": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "certificate": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "checksum": {
+      "class": "hashed",
+      "note": "A digest or root over protocol data; the preimage is fixed-width or high-entropy.",
+      "preimageEntropy": "high"
+    },
+    "claimant": {
+      "class": "public",
+      "note": "A principal identifier."
+    },
+    "closedAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "codes": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "collection": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "commitmentHash": {
+      "class": "hashed",
+      "note": "A digest or root over protocol data; the preimage is fixed-width or high-entropy.",
+      "preimageEntropy": "high"
+    },
+    "commitmentId": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "commitmentRoot": {
+      "class": "hashed",
+      "note": "A digest or root over protocol data; the preimage is fixed-width or high-entropy.",
+      "preimageEntropy": "high"
+    },
+    "commitments": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "committedAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "computedRoot": {
+      "class": "hashed",
+      "note": "A digest or root over protocol data; the preimage is fixed-width or high-entropy.",
+      "preimageEntropy": "high"
+    },
+    "conflicting": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "content": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "corpusTokens": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "counterRecord": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "createdAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "createdAtTime": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "creator": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "criteriaHash": {
+      "class": "hashed",
+      "note": "A digest of caller-supplied content; the pointer and the artifact stay off-chain at the caller's discretion.",
+      "preimageEntropy": "user-controlled"
+    },
+    "ctx": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "currency": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "currencyLedger": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "curve": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "custodian": {
+      "class": "sealed",
+      "note": "Names the custodian of sealed evidence; the pointer itself stays off-chain.",
+      "custodianProcess": "The custodian is the only party holding the evidence pointer; disputes carry a digest and this label, and the registry never resolves the label to a location."
+    },
+    "cyclesBalance": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "cyclesSpent": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "deadline": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "decimals": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "decision": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "declaredAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "delayNanos": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "delegate": {
+      "class": "public",
+      "note": "A principal identifier."
+    },
+    "deposit": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "description": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "descriptionHash": {
+      "class": "hashed",
+      "note": "A digest of caller-supplied content; the pointer and the artifact stay off-chain at the caller's discretion.",
+      "preimageEntropy": "user-controlled"
+    },
+    "descriptionUri": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data",
+        "private-evidence-off-chain"
+      ]
+    },
+    "determinations": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "determined": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "digest": {
+      "class": "hashed",
+      "note": "The digest of evidence, which may be low-entropy (a short text note, a known document).",
+      "preimageEntropy": "low",
+      "mitigation": "Private evidence stays off-chain encrypted; only the sealed locator and custodian are published, and a bare digest of low-entropy content must not be treated as confidential."
+    },
+    "digestSize": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "displayName": {
+      "class": "user-content",
+      "note": "A tenant-chosen display label. It can be a personal name or an email if the operator lets it, so the console must warn.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "dispute": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "domain": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "draftEvals": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "draftOrder": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "draftRounds": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "effectiveAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "enabled": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "entries": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "enum": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "event": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "eventIds": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "events": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "evidence": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "evidenceUri": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data",
+        "private-evidence-off-chain"
+      ]
+    },
+    "expected": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "expiresAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "faults": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "fee": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "feeBps": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "filedAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "format": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "from": {
+      "class": "public",
+      "note": "A principal or account identifier."
+    },
+    "function": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "funder": {
+      "class": "public",
+      "note": "A principal identifier."
+    },
+    "got": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "grantId": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "grantedAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "grants": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "ground": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "guardian": {
+      "class": "public",
+      "note": "A principal identifier."
+    },
+    "hash": {
+      "class": "hashed",
+      "note": "A digest or root over protocol data; the preimage is fixed-width or high-entropy.",
+      "preimageEntropy": "high"
+    },
+    "hashAlgorithm": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "head": {
+      "class": "hashed",
+      "note": "A digest or root over protocol data; the preimage is fixed-width or high-entropy.",
+      "preimageEntropy": "high"
+    },
+    "health": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "hi": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "humanContribution": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "id": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "idempotencyKey": {
+      "class": "user-content",
+      "note": "A caller-chosen key; it is an identifier, not a payload, and must not carry personal data.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "includeStorageUris": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "included": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "index": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "intentId": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "interCanisterCalls": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "invoice": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "keyId": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "keyLabel": {
+      "class": "user-content",
+      "note": "A tenant-chosen API key label; it must not be used for personal data.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "keys": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "kind": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "lastRejection": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "lateEvents": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "layout": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "leaf": {
+      "class": "hashed",
+      "note": "A digest or root over protocol data; the preimage is fixed-width or high-entropy.",
+      "preimageEntropy": "high"
+    },
+    "leafCount": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "leafDomain": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "leafPrefix": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "leaves": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "ledger": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "limit": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "lines": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "listingId": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "listings": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "lo": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "locator": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "lossless": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "manifestHash": {
+      "class": "hashed",
+      "note": "A digest of caller-supplied content; the pointer and the artifact stay off-chain at the caller's discretion.",
+      "preimageEntropy": "user-controlled"
+    },
+    "manifestUri": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data",
+        "private-evidence-off-chain"
+      ]
+    },
+    "maxAgeNanos": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "maxBatch": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "maxFutureSkewNanos": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "maxLeafCount": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "maxMultiproofLeaves": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "maxPrincipalTextSize": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "maxSaltSize": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "maxTokens": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "maxUnitsPerEvent": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "maxUnitsPerWindow": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "memo": {
+      "class": "metadata",
+      "note": "A protocol-defined payment memo (canister id and id); not user content."
+    },
+    "message": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "messages": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "metadataHash": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "mimeType": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "minPrincipalTextSize": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "minSaltSize": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "mode": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "model": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "name": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "nat": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "next": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "nodePrefix": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "note": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "observedAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "ops": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "order": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "orderId": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "orders": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "outOfScope": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "outcome": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "owner": {
+      "class": "public",
+      "note": "A principal identifier; pseudonymous, not a legal identity."
+    },
+    "paidAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "parameters": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "parents": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "party": {
+      "class": "public",
+      "note": "A dispute party role or principal."
+    },
+    "path": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "payTo": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "paymentBlock": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "paymentMemo": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "payments": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "periodSeconds": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "periodStart": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "periodStartedAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "plan": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "platform": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "platformFee": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "policy": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "policyUri": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data",
+        "private-evidence-off-chain"
+      ]
+    },
+    "prev": {
+      "class": "hashed",
+      "note": "A digest or root over protocol data; the preimage is fixed-width or high-entropy.",
+      "preimageEntropy": "high"
+    },
+    "prev1": {
+      "class": "hashed",
+      "note": "A digest or root over protocol data; the preimage is fixed-width or high-entropy.",
+      "preimageEntropy": "high"
+    },
+    "prev2": {
+      "class": "hashed",
+      "note": "A digest or root over protocol data; the preimage is fixed-width or high-entropy.",
+      "preimageEntropy": "high"
+    },
+    "price": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "priceMinorUnits": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "principal": {
+      "class": "public",
+      "note": "A principal identifier; pseudonymous, not a legal identity."
+    },
+    "prompt": {
+      "class": "user-content",
+      "note": "A raw prompt passed to the distributed LLM. The reference backend does not persist it; it is a call argument.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "promptHash": {
+      "class": "hashed",
+      "note": "A hash of a prompt: prompts are frequently low-entropy and guessable, so the hash is a confirmation oracle. Publish it only for prompts that are already public or high-entropy.",
+      "preimageEntropy": "low",
+      "mitigation": "Seal the prompt off-chain (or hash a high-entropy secret) and treat the on-chain value as a commitment, never as proof the prompt stayed private."
+    },
+    "proof": {
+      "class": "hashed",
+      "note": "A digest or root over protocol data; the preimage is fixed-width or high-entropy.",
+      "preimageEntropy": "high"
+    },
+    "proofCanister": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "proofRecordId": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "properties": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "proposed": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "proposedRoot": {
+      "class": "public",
+      "note": "A principal identifier."
+    },
+    "provider": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "publicKey": {
+      "class": "public",
+      "note": "A reporter signing key; public by design."
+    },
+    "quantity": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "quota": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "quotaRejections": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "range": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "reason": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "receipt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "receiptHash": {
+      "class": "hashed",
+      "note": "A digest of caller-supplied content; the pointer and the artifact stay off-chain at the caller's discretion.",
+      "preimageEntropy": "user-controlled"
+    },
+    "record": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "recordRoot": {
+      "class": "hashed",
+      "note": "A digest or root over protocol data; the preimage is fixed-width or high-entropy.",
+      "preimageEntropy": "high"
+    },
+    "recordedAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "recordedBy": {
+      "class": "public",
+      "note": "A principal identifier."
+    },
+    "records": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "recovery": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "reference": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "registeredAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "rejected": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "rejectedInWindow": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "rejections": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "replayed": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "replication": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "reply": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "reporter": {
+      "class": "public",
+      "note": "A principal identifier."
+    },
+    "reporters": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "requested": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "requestedAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "requestedBy": {
+      "class": "public",
+      "note": "A principal identifier."
+    },
+    "requireSignatures": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "required": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "reserve": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "resetInNanos": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "respondBy": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "response": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "retiredAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "retryAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "revoked": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "revokedAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "revokedRecords": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "reward": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "root": {
+      "class": "hashed",
+      "note": "A digest or root over protocol data; the preimage is fixed-width or high-entropy.",
+      "preimageEntropy": "high"
+    },
+    "round": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "rounding": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "salt": {
+      "class": "metadata",
+      "note": "A high-entropy value published with the record so the commitment can be re-verified; not personal."
+    },
+    "scale": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "schemaUri": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data",
+        "private-evidence-off-chain"
+      ]
+    },
+    "scope": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "score": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "scores": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "seller": {
+      "class": "public",
+      "note": "A principal identifier."
+    },
+    "seq": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "sequence": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "shape": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "shard": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "shardCount": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "signature": {
+      "class": "public",
+      "note": "A signature over public data; public by design."
+    },
+    "signatureEncoding": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "signer": {
+      "class": "public",
+      "note": "A principal identifier."
+    },
+    "sold": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "spotCheck": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "spotChecks": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "stance": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "start": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "state": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "statement": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "status": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "steps": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "stopToken": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "storageUri": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data",
+        "private-evidence-off-chain"
+      ]
+    },
+    "strategy": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "subaccount": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "submissionId": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "submissions": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "submittedAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "submitter": {
+      "class": "public",
+      "note": "A principal identifier."
+    },
+    "summary": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "supersedes": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "supply": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "symbol": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "targetEvals": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "targetOrder": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "targetRounds": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "tenant": {
+      "class": "public",
+      "note": "A principal identifier."
+    },
+    "tenants": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "termsHash": {
+      "class": "hashed",
+      "note": "A digest of caller-supplied content; the pointer and the artifact stay off-chain at the caller's discretion.",
+      "preimageEntropy": "user-controlled"
+    },
+    "termsUri": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data",
+        "private-evidence-off-chain"
+      ]
+    },
+    "text": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "timestamp": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "title": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "to": {
+      "class": "public",
+      "note": "A principal or account identifier."
+    },
+    "token": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "tokens": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "tool_call_id": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "tool_calls": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "tools": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "total": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "treeVersion": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "type": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "units": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "unitsPerWindow": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "unresolved": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "updatedAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "usageEvents": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "used": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "value": {
+      "class": "user-content",
+      "note": "Free text or a pointer supplied by a caller; publish only what is intended to be permanent and non-personal.",
+      "warnings": [
+        "irreversible-publication",
+        "no-personal-data"
+      ]
+    },
+    "verifiedAt": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "version": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "vocabSize": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "windowExceeded": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "windowNanos": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "windowSeconds": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "windowStart": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "windowUnits": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "winner": {
+      "class": "public",
+      "note": "A principal identifier."
+    },
+    "wireBytes": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "withdrawn": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "witness": {
+      "class": "hashed",
+      "note": "A digest or root over protocol data; the preimage is fixed-width or high-entropy.",
+      "preimageEntropy": "high"
+    },
+    "worker": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    },
+    "workers": {
+      "class": "public",
+      "note": "Public protocol data (identifier, principal, amount, status, count or timestamp)."
+    }
+  }
+}

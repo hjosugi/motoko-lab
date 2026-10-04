@@ -679,6 +679,26 @@
 
 詳細は`docs/31_PORTABLE_EXPORT.md`。
 
+## 2026-10-04に追加で実行済み (privacy, issue #20)
+
+- 全6アプリのcommitted `.did`の全record field (333件) を`privacy/fields.json`で分類
+  (public 277 / metadata 2 / hashed 22 / user-content 31 / sealed 1)。`scripts/check_privacy.py`
+  が分類漏れ、`raw-personal` class、low-entropy hashのmitigation欠落、user-contentの
+  warning欠落、未知のwarning id、sealedのcustodian process欠落を検出し、self-testは
+  inventoryを6通りに改変して全て検出することを確認
+- 低entropyのhashを特定: `promptHash` (promptは推測可能) とevidence `digest`。どちらも
+  mitigation (off-chain sealing / 暗号化、hashはcommitmentとしてのみ扱う) を必須化
+- `privacy/warnings.json`にUIがirreversible write前に表示すべき文言を固定
+  (irreversible-publication / no-personal-data / private-evidence-off-chain)。frontend #26が
+  これを使います
+- retention・off-chain deletion・dictionary attack・DPIA checklist (low-entropy hash /
+  minor user / court order / cross-border storage) を`docs/32_PRIVACY_AND_DATA_PROTECTION.md`
+  に記録。sealed evidenceにon-chain URIが無いこと、export policyがstorageUriを
+  redactすることは既存のreplica suite / #19 testで検証済み
+- 未実施: 法的レビュー・terms確定 (#35)、DPO/DPIAの運用側記録、frontendでのwarning実装 (#26)
+
+詳細は`docs/32_PRIVACY_AND_DATA_PROTECTION.md`。
+
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、
@@ -726,6 +746,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 732 + 55 assertions |
 | State-machine tests | 2,880 replica steps (4 apps × 6 seeds × 120) plus the offline framework's 31 checks; no canister disagreement remains |
 | Portable export/restore (app 01) | format v1 cross-checked live on every page (38 replica checks) + 22 offline checks; restore into a fresh canister rehearsed in CI |
+| Privacy field classification | 333 on-chain fields classified; checker self-test proves each rule bites; low-entropy hashes carry mitigations |
 | local replica (`icp deploy`) | passed for app 06 (icp-cli 1.2.0 / launcher 15.0.0) |
 | upgrade rehearsal | passed for all 6 applications; across a breaking Candid change, untried |
 | documentation site | 128 pages built strict, 0 warnings; published from `main` |

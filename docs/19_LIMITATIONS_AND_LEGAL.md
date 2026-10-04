@@ -2,12 +2,12 @@
 
 ## Technical limitations
 
-- reference appsはsecurity audit前
-- 全5 reference appsはpinned toolchainでcompile/test/Wasm build済みだが、PocketICとupgrade rehearsalは未実行
+- reference appsはsecurity audit前 (issue #21)
+- 全6 reference appsはpinned toolchainでcompile/test/Wasm build済みで、PocketIC suiteとupgrade rehearsalも実行済み
 - commitmentのSHA-256検証はapps/01でon-chain実行済み、RFC 8785 canonicalizationはoff-chain (canisterはdigestのみを受け取る設計)
 - payment appsはmanual confirmation model
-- certified queryは未実装
-- no production frontend
+- certified queryはapps/01で実装済み
+- no production frontend (#26)
 - no automatic legal dispute resolution
 
 ## Evidence limitation
@@ -21,6 +21,10 @@ AI-generated/assisted workのcopyright、contract、disclosure義務はjurisdict
 ## Privacy
 
 immutable public dataへpersonal dataを置くと、deletion requestへ対応できない可能性があります。hashもinput entropyが低い場合はpersonal dataを隠しません。
+
+fieldごとのclassification (public / metadata / hashed / user-content / sealed)、warning文言、retention・off-chain deletion、dictionary attackの分析、DPIA checklistは`docs/32_PRIVACY_AND_DATA_PROTECTION.md`にあります。classificationは`privacy/fields.json`として機械可読で、`scripts/check_privacy.py`が全`.did` fieldの分類漏れ、`raw-personal` class、low-entropy hashのmitigation欠落、user-contentのwarning欠落をCIで落とします。
+
+UIはirreversible publicationの前に`privacy/warnings.json`のwarningを表示する必要があります (#26)。termsは「registrationはauthorshipの証明ではない」「hashは低entropy入力の秘密を守らない」「on-chain dataは削除できない」を明記します (#35)。
 
 ## Financial
 

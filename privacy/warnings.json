@@ -1,0 +1,20 @@
+{
+  "format": "motoko-lab:publication-warnings:v1",
+  "warnings": [
+    {
+      "id": "irreversible-publication",
+      "title": "Publication is irreversible",
+      "copy": "This will be written to an immutable public canister. It cannot be edited or deleted, only superseded by a new record or withdrawn by revocation."
+    },
+    {
+      "id": "no-personal-data",
+      "title": "No personal data",
+      "copy": "Do not enter names, email addresses, IP addresses, or private source. On-chain free text is permanent and public."
+    },
+    {
+      "id": "private-evidence-off-chain",
+      "title": "Private evidence stays off-chain",
+      "copy": "Keep private evidence in your own storage; only a digest and a custodian label go on-chain."
+    }
+  ]
+}
