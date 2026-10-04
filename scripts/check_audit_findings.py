@@ -93,7 +93,8 @@ def check(root: Path) -> list[str]:
 
 def self_test(root: Path) -> int:
     path = root / REGISTER
-    original = load(path)
+    original_text = path.read_text(encoding="utf-8")
+    original = json.loads(original_text)
     if check(root):
         print("self-test cannot run: the real register already fails", file=sys.stderr)
         return 1
@@ -105,7 +106,9 @@ def self_test(root: Path) -> int:
         try:
             return check(root)
         finally:
-            path.write_text(json.dumps(original, indent=2) + "\n", encoding="utf-8")
+            # Restore the exact bytes, not a re-serialization: running the
+            # self-test must not dirty the working tree.
+            path.write_text(original_text, encoding="utf-8")
 
     def with_finding(**fields):
         def change(candidate):
