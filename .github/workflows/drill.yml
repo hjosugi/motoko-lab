@@ -1,0 +1,48 @@
+name: Drill
+
+# The quarterly restore drill (issue #25). The first of January, April, July
+# and October, plus manual dispatch, on a fresh replica: export, corrupt,
+# recover the controller, restore, verify. The report is uploaded as an
+# artifact; the operator commits it with the post-drill actions.
+
+on:
+  schedule:
+    - cron: '0 3 1 1,4,7,10 *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  drill:
+    name: Restore drill
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Install ICP and Motoko tooling
+        run: ./scripts/bootstrap_toolchain.sh
+      - name: Install application dependencies
+        run: |
+          source ./scripts/toolchain_env.sh
+          motoko_add_toolchain_to_path
+          for app in apps/*/; do
+            [ -f "$app/mops.toml" ] || continue
+            ( cd "$app" && ( mops install || "$GITHUB_WORKSPACE/scripts/vendor_core_offline.sh" "$PWD" ) )
+          done
+      - name: Download the replica
+        run: node tools/pocket-ic/setup.mjs
+      - name: Run the restore drill
+        run: |
+          source ./scripts/toolchain_env.sh
+          motoko_add_toolchain_to_path
+          node scripts/restore_drill.mjs
+      - name: Upload the drill report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: restore-drill-report
+          path: validation/restore-drill.json
+          if-no-files-found: error

@@ -128,6 +128,7 @@ nav:
       - プライバシーとデータ保護: docs/32_PRIVACY_AND_DATA_PROTECTION.md
       - セキュリティ監査: docs/33_SECURITY_AUDIT.md
       - 書き込みquotaとabuse economics: docs/34_WRITE_QUOTAS.md
+      - 災害復旧とrestore drill: docs/35_DISASTER_RECOVERY.md
       - データモデルとAPI: docs/23_DATA_MODEL_AND_API.md
 
   - アプリケーション:

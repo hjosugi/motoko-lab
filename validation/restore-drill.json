@@ -1,0 +1,69 @@
+{
+  "format": "motoko-lab:restore-drill:v1",
+  "startedAt": "2026-10-04T03:35:28.153Z",
+  "completedAt": "2026-10-04T03:35:36.217Z",
+  "targetSeconds": {
+    "rto": 3600,
+    "rpo": 86400,
+    "drill": 900
+  },
+  "versions": {
+    "pocketIc": "14.0.0",
+    "moduleSha256": "5eabb20a114f91fe591d4ebbdafd13b10b65dd9b69994fb458eb94ed34a1207c",
+    "candidSha256": "1a0da2538344ae52e62a0e06b6cdc8920982adcb07344203412fe20c35cad1b2"
+  },
+  "checks": [
+    {
+      "check": "the fixture has two records, one revoked",
+      "passed": true
+    },
+    {
+      "check": "the export holds every commitment and record",
+      "passed": true
+    },
+    {
+      "check": "a corrupted snapshot fails verification",
+      "passed": true
+    },
+    {
+      "check": "the lost key can no longer upgrade the canister",
+      "passed": true
+    },
+    {
+      "check": "the recovery controller can upgrade the canister",
+      "passed": true
+    },
+    {
+      "check": "the restored counts equal the exported ones",
+      "passed": true
+    },
+    {
+      "check": "the revoked ratio survives the restore",
+      "passed": true
+    },
+    {
+      "check": "the restored record root equals the source root",
+      "passed": true
+    },
+    {
+      "check": "the artifact index was rebuilt",
+      "passed": true
+    },
+    {
+      "check": "a restored record is certified by the new subnet",
+      "passed": true
+    },
+    {
+      "check": "the restored record re-encodes for a reader",
+      "passed": true
+    },
+    {
+      "check": "the restore completed within the RTO (0.1s <= 3600s)",
+      "passed": true
+    }
+  ],
+  "restoreSeconds": 0.093,
+  "elapsedSeconds": 8.064,
+  "status": "pass",
+  "failure": null
+}

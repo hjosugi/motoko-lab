@@ -1,4 +1,4 @@
-.PHONY: replica-tests docs docs-serve validate api-surface check-apps protocol-test issues-dry-run labels-dry-run offline-checks package state-machine-tests export-test privacy-check audit-check
+.PHONY: replica-tests docs docs-serve validate api-surface check-apps protocol-test issues-dry-run labels-dry-run offline-checks package state-machine-tests export-test privacy-check audit-check drill
 
 validate:
 	python3 scripts/validate_kit.py
@@ -59,6 +59,12 @@ privacy-check:
 # accepted risks with owner and unexpired expiry, remediations with re-tests.
 audit-check:
 	python3 scripts/check_audit_findings.py . --self-test
+
+# The quarterly restore drill (#25): export, corrupt, recover the controller,
+# restore into a fresh canister, verify. Needs the replica; writes
+# validation/restore-drill.json.
+drill:
+	node scripts/restore_drill.mjs
 
 # Documentation site. `site-src/` is staged from the repository rather than
 # being a second copy of it; see scripts/build_docs_site.py.

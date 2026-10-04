@@ -146,6 +146,7 @@ blockchain上だからbackup不要ではありません。
 - module hash and Candid version: `bundle.json`の`source.moduleHash` / `source.candidHash` (収集時にWasmと`.did`から)
 - encrypted private evidence backup: redaction policy (`includeStorageUris=false`)はdigest計算前に適用され、rootもredacted viewを指します
 - restore rehearsal: app 01のreplica suiteの"portable export"節。CIのReplica workflowで毎回実行
+- quarterly drill: `scripts/restore_drill.mjs` (`make drill`)。四半期cronの`Drill` workflowがfresh replicaでexport→corruption検出→controller recovery→restore→certified queryを検証し、`validation/restore-drill.json`を残します。手順とRTO/RPOは`docs/35_DISASTER_RECOVERY.md`
 
 ## Key and controller management
 

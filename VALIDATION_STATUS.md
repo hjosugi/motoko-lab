@@ -732,6 +732,24 @@
 
 詳細は`docs/34_WRITE_QUOTAS.md`。
 
+## 2026-10-04に追加で実行済み (disaster recovery, issue #25)
+
+- 災害シナリオ (lost deploy key / bad upgrade / index corruption / vault outage /
+  canister lost)、RTO/RPO、role、post-drill actionを`docs/35_DISASTER_RECOVERY.md`に定義
+- `scripts/restore_drill.mjs`がfresh replica上でdrillを自動実行: fixture (record 2件、
+  revoked 1件) → portable export → page改ざんでverificationが拒否することを確認 →
+  management canisterでcontrollerを移行し旧keyのupgrade不可・新keyのupgrade可を確認 →
+  fresh canisterへrestore → counts/roots/artifact index/revoked比率/certified queryを検証。
+  `validation/restore-drill.json`に12 checks、restore実測時間、RTO/RPO目標を記録し、
+  失敗時はnon-zero
+- `Drill` workflowが四半期cron (1/4/7/10月の1日) とmanual dispatchで実行し、reportを
+  artifactとして保存。`make drill`でローカル実行
+- 実行結果: 12/12 checks、drill全体8.1s、restore 0.1s (RTO 3,600s以内)。versions:
+  pocket-ic 14.0.0、module sha256 53937f96...、Candid sha256 はreportに記録
+- 未実施: 実subnetでのprovider/キーceremony、vault本体のbackup/restore、shard横断復旧
+
+詳細は`docs/35_DISASTER_RECOVERY.md`。
+
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
 - 破壊的Candid変更をまたぐupgrade。同一version間のrehearsalは実行済みですが、
@@ -782,6 +800,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | Privacy field classification | 333 on-chain fields classified; checker self-test proves each rule bites; low-entropy hashes carry mitigations |
 | Security audit | readiness package and findings gate in place; engagement not commissioned, so no audit claim is made |
 | Write quotas (app 01) | policy, caps, allowances and per-reason metrics, 35 replica checks; default limits leave the state-machine models valid |
+| Restore drill (app 01) | automated end-to-end drill on pocket-ic: 12/12 checks, restore within the RTO; quarterly cron workflow and committed report |
 | local replica (`icp deploy`) | passed for app 06 (icp-cli 1.2.0 / launcher 15.0.0) |
 | upgrade rehearsal | passed for all 6 applications; across a breaking Candid change, untried |
 | documentation site | 128 pages built strict, 0 warnings; published from `main` |
