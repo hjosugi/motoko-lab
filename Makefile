@@ -1,4 +1,4 @@
-.PHONY: replica-tests docs docs-serve validate api-surface check-apps protocol-test issues-dry-run labels-dry-run offline-checks package
+.PHONY: replica-tests docs docs-serve validate api-surface check-apps protocol-test issues-dry-run labels-dry-run offline-checks package state-machine-tests
 
 validate:
 	python3 scripts/validate_kit.py
@@ -35,6 +35,13 @@ replica-tests:
 	node tools/pocket-ic/vc.test.mjs
 	cd labs/migration-chain && mops install
 	node labs/migration-chain/test/migration-chain.test.mjs
+	node tools/state-machine/run.mjs
+
+# Property-based state-machine tests (#18): a pure model per app, seeded random
+# command sequences against a real replica, and delta debugging down to the
+# steps that reproduce a disagreement. Fixed seeds, so a failure replays.
+state-machine-tests:
+	node tools/state-machine/run.mjs
 
 # Documentation site. `site-src/` is staged from the repository rather than
 # being a second copy of it; see scripts/build_docs_site.py.

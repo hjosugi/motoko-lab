@@ -19,12 +19,12 @@ run() {
   echo
 }
 
-echo "[1/13] Shell syntax"
+echo "[1/14] Shell syntax"
 for script in "$ROOT"/scripts/*.sh; do
   run bash -n "$script"
 done
 
-echo "[2/13] Python source compilation without bytecode output"
+echo "[2/14] Python source compilation without bytecode output"
 ROOT_FOR_PY="$ROOT" python3 - <<'PY'
 import os
 from pathlib import Path
@@ -37,36 +37,42 @@ print(f"compiled: {len(files)} Python files")
 PY
 echo
 
-echo "[3/13] Node syntax"
+echo "[3/14] Node syntax"
 for module in "$ROOT"/protocol/tools/*.mjs; do
   run node --check "$module"
 done
 
-echo "[4/13] Provenance protocol tests"
+echo "[4/14] Provenance protocol tests"
 run node "$ROOT/protocol/tools/provenance-cli.test.mjs"
 run node "$ROOT/protocol/tools/merkle.test.mjs"
 
-echo "[5/13] C2PA bridge tests"
+echo "[5/14] C2PA bridge tests"
 run node "$ROOT/protocol/tools/c2pa.test.mjs"
 
-echo "[6/13] Verifiable credential tests"
+echo "[6/14] Verifiable credential tests"
 run node "$ROOT/protocol/tools/vc.test.mjs"
 
-echo "[7/13] AI attestation tests"
+echo "[7/14] AI attestation tests"
 run node "$ROOT/protocol/tools/ai-attestation.test.mjs"
 
-echo "[8/13] Tenant sharding model"
+echo "[8/14] Tenant sharding model"
 run node "$ROOT/tools/sharding/model.test.mjs"
 
-echo "[9/13] Observability model"
+echo "[9/14] Observability model"
 run node "$ROOT/tools/observability/model.test.mjs"
 
-echo "[10/13] Motoko/Candid API surface"
+echo "[10/14] State-machine framework"
+for module in "$ROOT"/tools/state-machine/*.mjs "$ROOT"/tools/state-machine/models/*.mjs; do
+  run node --check "$module"
+done
+run node "$ROOT/tools/state-machine/framework.test.mjs"
+
+echo "[11/14] Motoko/Candid API surface"
 run python3 "$ROOT/scripts/check_api_surface.py" "$ROOT" \
   --json-report "$VALIDATION_DIR/api-surface.json" \
   --markdown-report "$VALIDATION_DIR/API_SURFACE.md"
 
-echo "[11/13] GitHub automation dry-runs"
+echo "[12/14] GitHub automation dry-runs"
 labels_output="$(mktemp)"
 issues_output="$(mktemp)"
 trap 'rm -f "$labels_output" "$issues_output"' EXIT
@@ -76,11 +82,11 @@ echo "label commands: $(grep -c '^gh label create' "$labels_output")"
 echo "issue dry-run output lines: $(wc -l < "$issues_output" | tr -d ' ')"
 echo
 
-echo "[12/13] Structural validation"
+echo "[13/14] Structural validation"
 run python3 "$ROOT/scripts/validate_kit.py" "$ROOT" \
   --json-report "$VALIDATION_DIR/structural-validation.json"
 
-echo "[13/13] Workspace hygiene"
+echo "[14/14] Workspace hygiene"
 find "$ROOT" -type d -name __pycache__ -prune -exec rm -rf {} +
 
 # What matters is that no generated directory can be packaged, not that none

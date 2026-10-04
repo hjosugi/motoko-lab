@@ -25,3 +25,6 @@ site-src/
 .codex/skills/graphify/
 .codex/hooks.json
 graphify-out/
+
+# State-machine failures: generated only when a model and a canister disagree.
+.state-machine-failures/

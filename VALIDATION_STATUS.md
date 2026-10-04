@@ -607,7 +607,7 @@
 
 - `docs/29_OBSERVABILITY.md`と、review済みアラート目録`observability/alerts.json`、
   executable model`tools/observability/` (91 checks、offline・依存なし・決定的、
-  `run_offline_checks.sh`の[9/13])。metrics/alerting設計の主張はほぼ時間に関するもの
+  `run_offline_checks.sh`の[10/14])。metrics/alerting設計の主張はほぼ時間に関するもの
   (1サンプルでpageしない、backendが黙ってもhealthyと読まない、多数のalertで大量pageしない)
   なので、clockを数値としてtestが進め、alertの一生 (pending / firing / coalesced /
   suppressed / resolved) を厳密に再生します
@@ -633,6 +633,29 @@
   collection path、#30の実測baselineによる閾値の置換、growth baseline job
 
 詳細は`docs/29_OBSERVABILITY.md`。
+
+## 2026-10-04に追加で実行済み (state machine, issue #18)
+
+- 4アプリ (01 registry / 03 marketplace / 04 bounty / 05 metering) のpure model
+  (`tools/state-machine/models/`) とseed固定のcommand sequence generator、delta
+  debuggingによる最小化を実装し、実レプリカ (pocket-ic 14.0.0、pinned moc 1.11.1、
+  Node.js 26.10.0) で実行。seed 1-6 × 4 model × 120 step = 2,880 step、全てPASS
+  (default seedは1-2、追加で3-6を実行)
+- acceptance criteriaを不変条件として二重に検査: revoked recordの再活性化なし、
+  1 receipt -> 最大1 grant、closed bountyの再award不可、usageがquotaを超えない
+  (最後は毎step `getTenant` で `used <= plan.quota` を確認)。boundary Nat
+  (0 / ちょうどquota / 1e9 / 1e9+1) とコマンド間upgradeを生成
+- offline framework self-test 31 checks (`node tools/state-machine/framework.test.mjs`、
+  `run_offline_checks.sh`の[10/14])。replica実行は `node tools/state-machine/run.mjs`
+  または `make state-machine-tests`
+- 検出・修正したのはmodel側の不整合のみで、アプリのコード変更はなし: commitmentの
+  principal束縛 (duplicate replayのowner)、meteringの検査順序 (reporter gate →
+  量 → tenant → enabled → idempotency → quota)、replica clockのms分解能に対する
+  deadline境界の回避、shrink候補が別の失敗へ縮む問題 (sameFailure)
+- 未実施: registryのidentity/dispute、marketplaceのverified payment、bountyのescrow、
+  meteringのsigned receipt/billing。各アプリのreplica suiteが引き続き担当
+
+詳細は`docs/30_STATE_MACHINE_TESTING.md`。
 
 ## 未実施のproduction gate
 - 結託するワーカー (ビザンチン測定はいずれも1台構成)
@@ -679,6 +702,7 @@ compile error、generated Candid差分、upgrade failureが出た場合は、実
 | Motoko compile/test/Wasm/Candid | passed for all 6 applications |
 | Nix toolchain bootstrap | passed with read-only global npm prefix |
 | PocketIC replica run | passed for all 6 applications (pocket-ic 14.0.0), 732 + 55 assertions |
+| State-machine tests | 2,880 replica steps (4 apps × 6 seeds × 120) plus the offline framework's 31 checks; no canister disagreement remains |
 | local replica (`icp deploy`) | passed for app 06 (icp-cli 1.2.0 / launcher 15.0.0) |
 | upgrade rehearsal | passed for all 6 applications; across a breaking Candid change, untried |
 | documentation site | 128 pages built strict, 0 warnings; published from `main` |

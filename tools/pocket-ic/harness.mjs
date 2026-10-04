@@ -217,6 +217,11 @@ export async function upgradeCanister({ pic, canisterId, wasm, sender, arg = new
 /// when the suite throws. A leaked `pocket-ic` process holds its port and makes
 /// the *next* run fail with something unrelated.
 ///
+/// `options` is passed through to `PocketIc.create`. The state-machine runner
+/// disables `canisterExecutionRateLimiting` there because it installs a fresh
+/// canister for every shrink candidate, and the install rate limiter treats
+/// that as an attack long before the shrinking is done.
+///
 /// Two things this has to survive that a fast machine never shows. The PocketIC
 /// server exits after 60 seconds without a request, and a suite that compiles a
 /// canister for longer than that — any suite, on a loaded machine — finds the
@@ -225,14 +230,14 @@ export async function upgradeCanister({ pic, canisterId, wasm, sender, arg = new
 /// server which has already exited never sends, so it is bounded: unbounded, it
 /// left the process with nothing to wait on, Node exited mid-`await`, and the
 /// suite's real error was never printed.
-export async function withReplica(body) {
+export async function withReplica(body, options = {}) {
   const { PocketIc, PocketIcServer, createIdentity } = await import('@dfinity/pic');
 
   const server = await PocketIcServer.start();
   let pic;
   let heartbeat;
   try {
-    pic = await PocketIc.create(server.getUrl());
+    pic = await PocketIc.create(server.getUrl(), options);
     heartbeat = setInterval(() => pic.getTime().catch(() => {}), 20_000);
     return await body({ pic, createIdentity });
   } finally {

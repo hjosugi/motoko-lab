@@ -20,6 +20,7 @@
 | `career/` | 12か月のmaintainer/developer成果物計画 |
 | `github/` | 40 Issue drafts、labels、milestones、templates、CI |
 | `scripts/` | offline validation、toolchain bootstrap、deploy、Issue dry-run、packaging |
+| `tools/` | PocketICハーネス、sharding、observability、state-machineモデル |
 | `validation/` | 実行済み検証のJSON/Markdown/text report |
 | `mkdocs.yml` | ドキュメントサイトの構成とナビゲーション (GitHub Pagesへ自動配備) |
 

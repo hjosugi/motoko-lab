@@ -12,12 +12,19 @@
 
 ### Model tests
 
-domain modelをpure moduleとして実装し、command sequenceを生成します。
+`tools/state-machine/` に4アプリ分のpure modelと、seedからcommand sequenceを生成する
+generatorがあります。生成した列は**実レプリカ**に対して実行し、modelの予測と観測が
+食い違えばその列をdelta debuggingで最小化します。詳細は
+`docs/30_STATE_MACHINE_TESTING.md`。
 
-- create -> revoke -> create duplicate
-- listing -> order -> accept/reject
-- quota reset boundary
-- bounty cancel/award conflict
+- create -> revoke -> create duplicate (registry)
+- listing -> order -> accept/reject (marketplace)
+- bounty cancel/award conflict (bounty)
+- quota reset boundary (metering)
+- コマンド間のupgrade
+
+framework自体のoffline self-testは `node tools/state-machine/framework.test.mjs`、
+実レプリカでの実行は `make state-machine-tests` です。
 
 ### Canister integration tests
 
@@ -79,7 +86,7 @@ Missing upgrade option: Enhanced orthogonal persistence requires the
 6. generated Candid diff — `scripts/check_candid_compat.py`
 7. released-interface compatibility — 同スクリプト
 8. stable compatibility check
-9. PocketIC integration — `.github/workflows/replica.yml`
+9. PocketIC integration and state-machine tests — `.github/workflows/replica.yml`
 10. dependency/license scan
 11. reproducible Wasm hash
 

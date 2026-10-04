@@ -46,6 +46,15 @@ jobs:
           source ./scripts/toolchain_env.sh
           motoko_add_toolchain_to_path
           node tools/pocket-ic/run.mjs
+      # Property-based state-machine tests (#18): a pure model per app, seeded
+      # random command sequences against a real replica, and delta debugging
+      # down to the steps that reproduce a disagreement. Fixed seeds, so a
+      # failure replays.
+      - name: Run the state-machine tests
+        run: |
+          source ./scripts/toolchain_env.sh
+          motoko_add_toolchain_to_path
+          node tools/state-machine/run.mjs
       # Not an application suite: the C2PA bridge (#10) end to end against app
       # 01 — a credential naming a certified record, verified online and from a
       # saved bundle, before and after the record is revoked.

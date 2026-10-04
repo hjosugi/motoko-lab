@@ -47,6 +47,7 @@ moc、Mops、icp-cliが未導入の場合はbootstrap_toolchain.shが公式のnp
 | github/issues/ | そのままGitHub Issue化できる40件のbacklog |   
 | github/ISSUE_TEMPLATE/ | bug、feature、research用Issue Forms |   
 | scripts/ | 検証、toolchain導入、全app check、issue dry-run登録 |   
+| tools/ | PocketICハーネス、sharding・observability・state-machineモデル |   
    
 **推奨学習順**  
 1. docs/00_START_HERE.md  
