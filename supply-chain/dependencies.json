@@ -253,6 +253,11 @@
       "license": "MIT"
     },
     {
+      "name": "actions/upload-artifact",
+      "ref": "v4",
+      "license": "MIT"
+    },
+    {
       "name": "actions/upload-pages-artifact",
       "ref": "v4",
       "license": "MIT"
